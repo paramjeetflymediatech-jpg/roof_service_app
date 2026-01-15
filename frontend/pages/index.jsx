@@ -1,16 +1,16 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+import Layout from '@/components/Layout';
 
-function Home() {
+export default function HomePage() {
   return (
-    <div>
+    <Layout>
       <section className="card" style={{ marginBottom: 24 }}>
         <h2>Welcome to Roof Service</h2>
         <p>
           Professional roofing, renovation and repair services. Get a quote, explore our
           services and manage content via the admin panel.
         </p>
-        <Link to="/services" className="button">
+        <Link href="/services" className="button">
           View Services
         </Link>
       </section>
@@ -21,12 +21,10 @@ function Home() {
           Use the Admin Services page to create and manage services stored in MongoDB via
           your Node.js API.
         </p>
-        <Link to="/admin/services" className="button">
+        <Link href="/admin/services" className="button">
           Go to Admin Services
         </Link>
       </section>
-    </div>
+    </Layout>
   );
 }
-
-export default Home;

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { fetchServices, createService } from '../../../api/services.api';
+import { useEffect, useState } from 'react';
+import Layout from '@/components/Layout';
+import apiClient from '@/lib/apiClient';
 
-function AdminServices() {
+export default function AdminServicesPage() {
   const [services, setServices] = useState([]);
   const [form, setForm] = useState({ name: '', slug: '', shortDescription: '' });
   const [loading, setLoading] = useState(false);
@@ -11,8 +12,8 @@ function AdminServices() {
   async function loadServices() {
     try {
       setLoading(true);
-      const data = await fetchServices();
-      setServices(data.items || []);
+      const res = await apiClient.get('/services');
+      setServices(res.data.items || []);
     } catch (err) {
       console.error(err);
       setError('Failed to load services');
@@ -37,7 +38,7 @@ function AdminServices() {
 
     try {
       setLoading(true);
-      const created = await createService({
+      const res = await apiClient.post('/services', {
         name: form.name,
         slug: form.slug,
         shortDescription: form.shortDescription,
@@ -45,7 +46,7 @@ function AdminServices() {
       });
       setSuccess('Service created');
       setForm({ name: '', slug: '', shortDescription: '' });
-      setServices((prev) => [created, ...prev]);
+      setServices((prev) => [res.data, ...prev]);
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to create service');
@@ -60,7 +61,7 @@ function AdminServices() {
   }
 
   return (
-    <div>
+    <Layout>
       <h2>Admin - Services</h2>
 
       <section className="card" style={{ marginBottom: 24 }}>
@@ -129,8 +130,6 @@ function AdminServices() {
           ))
         )}
       </section>
-    </div>
+    </Layout>
   );
 }
-
-export default AdminServices;
