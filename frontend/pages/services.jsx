@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
+import Layout from '@/components/LayoutShell';
 import ServiceCard from '@/components/ServiceCard';
 import apiClient from '@/lib/apiClient';
 import { SERVICES } from '@/lib/constants';

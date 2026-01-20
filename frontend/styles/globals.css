@@ -10,19 +10,25 @@
   }
 
   html {
-    @apply scroll-smooth;
+    @apply scroll-smooth overflow-x-hidden;
   }
 
   body {
-    @apply m-0 font-sans bg-gray-50 text-gray-900 antialiased;
+    @apply m-0 font-sans bg-gray-50 text-gray-900 antialiased overflow-x-hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading;
   }
 }
 
 @layer components {
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     @apply w-2;
@@ -101,6 +107,7 @@
 }
 
 @layer utilities {
+
   /* Text Shadow */
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -116,9 +123,12 @@
   }
 
   @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0px);
     }
+
     50% {
       transform: translateY(-10px);
     }

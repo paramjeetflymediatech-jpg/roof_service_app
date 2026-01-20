@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import backgroundImage from '@/assets/roofing-background.jpg';
 import { HiChevronDown } from 'react-icons/hi';
 import { gsap } from 'gsap';
 import Button from './Button';
@@ -10,36 +11,58 @@ export default function Hero() {
     const subtitleRef = useRef(null);
     const ctaRef = useRef(null);
 
+
     useEffect(() => {
         const ctx = gsap.context(() => {
             // Animate title
-            gsap.from(titleRef.current.children, {
-                duration: 1,
-                y: 100,
-                opacity: 0,
-                stagger: 0.1,
-                ease: 'power4.out',
-                delay: 0.3,
-            });
+            gsap.fromTo(
+                titleRef.current.children,
+                {
+                    y: 100,
+                    opacity: 0,
+                },
+                {
+                    duration: 1,
+                    y: 0,
+                    opacity: 1,
+                    stagger: 0.1,
+                    ease: 'power4.out',
+                    delay: 0.3,
+                }
+            );
 
             // Animate subtitle
-            gsap.from(subtitleRef.current, {
-                duration: 0.8,
-                y: 30,
-                opacity: 0,
-                ease: 'power3.out',
-                delay: 0.8,
-            });
+            gsap.fromTo(
+                subtitleRef.current,
+                {
+                    y: 30,
+                    opacity: 0,
+                },
+                {
+                    duration: 0.8,
+                    y: 0,
+                    opacity: 1,
+                    ease: 'power3.out',
+                    delay: 0.8,
+                }
+            );
 
             // Animate CTA buttons
-            gsap.from(ctaRef.current.children, {
-                duration: 0.6,
-                y: 20,
-                opacity: 0,
-                stagger: 0.15,
-                ease: 'power3.out',
-                delay: 1.2,
-            });
+            gsap.fromTo(
+                ctaRef.current.children,
+                {
+                    y: 20,
+                    opacity: 0,
+                },
+                {
+                    duration: 0.6,
+                    y: 0,
+                    opacity: 1,
+                    stagger: 0.15,
+                    ease: 'power3.out',
+                    delay: 1.2,
+                }
+            );
         }, heroRef);
 
         return () => ctx.revert();
@@ -62,7 +85,7 @@ export default function Hero() {
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: "url('https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?q=80&w=2070')",
+                        backgroundImage: `url(${backgroundImage.src})`,
                     }}
                 />
                 <div className="overlay" />

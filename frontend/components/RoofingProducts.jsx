@@ -65,28 +65,32 @@ export default function RoofingProducts() {
             id: 1,
             title: 'Asphalt Shingles',
             description: 'Durable and cost-effective roofing solution with a wide variety of colors and styles.',
-            image: 'https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80',
+            image: '/assets/asphalt-shingles.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80',
             features: ['25-30 Year Warranty', 'Wind Resistant', 'Energy Efficient'],
         },
         {
             id: 2,
             title: 'Metal Roofing',
             description: 'Long-lasting, eco-friendly roofing with superior durability and modern aesthetics.',
-            image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=2070&q=80',
+            image: '/assets/metal-roofing.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=2070&q=80',
             features: ['50+ Year Lifespan', 'Fire Resistant', 'Low Maintenance'],
         },
         {
             id: 3,
             title: 'Tile Roofing',
             description: 'Premium roofing option offering timeless beauty and exceptional longevity.',
-            image: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2070&q=80',
+            image: '/assets/tile-roofing.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2070&q=80',
             features: ['Lifetime Durability', 'Weather Resistant', 'Classic Style'],
         },
         {
             id: 4,
             title: 'Flat Roofing',
             description: 'Modern commercial roofing solution with excellent waterproofing and accessibility.',
-            image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80',
+            image: '/assets/flat-roofing.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80',
             features: ['TPO & EPDM Options', 'Easy Maintenance', 'Cost Effective'],
         },
     ];
@@ -98,7 +102,7 @@ export default function RoofingProducts() {
                 ref={imageRef}
                 className="absolute inset-0 opacity-10"
                 style={{
-                    backgroundImage: "url('https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80')",
+                    backgroundImage: "url('/assets/roofing-background.jpg'), url('https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80')",
                     backgroundSize: 'cover',
                     backgroundPosition: '50% 0%',
                 }}

@@ -149,7 +149,7 @@ export const STATS = [
 
 // Navigation Links
 export const NAV_LINKS = [
-    { label: 'Home', href: '/' },
+    // { label: 'Home', href: '/' },
     { label: 'Our Company', href: '#about' },
     { label: 'Roofing Services', href: '/services' },
     { label: 'Roofing Products', href: '#products' },

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import Layout from '@/components/Layout';
+import Layout from '@/components/LayoutShell';
 import Hero from '@/components/Hero';
 import Services from '@/components/Services';
 import WhyChooseUs from '@/components/WhyChooseUs';

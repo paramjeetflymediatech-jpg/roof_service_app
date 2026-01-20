@@ -53,7 +53,8 @@ export default function FeaturedProjects() {
             title: 'Modern Residential Roof',
             location: 'Seattle, WA',
             type: 'Asphalt Shingles',
-            image: 'https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2073&q=80',
+            image: '/assets/project-residential.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2073&q=80',
             description: 'Complete roof replacement with premium architectural shingles.',
         },
         {
@@ -61,7 +62,8 @@ export default function FeaturedProjects() {
             title: 'Commercial Building',
             location: 'Portland, OR',
             type: 'TPO Flat Roof',
-            image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=2070&q=80',
+            image: '/assets/project-commercial.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=2070&q=80',
             description: 'Large-scale commercial roofing project with energy-efficient materials.',
         },
         {
@@ -69,7 +71,8 @@ export default function FeaturedProjects() {
             title: 'Historic Home Restoration',
             location: 'Vancouver, BC',
             type: 'Cedar Shake',
-            image: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2074&q=80',
+            image: '/assets/project-historic.jpg',
+            fallbackImage: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2074&q=80',
             description: 'Authentic cedar shake roof restoration maintaining original character.',
         },
         {

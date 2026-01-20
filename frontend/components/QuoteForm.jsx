@@ -1,52 +1,76 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 import apiClient from '@/lib/apiClient';
 
 export default function QuoteForm() {
     const [form, setForm] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
+        address: '',
+        province: 'British Columbia',
+        city: '',
         email: '',
         phone: '',
         serviceType: '',
+        roofType: '',
         message: '',
+        hearAboutUs: '',
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
-        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         // Validation
-        if (!form.name || !form.email || !form.phone) {
-            setError('Please fill in all required fields');
+        if (!form.firstName || !form.lastName || !form.city || !form.email || !form.phone || !form.hearAboutUs) {
+            toast.error('Please fill in all required fields');
             return;
         }
 
         try {
             setLoading(true);
-            await apiClient.post('/leads', {
+            const response = await apiClient.post('/leads', {
                 leadType: 'quote',
                 source: 'website',
-                name: form.name,
+                name: `${form.firstName} ${form.lastName}`,
                 email: form.email,
                 phone: form.phone,
+                address: form.address,
+                province: form.province,
+                city: form.city,
                 serviceType: form.serviceType,
+                roofType: form.roofType,
                 message: form.message,
+                hearAboutUs: form.hearAboutUs,
             });
-            setSuccess(true);
-            setForm({ name: '', email: '', phone: '', serviceType: '', message: '' });
+
+            // Show success toast
+            toast.success(response.data.message || 'Thank you! We will contact you soon.');
+
+            // Reset form
+            setForm({
+                firstName: '',
+                lastName: '',
+                address: '',
+                province: 'British Columbia',
+                city: '',
+                email: '',
+                phone: '',
+                serviceType: '',
+                roofType: '',
+                message: '',
+                hearAboutUs: '',
+            });
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.message || 'Failed to submit quote request');
+            // Show error toast
+            toast.error(err.response?.data?.message || 'Failed to submit quote request. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -87,28 +111,109 @@ export default function QuoteForm() {
                         transition={{ duration: 0.6, delay: 0.3 }}
                     >
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Name */}
+                            {/* First Name and Last Name */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        First Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="firstName"
+                                        name="firstName"
+                                        value={form.firstName}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                        placeholder="Firstname"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Last Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="lastName"
+                                        name="lastName"
+                                        value={form.lastName}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                        placeholder="Lastname"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Address */}
                             <div>
-                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Full Name *
+                                <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Address
                                 </label>
                                 <input
                                     type="text"
-                                    id="name"
-                                    name="name"
-                                    value={form.name}
+                                    id="address"
+                                    name="address"
+                                    value={form.address}
                                     onChange={handleChange}
                                     className="input-field"
-                                    placeholder="John Doe"
-                                    required
+                                    placeholder="Enter a location"
                                 />
+                            </div>
+
+                            {/* Province and City */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label htmlFor="province" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Province
+                                    </label>
+                                    <select
+                                        id="province"
+                                        name="province"
+                                        value={form.province}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                    >
+                                        <option value="British Columbia">British Columbia</option>
+                                        <option value="Alberta">Alberta</option>
+                                        <option value="Saskatchewan">Saskatchewan</option>
+                                        <option value="Manitoba">Manitoba</option>
+                                        <option value="Ontario">Ontario</option>
+                                        <option value="Quebec">Quebec</option>
+                                        <option value="New Brunswick">New Brunswick</option>
+                                        <option value="Nova Scotia">Nova Scotia</option>
+                                        <option value="Prince Edward Island">Prince Edward Island</option>
+                                        <option value="Newfoundland and Labrador">Newfoundland and Labrador</option>
+                                        <option value="Yukon">Yukon</option>
+                                        <option value="Northwest Territories">Northwest Territories</option>
+                                        <option value="Nunavut">Nunavut</option>
+                                    </select>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Servicing BC's Lower Mainland to Bowen Island to Hope, and Everywhere in Between!
+                                    </p>
+                                </div>
+                                <div>
+                                    <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        City *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="city"
+                                        name="city"
+                                        value={form.city}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                        placeholder="Enter city"
+                                        required
+                                    />
+                                </div>
                             </div>
 
                             {/* Email and Phone */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Email Address *
+                                        E-mail Address *
                                     </label>
                                     <input
                                         type="email"
@@ -117,7 +222,7 @@ export default function QuoteForm() {
                                         value={form.email}
                                         onChange={handleChange}
                                         className="input-field"
-                                        placeholder="john@example.com"
+                                        placeholder="example@email.com"
                                         required
                                     />
                                 </div>
@@ -132,72 +237,98 @@ export default function QuoteForm() {
                                         value={form.phone}
                                         onChange={handleChange}
                                         className="input-field"
-                                        placeholder="+1 (555) 123-4567"
+                                        placeholder="xxx-xxx-xxxx"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            {/* Service Type */}
-                            <div>
-                                <label htmlFor="serviceType" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Service Type
-                                </label>
-                                <select
-                                    id="serviceType"
-                                    name="serviceType"
-                                    value={form.serviceType}
-                                    onChange={handleChange}
-                                    className="input-field"
-                                >
-                                    <option value="">Select a service...</option>
-                                    <option value="residential">Residential Roofing</option>
-                                    <option value="commercial">Commercial Roofing</option>
-                                    <option value="repair">Roof Repair</option>
-                                    <option value="new-construction">New Construction</option>
-                                    <option value="inspection">Roof Inspection</option>
-                                    <option value="gutter">Gutter Services</option>
-                                    <option value="other">Other</option>
-                                </select>
+                            {/* Service Type and Roof Type */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label htmlFor="serviceType" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        What service are you interested in having?
+                                    </label>
+                                    <select
+                                        id="serviceType"
+                                        name="serviceType"
+                                        value={form.serviceType}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                    >
+                                        <option value="">Select one</option>
+                                        <option value="Roof Replacement">Roof Replacement</option>
+                                        <option value="Roof Repair">Roof Repair</option>
+                                        <option value="New Construction">New Construction</option>
+                                        <option value="Roof Inspection">Roof Inspection</option>
+                                        <option value="Gutter Services">Gutter Services</option>
+                                        <option value="Emergency Repair">Emergency Repair</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="roofType" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        What type of roof do you have?
+                                    </label>
+                                    <select
+                                        id="roofType"
+                                        name="roofType"
+                                        value={form.roofType}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                    >
+                                        <option value="">Select one</option>
+                                        <option value="Asphalt Shingles">Asphalt Shingles</option>
+                                        <option value="Metal Roofing">Metal Roofing</option>
+                                        <option value="Tile Roofing">Tile Roofing</option>
+                                        <option value="Flat Roof">Flat Roof</option>
+                                        <option value="Cedar Shake">Cedar Shake</option>
+                                        <option value="Slate">Slate</option>
+                                        <option value="Not Sure">Not Sure</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            {/* Message */}
+                            {/* Tell Us More */}
                             <div>
                                 <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Project Details
+                                    Tell Us More
                                 </label>
                                 <textarea
                                     id="message"
                                     name="message"
                                     value={form.message}
                                     onChange={handleChange}
-                                    rows={5}
+                                    rows={4}
                                     className="input-field resize-none"
                                     placeholder="Tell us about your roofing project..."
                                 />
                             </div>
 
-                            {/* Error Message */}
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+                            {/* How did you hear about us */}
+                            <div>
+                                <label htmlFor="hearAboutUs" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    How did you hear about us? *
+                                </label>
+                                <select
+                                    id="hearAboutUs"
+                                    name="hearAboutUs"
+                                    value={form.hearAboutUs}
+                                    onChange={handleChange}
+                                    className="input-field"
+                                    required
                                 >
-                                    {error}
-                                </motion.div>
-                            )}
-
-                            {/* Success Message */}
-                            {success && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
-                                >
-                                    ✓ Thank you! We've received your quote request and will contact you soon.
-                                </motion.div>
-                            )}
+                                    <option value="">Select one</option>
+                                    <option value="Google Search">Google Search</option>
+                                    <option value="Social Media">Social Media</option>
+                                    <option value="Friend/Family Referral">Friend/Family Referral</option>
+                                    <option value="Previous Customer">Previous Customer</option>
+                                    <option value="Advertisement">Advertisement</option>
+                                    <option value="Drive By">Drive By</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
 
                             {/* Submit Button */}
                             <motion.button
