@@ -142,18 +142,17 @@ export const TESTIMONIALS = [
 // Stats/Counters
 export const STATS = [
     { label: 'Years in Business', value: 5, suffix: '+' },
-    { label: 'Projects Completed', value: 1000, suffix: '+' },
+    { label: 'Projects Completed', value: 4000, suffix: '+' },
     { label: 'Happy Customers', value: 500, suffix: '+' },
-    { label: 'Expert Technicians', value: 45, suffix: '+' },
+    { label: 'Expert Technicians', value: 50, suffix: '+' },
 ];
 
 // Navigation Links
 export const NAV_LINKS = [
-    // { label: 'Home', href: '/' },
-    { label: 'Our Company', href: '#about' },
-    { label: 'Roofing Services', href: '/services' },
-    { label: 'Roofing Products', href: '#products' },
-    { label: 'Solar Services', href: '#solar' },
-    { label: 'Featured Projects', href: '#projects' },
+    { label: 'Company', href: '/company' },
+    { label: 'Services', href: '/services' },
+    { label: 'Products', href: '/products' },
+    { label: 'Solar', href: '/solar' },
+    { label: 'Projects', href: '/projects' },
     { label: 'Contact', href: '/contact' },
 ];

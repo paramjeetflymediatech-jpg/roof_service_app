@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import backgroundImage from '@/assets/roofing-background.jpg';
+// import backgroundImage from '@/assets/roofing-background.jpg';
 import { HiChevronDown } from 'react-icons/hi';
 import { gsap } from 'gsap';
 import Button from './Button';
@@ -85,7 +85,7 @@ export default function Hero() {
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: `url(${backgroundImage.src})`,
+                        backgroundImage: `url('/assets/roofing-background.jpg')`,
                     }}
                 />
                 <div className="overlay" />
