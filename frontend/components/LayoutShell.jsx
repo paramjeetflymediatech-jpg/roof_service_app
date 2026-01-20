@@ -34,100 +34,113 @@ export default function LayoutShell({ children }) {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden max-w-full">
-      {/* Top Bar */}
-      <div className="bg-dark-900 text-white py-2 hidden md:block">
-        <div className="container-custom flex justify-between items-center text-sm">
-          <div className="flex gap-6">
-            <a href={`tel:${COMPANY_INFO.phone}`} className="flex gap-2">
-              <HiPhone className="text-accent-500" />
-              {COMPANY_INFO.phone}
-            </a>
-            <a href={`mailto:${COMPANY_INFO.email}`} className="flex gap-2">
-              <HiMail className="text-accent-500" />
-              {COMPANY_INFO.email}
-            </a>
-          </div>
-          <div className="flex gap-4">
-            <FaFacebook />
-            <FaTwitter />
-            <FaInstagram />
-            <FaLinkedin />
+    <div className="min-h-screen flex flex-col max-w-full">
+      {/* Header & Top Bar Wrapper (Fixed) */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        {/* Top Bar */}
+        <div className="bg-dark-900 text-white py-2 hidden md:block">
+          <div className="container-custom flex justify-between items-center text-sm">
+            <div className="flex gap-6">
+              <a href={`tel:${COMPANY_INFO.phone}`} className="flex gap-2">
+                <HiPhone className="text-accent-500" />
+                {COMPANY_INFO.phone}
+              </a>
+              <a href={`mailto:${COMPANY_INFO.email}`} className="flex gap-2">
+                <HiMail className="text-accent-500" />
+                {COMPANY_INFO.email}
+              </a>
+            </div>
+            <div className="flex gap-4">
+              <FaFacebook />
+              <FaTwitter />
+              <FaInstagram />
+              <FaLinkedin />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Header */}
-      <header
-        className={`sticky top-0 z-50 transition-all ${scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 py-4'
-          }`}
-      >
-        <div className="container-custom flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3">
-            <Logo className="w-10 h-10" />
-          </Link>
+        {/* Header */}
+        <header
+          className={`transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-2' : 'bg-white py-4'
+            }`}
+        >
+          <div className="container-custom flex justify-between items-center">
+            <Link href="/" className="flex items-center gap-3 group">
+              <Logo className="w-14 h-14 md:w-16 md:h-16 transition-transform duration-300 group-hover:scale-105" />
+              <div className="flex flex-col">
+                <span className="text-xl md:text-2xl font-black font-heading leading-tight text-gray-900 group-hover:text-primary-600 transition-colors uppercase tracking-tighter">
+                  Premium
+                </span>
+                <span className="text-xs md:text-sm font-bold leading-none text-accent-600 tracking-[0.2em] uppercase -mt-1">
+                  Roofing
+                </span>
+              </div>
+            </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex gap-6">
-            {NAV_LINKS.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-gray-700 hover:text-primary-600 font-medium"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* CTA */}
-          <Link href="/contact" className="hidden md:block">
-            <button className="btn btn-primary">Get a Quote</button>
-          </Link>
-
-          {/* Mobile Button */}
-          <button
-            onClick={() => setMobileMenuOpen(prev => !prev)}
-            className="md:hidden"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <HiX size={30} /> : <HiMenu size={30} />}
-          </button>
-        </div>
-      </header>
-
-      {/* ✅ MOBILE MENU — NO HEIGHT ANIMATION */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.25 }}
-            className="md:hidden fixed top-[88px] left-0 right-0 bg-white shadow-lg z-40"
-          >
-            <nav className="container-custom py-6 flex flex-col gap-4">
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex gap-6">
               {NAV_LINKS.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="border-b py-2 text-gray-700"
+                  className="text-gray-700 hover:text-primary-600 font-medium"
                 >
                   {link.label}
                 </Link>
               ))}
-              <Link href="/contact">
-                <button className="btn btn-primary w-full mt-4">
-                  Get a Quote
-                </button>
-              </Link>
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            {/* CTA */}
+            <Link href="/contact" className="hidden md:block">
+              <button className="btn btn-primary">Get a Quote</button>
+            </Link>
+
+            {/* Mobile Button */}
+            <button
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              className="md:hidden"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <HiX size={30} /> : <HiMenu size={30} />}
+            </button>
+          </div>
+        </header>
+
+        {/* ✅ MOBILE MENU INSIDE FIXED WRAPPER */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25 }}
+              className="md:hidden bg-white shadow-lg border-t"
+            >
+              <nav className="container-custom py-6 flex flex-col gap-4">
+                {NAV_LINKS.map(link => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="border-b py-2 text-gray-700"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link href="/contact">
+                  <button className="btn btn-primary w-full mt-4">
+                    Get a Quote
+                  </button>
+                </Link>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pt-[102px] md:pt-[138px]">
+        {children}
+      </main>
 
       {/* Footer */}
       <footer className="bg-dark-900 text-gray-300 pt-16 pb-8">
@@ -135,8 +148,16 @@ export default function LayoutShell({ children }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
-              <Link href="/" className="flex items-center gap-3">
-                <Logo className="w-12 h-12" />
+              <Link href="/" className="flex items-center gap-4 group">
+                <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105" />
+                <div className="flex flex-col">
+                  <span className="text-2xl font-black font-heading leading-tight text-white group-hover:text-primary-400 transition-colors uppercase tracking-tighter">
+                    Premium
+                  </span>
+                  <span className="text-xs font-bold leading-none text-accent-500 tracking-[0.2em] uppercase -mt-1">
+                    Roofing
+                  </span>
+                </div>
               </Link>
               <p className="text-gray-400 leading-relaxed">
                 {COMPANY_INFO.tagline || 'Quality materials designed to protect your investment for decades.'}
