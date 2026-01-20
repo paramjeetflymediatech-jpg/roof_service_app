@@ -1,17 +1,35 @@
 const Lead = require('../models/Lead');
+const { sendLeadNotification, sendCustomerConfirmation } = require('../../services/emailService');
 
 // Create new lead (contact / quote)
 exports.createLead = async (req, res, next) => {
   try {
     const payload = { ...req.body };
 
-    if (!payload.name) {
-      return res.status(400).json({ message: 'Name is required' });
+    if (!payload.name || !payload.email || !payload.phone) {
+      return res.status(400).json({ message: 'Name, email, and phone are required' });
     }
 
+    // Create lead
     const lead = await Lead.create(payload);
-    res.status(201).json(lead);
+
+    // Send emails (don't wait for them to complete)
+    sendLeadNotification(lead).catch(err => console.error('Email notification error:', err));
+    sendCustomerConfirmation(lead).catch(err => console.error('Customer email error:', err));
+
+    res.status(201).json({
+      success: true,
+      message: 'Thank you! We will contact you soon.',
+      lead,
+    });
   } catch (err) {
+    // Handle duplicate email error
+    if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'This email has already been submitted. Please use a different email or contact us directly.',
+      });
+    }
     next(err);
   }
 };
