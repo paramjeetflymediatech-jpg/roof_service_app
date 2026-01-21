@@ -1,112 +1,71 @@
+'use client';
 import { motion } from 'framer-motion';
-import Layout from '@/components/LayoutShell';
-import Button from '@/components/Button';
+import Link from 'next/link';
+import { HiPhone } from 'react-icons/hi';
+import { SERVICES_DROPDOWN, COMPANY_INFO } from '@/lib/constants';
+import LayoutShell from '@/components/LayoutShell';
 
 export default function InsulationPage() {
   return (
-    <Layout>
-      <section className="bg-gradient-to-br from-primary-600 to-accent-600 text-white py-20">
-        <div className="container-custom text-center">
-          <motion.h1
-            className="text-4xl md:text-5xl font-bold mb-4"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            Roof Insulation Services
-          </motion.h1>
-        </div>
-      </section>
-
-      <section className="section-padding bg-gray-50">
-        <div className="container-custom">
-          <motion.h2
-            className="text-3xl font-bold text-center mb-4 text-gray-900"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Overview
-          </motion.h2>
-          <motion.p
-            className="text-lg text-gray-700 text-center max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Proper roof and attic insulation is essential for energy efficiency and comfort. We provide comprehensive insulation solutions to reduce energy costs and improve indoor comfort throughout the year.
-          </motion.p>
-        </div>
-      </section>
-
-      <section className="section-padding">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl font-bold mb-6 text-gray-900">Professional Insulation Solutions</h2>
-              <p className="text-lg text-gray-700 mb-6">
-                Proper insulation works with your roofing system to maintain consistent interior temperatures, reduce heating and cooling costs, and improve overall home comfort throughout the year.
-              </p>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start gap-3">
-                  <span className="text-primary-600 font-bold">✓</span>
-                  <span>Attic insulation installation and upgrades</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary-600 font-bold">✓</span>
-                  <span>Roof deck insulation systems</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary-600 font-bold">✓</span>
-                  <span>Energy audit and assessment</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary-600 font-bold">✓</span>
-                  <span>Air sealing and vapor barriers</span>
-                </li>
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-primary-200 to-accent-200 rounded-lg h-96 flex items-center justify-center hover:shadow-2xl hover:scale-105 transition-all duration-300"
-            >
-              <div className="text-center">
-                <div className="text-6xl mb-4">🏠</div>
-                <p className="text-gray-700 font-semibold">Insulation</p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding bg-gray-50">
-        <div className="container-custom max-w-3xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-lg text-gray-700 mb-8">
-              Ventilation system optimization with insulation removal and replacement. Fiberglass, cellulose, rigid foam, spray foam, and reflective barrier options available. Extends roof life, improves performance, and enhances energy efficiency.
-            </p>
-            <Button variant="primary" href="/contact" className="text-lg px-8 py-4">
-              Schedule Energy Audit
-            </Button>
+    <LayoutShell>
+      <div className="relative h-64 bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&h=400&fit=crop')", backgroundPosition: 'center' }}>
+        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="relative z-10 text-center text-white">
+          <motion.h1 className="text-4xl md:text-5xl font-bold mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>Insulation</motion.h1>
+          <motion.div className="flex items-center justify-center gap-2 text-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+            <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link><span>›</span><span>Insulation</span>
           </motion.div>
         </div>
-      </section>
-    </Layout>
+      </div>
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-3">
+              <motion.div className="mb-8 rounded-lg overflow-hidden shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
+                <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=400&fit=crop" alt="Roof Insulation" className="w-full h-[400px] object-cover" />
+              </motion.div>
+              <motion.div className="bg-white rounded-lg shadow-md p-8 space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    Mainstreet Roofing is a leading provider of roof insulation services, dedicated to enhancing the energy efficiency and comfort of homes and businesses. Our team of skilled professionals excels in installing top-quality insulation materials that effectively regulate indoor temperatures and reduce energy consumption. By prioritizing proper insulation techniques, we help our clients save money on utility bills while also minimizing their environmental impact. Insulation serves as a protective barrier against heat loss during the colder months and heat gain in the warmer seasons, ensuring optimal thermal performance year-round.
+                  </p>
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    At Mainstreet Roofing, we understand the importance of selecting the right type of insulation for each unique property, taking into account factors such as climate conditions and building design. Whether it's fiberglass, cellulose, foam board or spray foam insulation, we have the expertise to recommend the most suitable solution for maximum effectiveness.
+                  </p>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Expert Insulation Services</h2>
+                  <p className="text-gray-700 leading-relaxed">
+                    We take pride in delivering durable and long-lasting results that exceed industry standards, providing our customers with peace of mind knowing their properties are well-insulated for years to come. Trust Mainstreet Roofing to enhance your building's energy efficiency through expert roof insulation services tailored to meet your specific needs.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 space-y-6">
+                <motion.div className="bg-white rounded-lg shadow-md overflow-hidden" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
+                  <div className="bg-amber-600 text-white px-4 py-3"><h3 className="font-bold text-lg">Our Services</h3></div>
+                  <div className="divide-y divide-gray-200">{SERVICES_DROPDOWN.map((service) => (<Link key={service.href} href={service.href} className="flex items-center justify-between px-4 py-3 hover:bg-amber-50 transition-colors group"><span className="text-gray-700 group-hover:text-amber-600 text-sm">{service.label}</span><span className="text-amber-600 group-hover:translate-x-1 transition-transform">→</span></Link>))}</div>
+                </motion.div>
+                <motion.div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-lg shadow-lg p-6 text-center" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
+                  <div className="mb-4">
+                    <div className="w-16 h-16 bg-amber-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Mainsheet</h3>
+                    <p className="text-sm text-gray-300 mb-4">Professional<br />Roofing Contractors</p>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-300">Call us for a FREE quote!</p>
+                    <a href={`tel:${COMPANY_INFO.phone}`} className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"><HiPhone className="text-xl" /><span>{COMPANY_INFO.phone}</span></a>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </LayoutShell>
   );
 }

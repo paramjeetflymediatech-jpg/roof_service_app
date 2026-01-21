@@ -20,6 +20,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3001",
+  "http://localhost:3000", // Add frontend local port
   process.env.BACKEND_URL || "http://localhost:4000",
 ].filter(Boolean);
 
