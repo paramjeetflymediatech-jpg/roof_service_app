@@ -3,12 +3,11 @@ const Lead = require('../models/Lead');
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
-    if (req.session.userId) {
+    if (req.session && req.session.userId) {
         return res.redirect('/admin/dashboard');
     }
     res.render('admin/login', {
-        title: 'Admin Login',
-        layout: false,
+        title: 'Admin Login'
     });
 };
 
@@ -46,6 +45,9 @@ const postLogin = async (req, res) => {
         req.session.userRole = user.role;
         req.session.userName = user.name;
 
+        console.log('Login - Setting Session:', req.sessionID);
+        console.log('Login - User ID set:', user._id);
+
         // Save session before redirect
         req.session.save((err) => {
             if (err) {
@@ -53,6 +55,7 @@ const postLogin = async (req, res) => {
                 req.flash('error', 'An error occurred during login');
                 return res.redirect('/admin/login');
             }
+            console.log('Login - Session saved successfully');
             req.flash('success', 'Login successful');
             res.redirect('/admin/dashboard');
         });
@@ -170,11 +173,21 @@ const getCreateUser = (req, res) => {
 // POST /admin/users - Create new user
 const postCreateUser = async (req, res) => {
     try {
-        const { name, email, password, role, isActive } = req.body;
+        const { name, email, password, role, isActive, phone } = req.body;
 
         // Validation
         if (!name || !email || !password) {
             req.flash('error', 'Name, email, and password are required');
+            return res.redirect('/admin/users/create');
+        }
+
+        if (name.length < 3) {
+            req.flash('error', 'Name must be at least 3 characters long');
+            return res.redirect('/admin/users/create');
+        }
+
+        if (phone && phone.length > 16) {
+            req.flash('error', 'Phone cannot exceed 16 characters');
             return res.redirect('/admin/users/create');
         }
 
@@ -185,6 +198,19 @@ const postCreateUser = async (req, res) => {
             return res.redirect('/admin/users/create');
         }
 
+        // Check if phone already exists
+        if (phone) {
+            if (!/^\d+$/.test(phone)) {
+                req.flash('error', 'Phone number must contain only numbers');
+                return res.redirect('/admin/users/create');
+            }
+            const existingPhone = await User.findOne({ phone });
+            if (existingPhone) {
+                req.flash('error', 'Phone number already exists');
+                return res.redirect('/admin/users/create');
+            }
+        }
+
         // Create new user
         const newUser = new User({
             name,
@@ -192,6 +218,7 @@ const postCreateUser = async (req, res) => {
             password, // Will be hashed by pre-save hook
             role: role || 'user',
             isActive: isActive === 'on' ? true : false,
+            phone,
         });
 
         await newUser.save();
@@ -230,7 +257,7 @@ const getEditUser = async (req, res) => {
 // POST /admin/users/:id - Update user
 const postUpdateUser = async (req, res) => {
     try {
-        const { name, email, password, role, isActive } = req.body;
+        const { name, email, password, role, isActive, phone } = req.body;
         const userId = req.params.id;
 
         // Validation
@@ -239,11 +266,34 @@ const postUpdateUser = async (req, res) => {
             return res.redirect(`/admin/users/${userId}/edit`);
         }
 
+        if (name.length < 3) {
+            req.flash('error', 'Name must be at least 3 characters long');
+            return res.redirect(`/admin/users/${userId}/edit`);
+        }
+
+        if (phone && phone.length > 16) {
+            req.flash('error', 'Phone cannot exceed 16 characters');
+            return res.redirect(`/admin/users/${userId}/edit`);
+        }
+
         // Check if email already exists (excluding current user)
         const existingUser = await User.findOne({ email, _id: { $ne: userId } });
         if (existingUser) {
             req.flash('error', 'Email already exists');
             return res.redirect(`/admin/users/${userId}/edit`);
+        }
+
+        // Check if phone already exists (excluding current user)
+        if (phone) {
+            if (!/^\d+$/.test(phone)) {
+                req.flash('error', 'Phone number must contain only numbers');
+                return res.redirect(`/admin/users/${userId}/edit`);
+            }
+            const existingPhone = await User.findOne({ phone, _id: { $ne: userId } });
+            if (existingPhone) {
+                req.flash('error', 'Phone number already exists');
+                return res.redirect(`/admin/users/${userId}/edit`);
+            }
         }
 
         // Find and update user
@@ -257,6 +307,7 @@ const postUpdateUser = async (req, res) => {
         user.email = email;
         user.role = role || 'user';
         user.isActive = isActive === 'on' ? true : false;
+        user.phone = phone;
 
         // Only update password if provided
         if (password && password.trim() !== '') {
