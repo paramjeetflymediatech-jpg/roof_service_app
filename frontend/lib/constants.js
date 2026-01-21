@@ -149,13 +149,8 @@ export const SERVICES = [
             'Mainstreet Roofing is a premier provider of roof restoration services, extending the life and performance of existing roofs.',
         icon: 'tool',
     },
-    {
-        id: 13,
-        title: 'Solar Panels',
-        description:
-            'Mainstreet Roofing provides professional solar panel installation and repair services, helping you harness clean and renewable energy.',
-        icon: 'sun',
-    },
+   
+    
 ];
 
 
