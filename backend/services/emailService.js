@@ -74,7 +74,7 @@ const sendCustomerConfirmation = async (leadData) => {
                     ${leadData.roofType ? `<p><strong>Roof Type:</strong> ${leadData.roofType}</p>` : ''}
                     <p><strong>Contact Phone:</strong> ${leadData.phone}</p>
                 </div>
-                <p>If you have any urgent questions, please call us at <strong>1-877-252-2007</strong></p>
+                <p>If you have any urgent questions, please call us at <strong>604-720-4313</strong></p>
                 <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
                     Premium Roofing - Quality materials designed to protect your investment for decades
                 </p>

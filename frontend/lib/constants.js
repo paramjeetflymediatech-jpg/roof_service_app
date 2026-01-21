@@ -1,10 +1,10 @@
 // Company Information
 export const COMPANY_INFO = {
     name: 'Premium Roofing Services',
-    tagline: 'Your Trusted Roofing Partner',
-    phone: '1-877-252-2007',
-    email: 'info@premiumroofing.com',
-    address: '123 Roofing Street, City, State 12345',
+    tagline: 'Mainstreet Roofing offers expert roofing solutions with top-quality materials and craftsmanship. From installations to repairs, we ensure durability and customer satisfaction for residential and commercial projects.',
+    phone: '604-720-4313',
+    email: 'mainstreetroofing604@gmail.com',
+    address: '9380 124 St, Surrey, BC V3V 4S4',
     hours: 'Mon-Fri: 8AM-6PM, Sat: 9AM-4PM',
     emergency: '24/7 Emergency Services Available',
 };
@@ -149,27 +149,26 @@ export const STATS = [
 
 // Navigation Links
 export const NAV_LINKS = [
-    { label: 'Company', href: '/company' },
+    { label: 'Home', href: '/' },
+    { label: 'About Us', href: '/about' },
     { label: 'Services', href: '/services' },
-    { label: 'Products', href: '/products' },
-    { label: 'Solar', href: '/solar' },
-    { label: 'Projects', href: '/projects' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Gallery', href: '/gallery' },
+    { label: 'Contact Us', href: '/contact' },
 ];
 
 // Services Dropdown Links
 export const SERVICES_DROPDOWN = [
-    { label: 'New Construction', href: '/services/new-construction' },
-    { label: 'Reroofs', href: '/services/reroofs' },
-    { label: 'Metal Roofing', href: '/services/metal-roofing' },
-    { label: 'Wall Metals', href: '/services/wall-metals' },
-    { label: 'Torch On', href: '/services/torch-on' },
-    { label: 'EPDM', href: '/services/epdm' },
-    { label: 'Metal Gutters and Downspouts', href: '/services/metal-gutters-downspouts' },
-    { label: 'Leak Repair', href: '/services/leak-repair' },
-    { label: 'Tile and Slate Roofing', href: '/services/tile-slate-roofing' },
-    { label: 'Rain and Storm Damage', href: '/services/rain-storm-damage' },
-    { label: 'Insulation', href: '/services/insulation' },
-    { label: 'Restorations Servicing', href: '/services/restorations-servicing' },
-    { label: 'Solar Panels', href: '/services/solar-panels' },
+    { label: 'New Construction', href: '/services/new-construction', icon: '🏗️' },
+    { label: 'Reroofs', href: '/services/reroofs', icon: '🔄' },
+    { label: 'Metal Roofing', href: '/services/metal-roofing', icon: '⚙️' },
+    { label: 'Wall Metals', href: '/services/wall-metals', icon: '🧱' },
+    { label: 'Torch On', href: '/services/torch-on', icon: '🔥' },
+    { label: 'EPDM', href: '/services/epdm', icon: '📋' },
+    { label: 'Metal Gutters and Downspouts', href: '/services/metal-gutters-downspouts', icon: '💧' },
+    { label: 'Leak Repair', href: '/services/leak-repair', icon: '🔧' },
+    { label: 'Tile and Slate Roofing', href: '/services/tile-slate-roofing', icon: '🏠' },
+    { label: 'Rain and Storm Damage', href: '/services/rain-storm-damage', icon: '⛈️' },
+    { label: 'Insulation', href: '/services/insulation', icon: '🧊' },
+    { label: 'Restorations Servicing', href: '/services/restorations-servicing', icon: '✨' },
+    { label: 'Solar Panels', href: '/services/solar-panels', icon: '☀️' },
 ];

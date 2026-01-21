@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiMenu, HiX, HiPhone, HiMail } from 'react-icons/hi';
+import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from 'react-icons/hi';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 
@@ -68,11 +68,11 @@ export default function LayoutShell({ children }) {
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
               <Logo className="w-14 h-14 md:w-16 md:h-16 transition-transform duration-300 group-hover:scale-105" />
-             
+
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex gap-6 items-center">
+            <nav className="hidden md:flex gap-8 items-center">
               {NAV_LINKS.map(link => {
                 if (link.label === 'Services') {
                   return (
@@ -83,16 +83,19 @@ export default function LayoutShell({ children }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
                       </button>
-                      <div className="absolute left-0 mt-0 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
-                        {SERVICES_DROPDOWN.map(service => (
-                          <Link
-                            key={service.href}
-                            href={service.href}
-                            className="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                          >
-                            {service.label}
-                          </Link>
-                        ))}
+                      <div className="absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          {SERVICES_DROPDOWN.map(service => (
+                            <Link
+                              key={service.href}
+                              href={service.href}
+                              className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors rounded-md"
+                            >
+                              <span className="text-xl flex-shrink-0">{service.icon}</span>
+                              <span className="text-sm font-medium">{service.label}</span>
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   );
@@ -109,10 +112,22 @@ export default function LayoutShell({ children }) {
               })}
             </nav>
 
-            {/* CTA */}
-            <Link href="/contact" className="hidden md:block">
-              <button className="btn btn-primary">Get a Quote</button>
-            </Link>
+            {/* Phone & CTA Group */}
+            <div className="hidden md:flex items-center gap-2">
+              {/* Phone Number */}
+              <a
+                href="tel:604-720-4313"
+                className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
+              >
+                <HiPhone className="text-xl text-primary-600" />
+                <span>604-720-4313</span>
+              </a>
+
+              {/* CTA */}
+              <Link href="/contact">
+                <button className="btn btn-primary">Get a Quote</button>
+              </Link>
+            </div>
 
             {/* Mobile Button */}
             <button
@@ -155,9 +170,10 @@ export default function LayoutShell({ children }) {
                               <Link
                                 key={service.href}
                                 href={service.href}
-                                className="block px-6 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50"
+                                className="flex items-center gap-3 px-6 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50"
                               >
-                                {service.label}
+                                <span className="text-lg">{service.icon}</span>
+                                <span>{service.label}</span>
                               </Link>
                             ))}
                           </div>
@@ -197,16 +213,8 @@ export default function LayoutShell({ children }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
-              <Link href="/" className="flex items-center gap-4 group">
+              <Link href="/" className="flex items-center justify-center group">
                 <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-black font-heading leading-tight text-white group-hover:text-primary-400 transition-colors uppercase tracking-tighter">
-                    Premium
-                  </span>
-                  <span className="text-xs font-bold leading-none text-accent-500 tracking-[0.2em] uppercase -mt-1">
-                    Roofing
-                  </span>
-                </div>
               </Link>
               <p className="text-gray-400 leading-relaxed">
                 {COMPANY_INFO.tagline || 'Quality materials designed to protect your investment for decades.'}
@@ -246,11 +254,36 @@ export default function LayoutShell({ children }) {
             <div>
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">Our Services</h3>
               <ul className="space-y-4">
-                <li><Link href="/services#residential" className="hover:text-primary-400 transition-colors">Residential Roofing</Link></li>
-                <li><Link href="/services#commercial" className="hover:text-primary-400 transition-colors">Commercial Roofing</Link></li>
-                <li><Link href="/services#repair" className="hover:text-primary-400 transition-colors">Roof Repairs</Link></li>
-                <li><Link href="/services#solar" className="hover:text-primary-400 transition-colors">Solar Solutions</Link></li>
-                <li><Link href="/services#gutter" className="hover:text-primary-400 transition-colors">Gutter Services</Link></li>
+                <li>
+                  <Link href="/services/new-construction" className="hover:text-primary-400 transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    New construction
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/wall-metals" className="hover:text-primary-400 transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Wall Metals
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/solar-panels" className="hover:text-primary-400 transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Solar panels
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/leak-repair" className="hover:text-primary-400 transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Leak repair
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/torch-on" className="hover:text-primary-400 transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Torch on
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -270,6 +303,13 @@ export default function LayoutShell({ children }) {
                   <div>
                     <p className="text-white font-medium">Email</p>
                     <a href={`mailto:${COMPANY_INFO.email}`} className="hover:text-primary-400 transition-colors">{COMPANY_INFO.email}</a>
+                  </div>
+                </li>
+                <li className="flex gap-4 items-start text-gray-400">
+                  <div className="mt-1 text-primary-500"><HiLocationMarker size={20} /></div>
+                  <div>
+                    <p className="text-white font-medium">Location</p>
+                    <p className="hover:text-primary-400 transition-colors">{COMPANY_INFO.address}</p>
                   </div>
                 </li>
               </ul>
