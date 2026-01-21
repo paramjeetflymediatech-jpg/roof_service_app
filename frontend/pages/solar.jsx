@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import Layout from '@/components/LayoutShell';
-import SolarServices from '@/components/SolarServices';
+
 
 export default function SolarPage() {
     return (
@@ -28,8 +28,7 @@ export default function SolarPage() {
                 </div>
             </section>
 
-            {/* Solar Content */}
-            <SolarServices />
+
 
             {/* Solar Process */}
             <section className="py-24 bg-white">
