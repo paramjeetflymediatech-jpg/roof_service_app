@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> - Admin Panel
+    </title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('../partials/sidebar') %>
+
+            <main class="main-content">
+                <header class="top-header">
+                    <h1>
+                        <%= title %>
+                    </h1>
+                    <div class="user-info">
+                        <span>Welcome, <%= userName %></span>
+                    </div>
+                </header>
+
+                <% if (error && error.length> 0) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <% if (success && success.length> 0) { %>
+                            <div class="alert alert-success">
+                                <%= success %>
+                            </div>
+                            <% } %>
+
+                                <div class="content">
+                                    <%- body %>
+                                </div>
+            </main>
+    </div>
+</body>
+
+</html>

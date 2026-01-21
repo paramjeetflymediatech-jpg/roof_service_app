@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> - Admin Panel
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        .toast-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .toast-error {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.hiding {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body <% if (error && error.length> 0) { %>data-flash-error="<%= error %>"<% } %>
+            <% if (success && success.length> 0) { %>data-flash-success="<%= success %>"<% } %>
+                        >
+                        <!-- Toast Container -->
+                        <div id="toast-container"></div>
+
+                        <div class="admin-wrapper">
+                            <%- include('../partials/sidebar') %>
+
+                                <main class="main-content">
+                                    <header class="top-header">
+                                        <h1>
+                                            <%= title %>
+                                        </h1>
+                                        <div class="user-info">
+                                            <span>Welcome, <%= userName %></span>
+                                        </div>
+                                    </header>
+
+                                    <div class="content">
+                                        <div class="stats-grid">
+                                            <div class="stat-card">
+                                                <div class="stat-icon">👥</div>
+                                                <div class="stat-info">
+                                                    <h3>
+                                                        <%= stats.totalUsers %>
+                                                    </h3>
+                                                    <p>Total Users</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="stat-card">
+                                                <div class="stat-icon">📋</div>
+                                                <div class="stat-info">
+                                                    <h3>
+                                                        <%= stats.totalLeads %>
+                                                    </h3>
+                                                    <p>Total Leads</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="stat-card">
+                                                <div class="stat-icon">🆕</div>
+                                                <div class="stat-info">
+                                                    <h3>
+                                                        <%= stats.newLeads %>
+                                                    </h3>
+                                                    <p>New Leads</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="stat-card">
+                                                <div class="stat-icon">⏳</div>
+                                                <div class="stat-info">
+                                                    <h3>
+                                                        <%= stats.inProgressLeads %>
+                                                    </h3>
+                                                    <p>In Progress</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="quick-links">
+                                            <h2>Quick Actions</h2>
+                                            <div class="quick-links-grid">
+                                                <a href="/admin/users" class="quick-link-card">
+                                                    <span class="icon">👥</span>
+                                                    <span>Manage Users</span>
+                                                </a>
+                                                <a href="/admin/leads" class="quick-link-card">
+                                                    <span class="icon">📋</span>
+                                                    <span>Manage Leads</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </main>
+                        </div>
+
+                        <script src="/js/toast.js"></script>
+</body>
+
+</html>
