@@ -1,66 +1,60 @@
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-// import backgroundImage from '@/assets/roofing-background.jpg';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { HiChevronDown } from 'react-icons/hi';
 import { gsap } from 'gsap';
-import Button from './Button';
+import Link from 'next/link';
+
+// ✅ Local images
+import banner1 from '@/assets/aw-banner-1.jpg';
+import banner2 from '@/assets/aw-banner-2.jpg';
+import banner3 from '@/assets/aw-banner-3.jpg';
 
 export default function Hero() {
     const heroRef = useRef(null);
     const titleRef = useRef(null);
-    const subtitleRef = useRef(null);
     const ctaRef = useRef(null);
 
+    const [currentSlide, setCurrentSlide] = useState(0);
 
+    const slides = [
+        { image: banner1, headline: 'Premium Roofing Solution' },
+        { image: banner2, headline: 'Expert Leak Repair' },
+        { image: banner3, headline: 'Best Roofer Contractor' },
+    ];
+
+    // Auto slide
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // GSAP animation
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Animate title
             gsap.fromTo(
                 titleRef.current.children,
+                { y: 80, opacity: 0 },
                 {
-                    y: 100,
-                    opacity: 0,
-                },
-                {
+                    y: 0,
+                    opacity: 1,
                     duration: 1,
-                    y: 0,
-                    opacity: 1,
-                    stagger: 0.1,
-                    ease: 'power4.out',
-                    delay: 0.3,
-                }
-            );
-
-            // Animate subtitle
-            gsap.fromTo(
-                subtitleRef.current,
-                {
-                    y: 30,
-                    opacity: 0,
-                },
-                {
-                    duration: 0.8,
-                    y: 0,
-                    opacity: 1,
-                    ease: 'power3.out',
-                    delay: 0.8,
-                }
-            );
-
-            // Animate CTA buttons
-            gsap.fromTo(
-                ctaRef.current.children,
-                {
-                    y: 20,
-                    opacity: 0,
-                },
-                {
-                    duration: 0.6,
-                    y: 0,
-                    opacity: 1,
                     stagger: 0.15,
+                    ease: 'power4.out',
+                }
+            );
+
+            gsap.fromTo(
+                ctaRef.current,
+                { y: 30, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    delay: 0.8,
                     ease: 'power3.out',
-                    delay: 1.2,
                 }
             );
         }, heroRef);
@@ -78,114 +72,67 @@ export default function Hero() {
     return (
         <section
             ref={heroRef}
-            className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-dark-900 via-dark-800 to-primary-900"
+            className="relative min-h-screen flex items-center justify-center overflow-hidden"
         >
-            {/* Background Image with Overlay */}
+            {/* Background slider */}
             <div className="absolute inset-0 z-0">
-                <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{
-                        backgroundImage: `url('/assets/roofing-background.jpg')`,
-                    }}
-                />
-                <div className="overlay" />
-            </div>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentSlide}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5 }}
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                            backgroundImage: `url(${slides[currentSlide].image.src})`,
+                        }}
+                    />
+                </AnimatePresence>
 
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 z-0 opacity-20">
-                <motion.div
-                    className="absolute top-20 left-10 w-72 h-72 bg-accent-500 rounded-full blur-3xl"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.3, 0.5, 0.3],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
-                />
-                <motion.div
-                    className="absolute bottom-20 right-10 w-96 h-96 bg-primary-500 rounded-full blur-3xl"
-                    animate={{
-                        scale: [1, 1.3, 1],
-                        opacity: [0.3, 0.5, 0.3],
-                    }}
-                    transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                        delay: 1,
-                    }}
-                />
+                <div className="absolute inset-0 bg-black/50" />
             </div>
 
             {/* Content */}
-            <div className="relative z-10 container-custom text-center text-white px-4">
-                <div ref={titleRef} className="mb-6 overflow-hidden">
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-shadow-lg">
-                        <span className="block">Premium Roofing</span>
-                        <span className="block gradient-text bg-gradient-to-r from-accent-400 to-accent-600">
-                            Solutions
+            <div className="relative z-10 text-center px-4 max-w-4xl mx-auto text-white">
+                <div ref={titleRef} className="mb-6">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                        <span className="block mb-3">
+                            Welcome to Mainstreet Roofing LTD
                         </span>
+
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={currentSlide}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.6 }}
+                                className="block text-accent-400 text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
+                            >
+                                {slides[currentSlide].headline}
+                            </motion.span>
+                        </AnimatePresence>
                     </h1>
                 </div>
 
-                <p
-                    ref={subtitleRef}
-                    className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto text-gray-200 text-shadow"
-                >
-                    Protecting your home with expert craftsmanship and quality materials.
-                    Licensed, insured, and trusted by thousands of homeowners.
-                </p>
-
-                <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <Button variant="primary" href="/contact" className="text-lg px-8 py-4">
-                        Get a Free Quote
-                    </Button>
-                    <Button variant="outline" href="/services" className="text-lg px-8 py-4">
-                        Our Services
-                    </Button>
-                </div>
-
-                {/* Trust Badges */}
-                <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <span className="text-2xl">✓</span>
-                        </div>
-                        <div className="text-left">
-                            <div className="font-semibold">Licensed & Insured</div>
-                            <div className="text-gray-300 text-xs">Fully Certified</div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <span className="text-2xl">⭐</span>
-                        </div>
-                        <div className="text-left">
-                            <div className="font-semibold">5-Star Rated</div>
-                            <div className="text-gray-300 text-xs">1000+ Reviews</div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <span className="text-2xl">🛡️</span>
-                        </div>
-                        <div className="text-left">
-                            <div className="font-semibold">Lifetime Warranty</div>
-                            <div className="text-gray-300 text-xs">On All Work</div>
-                        </div>
-                    </div>
+                {/* CTA Button */}
+                <div ref={ctaRef} className="mt-8 flex justify-center">
+                    <Link
+                        href="/contact"
+                        className="bg-accent-500 hover:bg-accent-600 text-white text-base sm:text-lg font-semibold px-8 py-4 rounded-lg shadow-xl transition-transform duration-300 hover:scale-105"
+                    >
+                        Our Solution
+                    </Link>
                 </div>
             </div>
 
-            {/* Scroll Indicator */}
+            {/* Scroll indicator */}
             <motion.button
                 onClick={scrollToContent}
-                className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 text-white cursor-pointer"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white"
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
             >
                 <HiChevronDown className="text-4xl" />
             </motion.button>

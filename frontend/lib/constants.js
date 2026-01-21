@@ -18,50 +18,146 @@ export const SOCIAL_LINKS = {
 };
 
 // Service Categories
+// export const SERVICES = [
+//     {
+//         id: 1,
+//         title: 'Residential Roofing',
+//         description: 'Expert roofing solutions for your home. From new installations to repairs, we protect what matters most.',
+//         icon: 'home',
+//         features: ['Shingle Roofing', 'Tile Roofing', 'New Roof Installation', 'Roof Replacement',],
+//     },
+//     {
+//         id: 2,
+//         title: 'Commercial Roofing',
+//         description: 'Professional commercial roofing services for businesses of all sizes with minimal disruption.',
+//         icon: 'building',
+//         features: ['Flat Roofing', 'Metal Roofing', 'TPO & EPDM', 'Roof Maintenance'],
+//     },
+//     {
+//         id: 3,
+//         title: 'Roof Repairs',
+//         description: '24/7 emergency roof repair services. Fast response times to protect your property from damage.',
+//         icon: 'wrench',
+//         features: ['Leak Repair', 'Storm Damage', 'Emergency Services', 'Preventive Maintenance'],
+//     },
+//     {
+//         id: 4,
+//         title: 'New Construction',
+//         description: 'Complete roofing solutions for new construction projects with quality materials and expert installation.',
+//         icon: 'hammer',
+//         features: ['Custom Design', 'Quality Materials', 'Expert Installation', 'Project Management'],
+//     },
+//     {
+//         id: 5,
+//         title: 'Roof Inspection',
+//         description: 'Comprehensive roof inspections to identify issues before they become costly problems.',
+//         icon: 'search',
+//         features: ['Free Estimates', 'Detailed Reports', 'Drone Inspection', 'Thermal Imaging'],
+//     },
+//     {
+//         id: 6,
+//         title: 'Gutter Services',
+//         description: 'Professional gutter installation, repair, and cleaning services to protect your foundation.',
+//         icon: 'water',
+//         features: ['Gutter Installation', 'Gutter Guards', 'Cleaning Services', 'Downspout Repair'],
+//     },
+// ];
+
+
 export const SERVICES = [
     {
         id: 1,
-        title: 'Residential Roofing',
-        description: 'Expert roofing solutions for your home. From new installations to repairs, we protect what matters most.',
-        icon: 'home',
-        features: ['Shingle Roofing', 'Tile Roofing', 'New Roof Installation', 'Roof Replacement',],
+        title: 'New Construction',
+        description:
+            'Mainstreet Roofing is a premier roofing company specializing in new construction projects, delivering durable, high-quality roofing solutions built to last.',
+        icon: 'hammer',
     },
     {
         id: 2,
-        title: 'Commercial Roofing',
-        description: 'Professional commercial roofing services for businesses of all sizes with minimal disruption.',
-        icon: 'building',
-        features: ['Flat Roofing', 'Metal Roofing', 'TPO & EPDM', 'Roof Maintenance'],
+        title: 'Reroofs',
+        description:
+            'Mainstreet Roofing is a trusted and reliable company specializing in reroofing services, helping homeowners and businesses upgrade and protect their properties.',
+        icon: 'refresh',
     },
     {
         id: 3,
-        title: 'Roof Repairs',
-        description: '24/7 emergency roof repair services. Fast response times to protect your property from damage.',
-        icon: 'wrench',
-        features: ['Leak Repair', 'Storm Damage', 'Emergency Services', 'Preventive Maintenance'],
+        title: 'Metal Roofing',
+        description:
+            'Mainstreet Roofing is a premier company specializing in metal roofing services, offering unmatched durability, energy efficiency, and modern aesthetics.',
+        icon: 'shield',
     },
     {
         id: 4,
-        title: 'New Construction',
-        description: 'Complete roofing solutions for new construction projects with quality materials and expert installation.',
-        icon: 'hammer',
-        features: ['Custom Design', 'Quality Materials', 'Expert Installation', 'Project Management'],
+        title: 'Wall Metals',
+        description:
+            'Mainstreet Roofing is a trusted name in the industry, specializing in wall metal solutions for commercial and industrial buildings.',
+        icon: 'layers',
     },
     {
         id: 5,
-        title: 'Roof Inspection',
-        description: 'Comprehensive roof inspections to identify issues before they become costly problems.',
-        icon: 'search',
-        features: ['Free Estimates', 'Detailed Reports', 'Drone Inspection', 'Thermal Imaging'],
+        title: 'Torch On Roofing',
+        description:
+            'Mainstreet Roofing specializes in torch-on roofing services, providing strong, waterproof membrane systems ideal for flat and low-slope roofs.',
+        icon: 'fire',
     },
     {
         id: 6,
-        title: 'Gutter Services',
-        description: 'Professional gutter installation, repair, and cleaning services to protect your foundation.',
+        title: 'EPDM Roofing',
+        description:
+            'Mainstreet Roofing is a leading provider of EPDM roofing systems, known for flexibility, weather resistance, and long-term performance.',
+        icon: 'droplet',
+    },
+    {
+        id: 7,
+        title: 'Metal Gutters & Downspouts',
+        description:
+            'Mainstreet Roofing offers top-quality metal gutter and downspout services to protect your property from water damage.',
         icon: 'water',
-        features: ['Gutter Installation', 'Gutter Guards', 'Cleaning Services', 'Downspout Repair'],
+    },
+    {
+        id: 8,
+        title: 'Leak Repair',
+        description:
+            'Mainstreet Roofing is a trusted name for fast and reliable leak repair services, preventing further damage to your property.',
+        icon: 'wrench',
+    },
+    {
+        id: 9,
+        title: 'Rain & Storm Damage',
+        description:
+            'Mainstreet Roofing specializes in repairing rain and storm damage, restoring your roof’s strength and safety after severe weather.',
+        icon: 'cloud-rain',
+    },
+    {
+        id: 10,
+        title: 'Tile & Slate Roofing',
+        description:
+            'Mainstreet Roofing provides premium tile and slate roofing services, combining classic beauty with long-lasting performance.',
+        icon: 'home',
+    },
+    {
+        id: 11,
+        title: 'Insulation',
+        description:
+            'Mainstreet Roofing delivers professional roof insulation services to improve energy efficiency and indoor comfort.',
+        icon: 'thermometer',
+    },
+    {
+        id: 12,
+        title: 'Restorations Servicing',
+        description:
+            'Mainstreet Roofing is a premier provider of roof restoration services, extending the life and performance of existing roofs.',
+        icon: 'tool',
+    },
+    {
+        id: 13,
+        title: 'Solar Panels',
+        description:
+            'Mainstreet Roofing provides professional solar panel installation and repair services, helping you harness clean and renewable energy.',
+        icon: 'sun',
     },
 ];
+
 
 // Why Choose Us Features
 export const WHY_CHOOSE_US = [
