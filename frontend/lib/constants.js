@@ -156,3 +156,20 @@ export const NAV_LINKS = [
     { label: 'Projects', href: '/projects' },
     { label: 'Contact', href: '/contact' },
 ];
+
+// Services Dropdown Links
+export const SERVICES_DROPDOWN = [
+    { label: 'New Construction', href: '/services/new-construction' },
+    { label: 'Reroofs', href: '/services/reroofs' },
+    { label: 'Metal Roofing', href: '/services/metal-roofing' },
+    { label: 'Wall Metals', href: '/services/wall-metals' },
+    { label: 'Torch On', href: '/services/torch-on' },
+    { label: 'EPDM', href: '/services/epdm' },
+    { label: 'Metal Gutters and Downspouts', href: '/services/metal-gutters-downspouts' },
+    { label: 'Leak Repair', href: '/services/leak-repair' },
+    { label: 'Tile and Slate Roofing', href: '/services/tile-slate-roofing' },
+    { label: 'Rain and Storm Damage', href: '/services/rain-storm-damage' },
+    { label: 'Insulation', href: '/services/insulation' },
+    { label: 'Restorations Servicing', href: '/services/restorations-servicing' },
+    { label: 'Solar Panels', href: '/services/solar-panels' },
+];

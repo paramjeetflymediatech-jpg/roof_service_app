@@ -7,11 +7,12 @@ import { HiMenu, HiX, HiPhone, HiMail } from 'react-icons/hi';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 
-import { COMPANY_INFO, NAV_LINKS, SOCIAL_LINKS } from '@/lib/constants';
+import { COMPANY_INFO, NAV_LINKS, SERVICES_DROPDOWN, SOCIAL_LINKS } from '@/lib/constants';
 import Logo from '@/components/Logo';
 
 export default function LayoutShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
@@ -67,27 +68,45 @@ export default function LayoutShell({ children }) {
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
               <Logo className="w-14 h-14 md:w-16 md:h-16 transition-transform duration-300 group-hover:scale-105" />
-              <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-black font-heading leading-tight text-gray-900 group-hover:text-primary-600 transition-colors uppercase tracking-tighter">
-                  Premium
-                </span>
-                <span className="text-xs md:text-sm font-bold leading-none text-accent-600 tracking-[0.2em] uppercase -mt-1">
-                  Roofing
-                </span>
-              </div>
+             
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex gap-6">
-              {NAV_LINKS.map(link => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-gray-700 hover:text-primary-600 font-medium"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <nav className="hidden md:flex gap-6 items-center">
+              {NAV_LINKS.map(link => {
+                if (link.label === 'Services') {
+                  return (
+                    <div key={link.href} className="relative group">
+                      <button className="text-gray-700 hover:text-primary-600 font-medium flex items-center gap-1">
+                        {link.label}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </button>
+                      <div className="absolute left-0 mt-0 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
+                        {SERVICES_DROPDOWN.map(service => (
+                          <Link
+                            key={service.href}
+                            href={service.href}
+                            className="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                          >
+                            {service.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-gray-700 hover:text-primary-600 font-medium"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* CTA */}
@@ -117,15 +136,45 @@ export default function LayoutShell({ children }) {
               className="md:hidden bg-white shadow-lg border-t"
             >
               <nav className="container-custom py-6 flex flex-col gap-4">
-                {NAV_LINKS.map(link => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="border-b py-2 text-gray-700"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {NAV_LINKS.map(link => {
+                  if (link.label === 'Services') {
+                    return (
+                      <div key={link.href}>
+                        <button
+                          onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                          className="w-full border-b py-2 text-gray-700 flex justify-between items-center"
+                        >
+                          {link.label}
+                          <svg className={`w-4 h-4 transition-transform ${servicesDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                          </svg>
+                        </button>
+                        {servicesDropdownOpen && (
+                          <div className="bg-gray-50 py-2">
+                            {SERVICES_DROPDOWN.map(service => (
+                              <Link
+                                key={service.href}
+                                href={service.href}
+                                className="block px-6 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50"
+                              >
+                                {service.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="border-b py-2 text-gray-700"
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
                 <Link href="/contact">
                   <button className="btn btn-primary w-full mt-4">
                     Get a Quote
