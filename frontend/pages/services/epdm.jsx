@@ -20,15 +20,6 @@ export default function EPDMPage() {
 
       <section className="section-padding bg-gray-50">
         <div className="container-custom">
-          <motion.h2
-            className="text-3xl font-bold text-center mb-4 text-gray-900"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Overview
-          </motion.h2>
           <motion.p
             className="text-lg text-gray-700 text-center max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -79,7 +70,7 @@ export default function EPDMPage() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-primary-200 to-accent-200 rounded-lg h-96 flex items-center justify-center hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-br from-primary-200 to-accent-200 rounded-lg h-96 flex items-center justify-center"
             >
               <div className="text-center">
                 <div className="text-6xl mb-4">💧</div>
