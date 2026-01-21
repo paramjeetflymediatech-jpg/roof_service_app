@@ -13,7 +13,7 @@ export default function NewConstructionPage() {
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=1200&h=400&fit=crop')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: 'center'
         }}
       >
@@ -58,7 +58,7 @@ export default function NewConstructionPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=800&h=400&fit=crop"
+                  src="/assets/New-construction.jpg"
                   alt="New Construction Roofing"
                   className="w-full h-[400px] object-cover"
                 />

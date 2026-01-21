@@ -13,7 +13,7 @@ export default function ReroofsPage() {
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=1200&h=400&fit=crop')",
+         backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: 'center'
         }}
       >
@@ -51,7 +51,7 @@ export default function ReroofsPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=400&fit=crop"
+                  src="/assets/Repai.jpg"
                   alt="Reroofing Services"
                   className="w-full h-[400px] object-cover"
                 />
