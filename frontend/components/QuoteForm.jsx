@@ -20,6 +20,11 @@ export default function QuoteForm() {
             return; // Block numeric input in Name field
         }
 
+        // Phone validation: only allow numbers, spaces, dashes, and parentheses
+        if (name === 'phone' && value && !/^[0-9\s\-()]*$/.test(value)) {
+            return; // Block non-numeric input in Phone field
+        }
+
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
