@@ -17,7 +17,7 @@ export default function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const slides = [
-        { image: banner1, headline: 'Premium Roofing Solution' },
+        { image: banner1, headline: 'Premium Roofing Solutions' },
         { image: banner2, headline: 'Expert Leak Repair' },
         { image: banner3, headline: 'Best Roofer Contractor' },
     ];
@@ -72,7 +72,7 @@ export default function Hero() {
     return (
         <section
             ref={heroRef}
-            className="relative min-h-screen flex items-center justify-center overflow-hidden"
+            className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden"
         >
             {/* Background slider */}
             <div className="absolute inset-0 z-0">
@@ -90,13 +90,13 @@ export default function Hero() {
                     />
                 </AnimatePresence>
 
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/30" />
             </div>
 
             {/* Content */}
-            <div className="relative z-10 text-center px-4 max-w-4xl mx-auto text-white">
+            <div className="relative text-center px-4 max-w-4xl mx-auto text-white">
                 <div ref={titleRef} className="mb-6">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                         <span className="block mb-3">
                             Welcome to Mainstreet Roofing LTD
                         </span>
@@ -113,7 +113,7 @@ export default function Hero() {
                                 {slides[currentSlide].headline}
                             </motion.span>
                         </AnimatePresence>
-                    </h1>
+                    </h2>
                 </div>
 
                 {/* CTA Button */}
@@ -126,16 +126,6 @@ export default function Hero() {
                     </Link>
                 </div>
             </div>
-
-            {/* Scroll indicator */}
-            <motion.button
-                onClick={scrollToContent}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-            >
-                <HiChevronDown className="text-4xl" />
-            </motion.button>
         </section>
     );
 }

@@ -80,7 +80,7 @@ export default function RoofingProducts() {
         {
             id: 3,
             title: 'Tile Roofing',
-            description: 'Premium roofing option offering timeless beauty and exceptional longevity.',
+            description: 'Mainstreet Roofing Ltd option offering timeless beauty and exceptional longevity.',
             image: '/assets/tile-roofing.jpg',
             fallbackImage: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2070&q=80',
             features: ['Lifetime Durability', 'Weather Resistant', 'Classic Style'],

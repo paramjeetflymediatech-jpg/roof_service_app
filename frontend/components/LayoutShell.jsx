@@ -84,7 +84,6 @@ export default function LayoutShell({ children }) {
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
               <Logo className="w-20 h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-105" />
-
             </Link>
 
             {/* Desktop Nav */}
@@ -439,26 +438,25 @@ export default function LayoutShell({ children }) {
           </div>
         )}
       </AnimatePresence>
-      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between px-4 md:hidden">
-
-        {/* Contact Us */}
-        <Link
-          href="/contact"
-          className="bg-[#ea580c] text-white px-5 py-3 rounded-lg 
-                   font-semibold shadow-lg hover:bg-black transition w-[48%] text-center"
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between gap-3 px-4 md:hidden">
+        {/* Phone Number */}
+        <a
+          href="tel:604-720-4313"
+          className="flex items-center justify-center gap-2 bg-[#ea580c] text-white px-4 py-3 rounded-lg 
+                   font-semibold shadow-lg hover:bg-black transition w-[48%]"
         >
-          Contact Us
-        </Link>
+          <HiPhone className="text-xl" />
+          <span>Call Now</span>
+        </a>
 
         {/* Get a Quote */}
         <Link
           href="/contact"
-          className="bg-black text-white px-5 py-3 rounded-lg 
-                   font-semibold shadow-lg hover:bg-[#ea580c] transition w-[48%] text-center"
+          className="flex items-center justify-center bg-black text-white px-4 py-3 rounded-lg 
+                   font-semibold shadow-lg hover:bg-[#ea580c] transition w-[48%]"
         >
           Get a Quote
         </Link>
-
       </div>
 
     </div >

@@ -14,7 +14,7 @@ export default function ProductsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                     >
-                        Premium Roofing Products
+                        Mainstreet Roofing Ltd Products
                     </motion.h1>
                     <motion.p
                         className="text-xl max-w-2xl mx-auto opacity-90"

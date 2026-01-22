@@ -1,6 +1,6 @@
 // Company Information
 export const COMPANY_INFO = {
-    name: 'Premium Roofing Services',
+    name: 'Mainstreet Roofing Ltd Services',
     tagline: 'Mainstreet Roofing offers expert roofing solutions with top-quality materials and craftsmanship. From installations to repairs, we ensure durability and customer satisfaction for residential and commercial projects.',
     phone: '604-720-4313',
     email: 'mainstreetroofing604@gmail.com',

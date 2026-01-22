@@ -38,7 +38,7 @@ export default function CompanyPage() {
                         <div>
                             <h2 className="text-3xl font-bold mb-6">Our Legacy of Excellence</h2>
                             <p className="text-gray-600 mb-6 leading-relaxed">
-                                Founded on the principles of integrity, quality, and community, Premium Roofing Solutions
+                                Founded on the principles of integrity, quality, and community, Mainstreet Roofing Ltd Solutions
                                 has been serving property owners for over 5 years. We've built our reputation one roof
                                 at a time, combining traditional craftsmanship with modern roofing technology.
                             </p>
