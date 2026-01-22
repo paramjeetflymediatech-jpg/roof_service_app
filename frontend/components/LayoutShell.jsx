@@ -14,6 +14,7 @@ export default function LayoutShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showAppModal, setShowAppModal] = useState(false);
   const pathname = usePathname();
 
   /* Detect scroll */
@@ -33,6 +34,21 @@ export default function LayoutShell({ children }) {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
     return () => (document.body.style.overflow = '');
   }, [mobileMenuOpen]);
+
+  /* App Modal Logic */
+  useEffect(() => {
+    // Show modal after 2 seconds if not dismissed in current session
+    const isDismissed = sessionStorage.getItem('app_modal_dismissed');
+    if (!isDismissed) {
+      const timer = setTimeout(() => setShowAppModal(true), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCloseModal = () => {
+    setShowAppModal(false);
+    sessionStorage.setItem('app_modal_dismissed', 'true');
+  };
 
   return (
     <div className="min-h-screen flex flex-col max-w-full">
@@ -204,6 +220,31 @@ export default function LayoutShell({ children }) {
                       Get a Quote
                     </button>
                   </Link>
+                  {/* App Promo Card */}
+                  <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group mt-4">
+                    {/* Decorative Background Elements */}
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                          <Logo className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg leading-tight">Our App is Live!</h4>
+                          <p className="text-primary-100 text-xs">Better roofing experience</p>
+                        </div>
+                      </div>
+
+                      <a
+                        href="/download/roof-service.apk"
+                        download
+                        className="flex items-center justify-center gap-2 w-full py-3 bg-white text-primary-700 font-bold rounded-lg hover:bg-primary-50 transition-colors shadow-md text-sm"
+                      >
+                        Download APK
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </nav>
             </motion.div>
@@ -256,6 +297,16 @@ export default function LayoutShell({ children }) {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <a
+                    href="/download/roof-service.apk"
+                    download
+                    className="hover:text-primary-400 transition-colors flex items-center gap-2 font-semibold text-primary-400"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Download Android App
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -345,7 +396,60 @@ export default function LayoutShell({ children }) {
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+
+      {/* App Download Promo Modal */}
+      <AnimatePresence>
+        {showAppModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden relative"
+            >
+              {/* Close Button */}
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
+              >
+                <HiX size={24} />
+              </button>
+
+              <div className="p-8 flex flex-col items-center text-center">
+                {/* Icon/Logo area */}
+                <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center mb-6">
+                  <Logo className="w-14 h-14" />
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                  Download Our Official App
+                </h2>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Get a faster, more convenient way to manage your roofing needs. Access our services anywhere, anytime from your Android device.
+                </p>
+
+                <div className="flex flex-col w-full gap-3">
+                  <a
+                    href="/download/roof-service.apk"
+                    download
+                    onClick={handleCloseModal}
+                    className="flex items-center justify-center gap-2 w-full py-4 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200"
+                  >
+                    Download for Android
+                  </a>
+                  <button
+                    onClick={handleCloseModal}
+                    className="w-full py-3 text-gray-500 font-medium hover:text-gray-700 transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div >
   );
 }

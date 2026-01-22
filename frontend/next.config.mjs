@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       // Reduce file watching sensitivity to prevent frequent reloads

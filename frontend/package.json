@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
     "@heroicons/react": "^2.2.0",
     "axios": "^1.7.0",
     "framer-motion": "^12.27.1",
