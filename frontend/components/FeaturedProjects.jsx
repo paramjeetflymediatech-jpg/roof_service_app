@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { HiX, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
+import { PROJECTS } from '@/lib/constants';
 
 if (typeof window !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
@@ -13,6 +14,9 @@ export default function FeaturedProjects() {
     const sectionRef = useRef(null);
     const cardsRef = useRef([]);
     const [selectedIndex, setSelectedIndex] = useState(null);
+
+    // Show only first 4 projects
+    const displayedProjects = PROJECTS.slice(0, 4);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -32,26 +36,15 @@ export default function FeaturedProjects() {
         return () => ctx.revert();
     }, []);
 
-    const projects = [
-        { id: 1, image: '/assets/project-1.jpg' },
-        { id: 2, image: '/assets/project-2.jpg' },
-        { id: 3, image: '/assets/project-3.jpg' },
-        { id: 4, image: '/assets/project-4.jpg' },
-        { id: 5, image: '/assets/project-5.jpg' },
-        { id: 6, image: '/assets/project-6.jpg' },
-        { id: 7, image: '/assets/project-7.jpg' },
-        { id: 8, image: '/assets/project-8.jpg' },
-    ];
-
     const nextImage = useCallback((e) => {
         e?.stopPropagation();
-        setSelectedIndex((prev) => (prev + 1) % projects.length);
-    }, [projects.length]);
+        setSelectedIndex((prev) => (prev + 1) % displayedProjects.length);
+    }, [displayedProjects.length]);
 
     const prevImage = useCallback((e) => {
         e?.stopPropagation();
-        setSelectedIndex((prev) => (prev - 1 + projects.length) % projects.length);
-    }, [projects.length]);
+        setSelectedIndex((prev) => (prev - 1 + displayedProjects.length) % displayedProjects.length);
+    }, [displayedProjects.length]);
 
     const closeLightbox = useCallback(() => {
         setSelectedIndex(null);
@@ -95,7 +88,7 @@ export default function FeaturedProjects() {
 
                 {/* Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {projects.map((project, index) => (
+                    {displayedProjects.map((project, index) => (
                         <div
                             key={project.id}
                             ref={(el) => (cardsRef.current[index] = el)}
@@ -159,13 +152,13 @@ export default function FeaturedProjects() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <img
-                                src={projects[selectedIndex].image}
+                                src={displayedProjects[selectedIndex].image}
                                 alt="Project"
                                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                             />
                             <div className="absolute bottom-[-40px] left-0 right-0 text-center">
                                 <p className="text-white text-lg font-medium">
-                                    Mainstreet Roofing Ltd - Project {projects[selectedIndex].id}
+                                    Mainstreet Roofing Ltd - {displayedProjects[selectedIndex].title}
                                 </p>
                             </div>
                         </motion.div>

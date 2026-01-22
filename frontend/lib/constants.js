@@ -149,8 +149,8 @@ export const SERVICES = [
             'Mainstreet Roofing is a premier provider of roof restoration services, extending the life and performance of existing roofs.',
         icon: 'tool',
     },
-   
-    
+
+
 ];
 
 
@@ -244,7 +244,7 @@ export const NAV_LINKS = [
     { label: 'About Us', href: '/about' },
     { label: 'Services', href: '/services' },
     { label: 'Gallery', href: '/gallery' },
-    { label: 'Contact Us', href: '/contact' },
+    { label: 'Contact Us', href: '/#contact' },
 ];
 
 // Services Dropdown Links
@@ -262,4 +262,16 @@ export const SERVICES_DROPDOWN = [
     { label: 'Insulation', href: '/services/insulation', icon: '🧊' },
     { label: 'Restorations Servicing', href: '/services/restorations-servicing', icon: '✨' },
     { label: 'Solar Panels', href: '/services/solar-panels', icon: '☀️' },
+];
+
+// Projects Data
+export const PROJECTS = [
+    { id: 1, image: '/assets/project-1.jpg', title: 'Residential Roofing', category: 'Residential' },
+    { id: 2, image: '/assets/project-2.jpg', title: 'Modern Metal Roof', category: 'Metal Roofing' },
+    { id: 3, image: '/assets/project-3.jpg', title: 'Commercial Flat Roof', category: 'Commercial' },
+    { id: 4, image: '/assets/project-4.jpg', title: 'Tile Roof Restoration', category: 'Residential' },
+    { id: 5, image: '/assets/project-5.jpg', title: 'Emergency Leak Repair', category: 'Repairs' },
+    { id: 6, image: '/assets/project-6.jpg', title: 'Industrial Wall Metal', category: 'Wall Metals' },
+    { id: 7, image: '/assets/project-7.jpg', title: 'New Construction Roof', category: 'New Construction' },
+    { id: 8, image: '/assets/project-8.jpg', title: 'Custom Gutter System', category: 'Services' },
 ];

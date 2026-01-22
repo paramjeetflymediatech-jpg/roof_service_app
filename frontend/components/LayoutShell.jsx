@@ -124,7 +124,7 @@ export default function LayoutShell({ children }) {
               </a>
 
               {/* CTA */}
-              <Link href="/contact">
+              <Link href="/#contact">
                 <button className="btn btn-primary">Get a Quote</button>
               </Link>
             </div>
@@ -191,11 +191,20 @@ export default function LayoutShell({ children }) {
                     </Link>
                   );
                 })}
-                <Link href="/contact">
-                  <button className="btn btn-primary w-full mt-4">
-                    Get a Quote
-                  </button>
-                </Link>
+                <div className="mt-auto pt-6 border-t space-y-4">
+                  <a
+                    href={`tel:${COMPANY_INFO.phone}`}
+                    className="flex items-center justify-center gap-2 text-gray-900 font-bold text-lg"
+                  >
+                    <HiPhone className="text-xl text-primary-600" />
+                    <span>{COMPANY_INFO.phone}</span>
+                  </a>
+                  <Link href="/#contact">
+                    <button className="btn btn-primary w-full py-4 text-lg">
+                      Get a Quote
+                    </button>
+                  </Link>
+                </div>
               </nav>
             </motion.div>
           )}
@@ -213,10 +222,10 @@ export default function LayoutShell({ children }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
-              <Link href="/" className="flex items-center justify-center group">
-                <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105" />
+              <Link href="/" className="flex items-center justify-start group">
+                <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105 brightness-0 invert" />
               </Link>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-white leading-relaxed">
                 {COMPANY_INFO.tagline || 'Quality materials designed to protect your investment for decades.'}
               </p>
               <div className="flex gap-4">

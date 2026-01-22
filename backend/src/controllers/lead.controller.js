@@ -6,8 +6,8 @@ exports.createLead = async (req, res, next) => {
   try {
     const payload = { ...req.body };
 
-    if (!payload.name || !payload.email || !payload.phone) {
-      return res.status(400).json({ message: 'Name, email, and phone are required' });
+    if (!payload.name || !payload.email) {
+      return res.status(400).json({ message: 'Name and email are required' });
     }
 
     // Create lead

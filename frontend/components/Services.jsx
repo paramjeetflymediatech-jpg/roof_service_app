@@ -9,12 +9,10 @@ export default function Services() {
             <div className="container-custom">
                 {/* Section Header */}
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
-                        Our <span className="gradient-text">Services</span>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-gray-900">
+                       Get Customized <span className="gradient-text">Roofing Services
+According your needs.</span>
                     </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Comprehensive roofing solutions for residential and commercial properties
-                    </p>
                 </div>
 
                 {/* Services Grid */}
