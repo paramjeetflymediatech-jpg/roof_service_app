@@ -60,6 +60,10 @@ const sendLeadNotification = async (leadData) => {
 
 // Send confirmation email to customer
 const sendCustomerConfirmation = async (leadData) => {
+    if (!leadData.email) {
+        console.log('ℹ️ No customer email provided, skipping confirmation email.');
+        return;
+    }
     const mailOptions = {
         from: process.env.EMAIL_FROM,
         to: leadData.email,

@@ -8,7 +8,7 @@ const LeadSchema = new mongoose.Schema(
       default: 'contact',
     },
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: false, lowercase: true, trim: true },
     phone: { type: String, required: false },
     subject: { type: String },
     message: { type: String },

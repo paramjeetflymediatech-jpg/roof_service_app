@@ -14,6 +14,12 @@ export default function QuoteForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // Name validation: prevent numbers
+        if (name === 'name' && /\d/.test(value)) {
+            return; // Block numeric input in Name field
+        }
+
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -21,8 +27,13 @@ export default function QuoteForm() {
         e.preventDefault();
 
         // Validation
-        if (!form.name || !form.email) {
-            toast.error('Please fill in all required fields');
+        if (!form.name.trim()) {
+            toast.error('Please enter your name');
+            return;
+        }
+
+        if (/\d/.test(form.name)) {
+            toast.error('Name should not contain numbers');
             return;
         }
 
@@ -32,7 +43,6 @@ export default function QuoteForm() {
                 leadType: 'quote',
                 source: 'website',
                 name: form.name,
-                email: form.email,
                 phone: form.phone,
                 message: form.message,
             });
@@ -43,7 +53,6 @@ export default function QuoteForm() {
             // Reset form
             setForm({
                 name: '',
-                email: '',
                 phone: '',
                 message: '',
             });
@@ -160,27 +169,11 @@ export default function QuoteForm() {
                                     value={form.name}
                                     onChange={handleChange}
                                     className="input-field py-3"
-                                    placeholder="Enter your name"
+                                    placeholder="Enter your name (letters only)"
                                     required
                                 />
                             </div>
 
-                            {/* Email */}
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Email*
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    className="input-field py-3"
-                                    placeholder="example@email.com"
-                                    required
-                                />
-                            </div>
 
                             {/* Phone */}
                             <div>

@@ -124,7 +124,7 @@ export default function LayoutShell({ children }) {
               </a>
 
               {/* CTA */}
-              <Link href="/#contact">
+              <Link href="/contact">
                 <button className="btn btn-primary">Get a Quote</button>
               </Link>
             </div>
@@ -199,7 +199,7 @@ export default function LayoutShell({ children }) {
                     <HiPhone className="text-xl text-primary-600" />
                     <span>{COMPANY_INFO.phone}</span>
                   </a>
-                  <Link href="/#contact">
+                  <Link href="/contact">
                     <button className="btn btn-primary w-full py-4 text-lg">
                       Get a Quote
                     </button>
