@@ -43,8 +43,10 @@ export default function QuoteForm() {
                 leadType: 'quote',
                 source: 'website',
                 name: form.name,
+                email: form.email,
                 phone: form.phone,
                 message: form.message,
+
             });
 
             // Show success toast
@@ -53,6 +55,7 @@ export default function QuoteForm() {
             // Reset form
             setForm({
                 name: '',
+                email: '',
                 phone: '',
                 message: '',
             });
@@ -80,7 +83,7 @@ export default function QuoteForm() {
                         className="space-y-8"
                     >
                         <div>
-                            <h2 className="text-4xl font-bold mb-4 text-gray-900 uppercase tracking-wider">
+                            <   h2 className="text-4xl font-bold mb-4 text-gray-900 uppercase tracking-wider">
                                 GET IN <span className="gradient-text">TOUCH</span>
                             </h2>
                             <p className="text-xl text-gray-600 mb-8">
@@ -173,8 +176,21 @@ export default function QuoteForm() {
                                     required
                                 />
                             </div>
-
-
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    id="name"
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    className="input-field py-3"
+                                    placeholder="Enter your mail"
+                                    required
+                                />
+                            </div>
                             {/* Phone */}
                             <div>
                                 <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1.5">

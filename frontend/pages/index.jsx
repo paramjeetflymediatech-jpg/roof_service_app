@@ -6,9 +6,11 @@ import Hero from '@/components/Hero';
 // import RoofingProducts from '@/components/RoofingProducts';
 import FeaturedProjects from '@/components/FeaturedProjects';
 import Testimonials from '@/components/Testimonials';
-import QuoteForm from '@/components/QuoteForm';
+// import QuoteForm from '@/components/QuoteForm';
 import { cleanupScrollTriggers } from '@/lib/animations';
 import Services from '@/components/Services';
+import Secondsechome from '@/components/Secondsechome';
+import OurProcess from '@/components/OurProcess';
 
 export default function HomePage() {
   useEffect(() => {
@@ -23,6 +25,9 @@ export default function HomePage() {
       <Hero />
       <div id="services">
       </div>
+
+
+      <Secondsechome />
       {/* <div id="about">
         <WhyChooseUs />
       </div> */}
@@ -30,13 +35,13 @@ export default function HomePage() {
 
       <Services />
       {/* <RoofingProducts /> */}
+
+      <OurProcess />
       <FeaturedProjects />
       <div id="testimonials">
         <Testimonials />
       </div>
-      <div id="contact">
-        <QuoteForm />
-      </div>
+
     </Layout>
   );
 }

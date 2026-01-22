@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function ServiceCard({ title, description, icon, features, index = 0 }) {
     const cardVariants = {
@@ -23,6 +24,10 @@ export default function ServiceCard({ title, description, icon, features, index 
         water: '💧',
     };
 
+    // Create URL-friendly slug from title
+    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and');
+    const serviceUrl = `/services/${slug}`;
+
     return (
         <motion.div
             variants={cardVariants}
@@ -30,7 +35,7 @@ export default function ServiceCard({ title, description, icon, features, index 
             whileInView="visible"
             viewport={{ once: true, margin: '-50px' }}
             whileHover={{ y: -10 }}
-            className="card card-hover p-8 group"
+            className="card card-hover p-8 group relative h-full flex flex-col"
         >
             {/* Icon */}
             <div className="mb-6 flex justify-center">
@@ -49,11 +54,11 @@ export default function ServiceCard({ title, description, icon, features, index 
             </h3>
 
             {/* Description */}
-            <p className="text-gray-600 mb-6 leading-relaxed">{description}</p>
+            <p className="text-gray-600 mb-6 leading-relaxed flex-grow">{description}</p>
 
             {/* Features */}
             {features && features.length > 0 && (
-                <ul className="space-y-2">
+                <ul className="space-y-2 mb-6">
                     {features.map((feature, idx) => (
                         <motion.li
                             key={idx}
@@ -70,8 +75,19 @@ export default function ServiceCard({ title, description, icon, features, index 
                 </ul>
             )}
 
+            {/* Learn More Button */}
+            <Link href={serviceUrl}>
+                <motion.button
+                    className="w-full btn btn-primary mt-auto"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                >
+                    Learn More
+                </motion.button>
+            </Link>
+
             {/* Hover Border Effect */}
-            <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary-500 rounded-xl transition-all duration-300" />
+            <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary-500 rounded-xl transition-all duration-300 pointer-events-none" />
         </motion.div>
     );
 }

@@ -83,7 +83,7 @@ export default function LayoutShell({ children }) {
         >
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
-              <Logo className="w-14 h-14 md:w-16 md:h-16 transition-transform duration-300 group-hover:scale-105" />
+              <Logo className="w-20 h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-105" />
 
             </Link>
 
@@ -208,18 +208,7 @@ export default function LayoutShell({ children }) {
                   );
                 })}
                 <div className="mt-auto pt-6 border-t space-y-4">
-                  <a
-                    href={`tel:${COMPANY_INFO.phone}`}
-                    className="flex items-center justify-center gap-2 text-gray-900 font-bold text-lg"
-                  >
-                    <HiPhone className="text-xl text-primary-600" />
-                    <span>{COMPANY_INFO.phone}</span>
-                  </a>
-                  <Link href="/contact">
-                    <button className="btn btn-primary w-full py-4 text-lg">
-                      Get a Quote
-                    </button>
-                  </Link>
+
                   {/* App Promo Card */}
                   <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group mt-4">
                     {/* Decorative Background Elements */}
@@ -450,6 +439,29 @@ export default function LayoutShell({ children }) {
           </div>
         )}
       </AnimatePresence>
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between px-4 md:hidden">
+
+        {/* Contact Us */}
+        <Link
+          href="/contact"
+          className="bg-[#ea580c] text-white px-5 py-3 rounded-lg 
+                   font-semibold shadow-lg hover:bg-black transition w-[48%] text-center"
+        >
+          Contact Us
+        </Link>
+
+        {/* Get a Quote */}
+        <Link
+          href="/contact"
+          className="bg-black text-white px-5 py-3 rounded-lg 
+                   font-semibold shadow-lg hover:bg-[#ea580c] transition w-[48%] text-center"
+        >
+          Get a Quote
+        </Link>
+
+      </div>
+
     </div >
+
   );
 }
