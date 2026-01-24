@@ -5,8 +5,12 @@ import { motion } from 'framer-motion';
 import { HiHome } from 'react-icons/hi';
 import LayoutShell from "@/components/LayoutShell";
 import { COMPANY_INFO } from "@/lib/constants";
+import { useSeo } from '@/hooks/useSeo';
 
 export default function AboutPage() {
+  // Load SEO meta tags for about page
+  useSeo('about');
+
   return (
     <LayoutShell>
       {/* Breadcrumb / Hero Section */}

@@ -12,27 +12,36 @@
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="logo-box">
-            
-              <img
-            src="/assets/roofing-logo.png"
-            alt="Roofing Logo"
-            class=""
-          />
+
+            <img src="/assets/roofing-logo.png" alt="Roofing Logo" class="" />
         </div>
     </div>
 
     <nav class="sidebar-nav">
         <a href="/admin/dashboard" class="nav-item <%= title === 'Dashboard' ? 'active' : '' %>">
             <span class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
             </span>
             <span class="label">Dashboard</span>
             <span class="badge-dot"></span>
         </a>
 
-        <a href="/admin/users" class="nav-item <%= title === 'User List' || title === 'Create User' || title === 'Edit User' ? 'active' : '' %>">
+        <a href="/admin/users"
+            class="nav-item <%= title === 'User List' || title === 'Create User' || title === 'Edit User' ? 'active' : '' %>">
             <span class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
             </span>
             <span class="label">User List</span>
             <span class="badge-dot"></span>
@@ -40,9 +49,26 @@
 
         <a href="/admin/leads" class="nav-item <%= title === 'Lead List' ? 'active' : '' %>">
             <span class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 3"></path><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 3"></path>
+                    <path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11"></path>
+                </svg>
             </span>
             <span class="label">Lead List</span>
+            <span class="badge-dot"></span>
+        </a>
+
+        <a href="/admin/seo"
+            class="nav-item <%= title === 'SEO Management' || title === 'Edit SEO Meta Tags' ? 'active' : '' %>">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </span>
+            <span class="label">SEO Management</span>
             <span class="badge-dot"></span>
         </a>
 
@@ -50,7 +76,12 @@
 
         <a href="#" class="nav-item logout-btn" onclick="showLogoutConfirm(event)">
             <span class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
             </span>
             <span class="label">Logout</span>
         </a>
@@ -60,7 +91,12 @@
     <div id="logoutModal" class="logout-modal">
         <div class="logout-modal-content">
             <div class="logout-modal-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4v2m6.364-1.636l-1.414-1.414M7.05 7.05L5.636 5.636m8.728 0l-1.414 1.414M7.05 16.95l-1.414 1.414"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M12 9v2m0 4v2m6.364-1.636l-1.414-1.414M7.05 7.05L5.636 5.636m8.728 0l-1.414 1.414M7.05 16.95l-1.414 1.414">
+                    </path>
+                </svg>
                 <h3>Confirm Logout</h3>
             </div>
             <p class="logout-modal-message">Are you sure you want to logout? Your session will end.</p>
@@ -173,6 +209,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -183,6 +220,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -190,9 +228,19 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-5deg); }
-            75% { transform: rotate(5deg); }
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-5deg);
+            }
+
+            75% {
+                transform: rotate(5deg);
+            }
         }
     </style>
 </aside>

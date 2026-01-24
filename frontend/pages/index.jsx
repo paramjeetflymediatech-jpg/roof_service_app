@@ -11,8 +11,12 @@ import { cleanupScrollTriggers } from '@/lib/animations';
 import Services from '@/components/Services';
 import Secondsechome from '@/components/Secondsechome';
 import OurProcess from '@/components/OurProcess';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function HomePage() {
+  // Load SEO meta tags for home page
+  useSeo('home');
+
   useEffect(() => {
     // Cleanup GSAP ScrollTriggers on unmount
     return () => {

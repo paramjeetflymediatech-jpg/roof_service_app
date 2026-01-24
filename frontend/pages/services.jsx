@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { SERVICES_DROPDOWN } from '@/lib/constants';
 import LayoutShell from '@/components/LayoutShell';
+import { useSeo } from '@/hooks/useSeo';
 
 // Service descriptions matching your content
 const SERVICE_DETAILS = {
@@ -23,6 +24,9 @@ const SERVICE_DETAILS = {
 };
 
 export default function ServicesPage() {
+  // Load SEO meta tags for services page
+  useSeo('services');
+
   return (
     <LayoutShell>
       {/* Hero Banner */}

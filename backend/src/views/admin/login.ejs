@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= title %> - Admin Panel</title>
+  <title>
+    <%= title %> - Admin Panel
+  </title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -64,85 +66,65 @@
   </style>
 </head>
 
-<body
-  class="min-h-screen px-2 bg-[#062a2a] flex items-center justify-center"
-  <% if (error && error.length > 0) { %> data-flash-error="<%= error %>" <% } %>
-  <% if (success && success.length > 0) { %> data-flash-success="<%= success %>" <% } %>
->
+<body class="min-h-screen px-2 bg-[#062a2a] flex items-center justify-center" <% if (error && error.length> 0) { %>
+  data-flash-error="<%= error %>" <% } %>
+      <% if (success && success.length> 0) { %> data-flash-success="<%= success %>" <% } %>
+            >
 
-  <!-- Toast Container -->
-  <div id="toast-container"></div>
+            <!-- Toast Container -->
+            <div id="toast-container"></div>
 
-  <!-- Main Card -->
-  <div class="w-full max-w-5xl bg-[#062a2a] rounded-xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-2">
+            <!-- Main Card -->
+            <div
+              class="w-full max-w-5xl bg-[#062a2a] rounded-xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-2">
 
-    <!-- Left Branding Panel -->
-    <div class="hidden md:flex flex-col justify-center bg-white items-center text-white p-12">
+              <!-- Left Branding Panel -->
+              <div class="hidden md:flex flex-col justify-center bg-white items-center text-white p-12">
 
-      <div class="flex items-center gap-3 mb-6">
-        <img
-            src="/assets/roofing-logo.png"
-            alt="Roofing Logo"
-            class="w-30 h-30 "
-          />
-      </div>
-     
-      
+                <div class="flex items-center gap-3 mb-6">
+                  <img src="/assets/roofing-logo.png" alt="Roofing Logo" class="w-30 h-30 " />
+                </div>
 
-      
-    </div>
 
-    <!-- Right Login Panel -->
-    <div class="bg-[#0b3a3a] p-10 flex flex-col justify-center">
 
-      <div class="mb-8">
-        <h1 class="text-3xl font-semibold text-white mb-2 text-center">Welcome</h1>
-        <p class="text-gray-300 text-sm text-center">
-          Please login to admin dashboard.
-        </p>
-      </div>
 
-      <form action="/admin/login" method="POST" class="space-y-5">
+              </div>
 
-        <div>
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Username"
-            class="w-full px-4 py-3 rounded-md bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-        </div>
+              <!-- Right Login Panel -->
+              <div class="bg-[#0b3a3a] p-10 flex flex-col justify-center">
 
-        <div>
-          <input
-            type="password"
-            name="password"
-            required
-            placeholder="Password"
-            class="w-full px-4 py-3 rounded-md bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-        </div>
+                <div class="mb-8">
+                  <h1 class="text-3xl font-semibold text-white mb-2 text-center">Welcome</h1>
+                  <p class="text-gray-300 text-sm text-center">
+                    Please login to admin dashboard.
+                  </p>
+                </div>
 
-        <button
-          type="submit"
-          class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-semibold transition"
-        >
-          Login
-        </button>
+                <form action="/admin/login" method="POST" class="space-y-5">
 
-        <div class="text-center">
-          <a href="#" class="text-sm text-gray-300 hover:text-white transition">
-            Forgotten your password?
-          </a>
-        </div>
+                  <div>
+                    <input type="email" name="email" required placeholder="Username"
+                      class="w-full px-4 py-3 rounded-md bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  </div>
 
-      </form>
+                  <div>
+                    <input type="password" name="password" required placeholder="Password"
+                      class="w-full px-4 py-3 rounded-md bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  </div>
 
-    </div>
-  </div>
+                  <button type="submit"
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-semibold transition">
+                    Login
+                  </button>
 
-  <script src="/js/toast.js"></script>
+
+
+                </form>
+
+              </div>
+            </div>
+
+            <script src="/js/toast.js"></script>
 </body>
 
 </html>

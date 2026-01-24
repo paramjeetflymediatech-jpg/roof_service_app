@@ -22,4 +22,9 @@ router.post('/users/:id/delete', isAuthenticated, isAdmin, adminController.delet
 // Lead management routes
 router.get('/leads', isAuthenticated, isAdmin, adminController.getLeadList);
 
+// SEO management routes
+router.get('/seo', isAuthenticated, isAdmin, adminController.getSeoList);
+router.get('/seo/:id/edit', isAuthenticated, isAdmin, adminController.getEditSeo);
+router.post('/seo/:id', isAuthenticated, isAdmin, adminController.postUpdateSeo);
+
 module.exports = router;

@@ -5,8 +5,12 @@ import { HiPhone, HiChevronRight, HiX, HiChevronLeft } from 'react-icons/hi';
 import { COMPANY_INFO, PROJECTS } from '@/lib/constants';
 import LayoutShell from '@/components/LayoutShell';
 import { useState, useCallback, useEffect } from 'react';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function GalleryPage() {
+  // Load SEO meta tags for gallery page
+  useSeo('gallery');
+
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   const nextImage = useCallback((e) => {

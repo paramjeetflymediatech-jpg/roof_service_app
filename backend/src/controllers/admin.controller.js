@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Lead = require('../models/Lead');
+const SeoMeta = require('../models/SeoMeta');
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
@@ -352,6 +353,91 @@ const deleteUser = async (req, res) => {
     }
 };
 
+// GET /admin/seo - Render SEO list
+const getSeoList = async (req, res) => {
+    try {
+        const seoPages = await SeoMeta.find().sort({ pageName: 1 });
+
+        res.render('admin/seo/list', {
+            title: 'SEO Management',
+            userName: req.session.userName,
+            seoPages,
+        });
+    } catch (error) {
+        console.error('SEO list error:', error);
+        req.flash('error', 'Error loading SEO list');
+        res.redirect('/admin/dashboard');
+    }
+};
+
+// GET /admin/seo/:id/edit - Render edit SEO form
+const getEditSeo = async (req, res) => {
+    try {
+        const seoPage = await SeoMeta.findById(req.params.id);
+
+        if (!seoPage) {
+            req.flash('error', 'SEO page not found');
+            return res.redirect('/admin/seo');
+        }
+
+        res.render('admin/seo/edit', {
+            title: 'Edit SEO Meta Tags',
+            userName: req.session.userName,
+            seoPage,
+        });
+    } catch (error) {
+        console.error('Edit SEO error:', error);
+        req.flash('error', 'Error loading SEO page');
+        res.redirect('/admin/seo');
+    }
+};
+
+// POST /admin/seo/:id - Update SEO meta tags
+const postUpdateSeo = async (req, res) => {
+    try {
+        const {
+            pageTitle,
+            metaDescription,
+            metaRobots,
+            ogTitle,
+            ogDescription,
+            ogImage,
+            canonicalUrl,
+        } = req.body;
+        const seoId = req.params.id;
+
+        // Validation
+        if (!pageTitle || !metaDescription) {
+            req.flash('error', 'Page title and meta description are required');
+            return res.redirect(`/admin/seo/${seoId}/edit`);
+        }
+
+        // Find and update SEO page
+        const seoPage = await SeoMeta.findById(seoId);
+        if (!seoPage) {
+            req.flash('error', 'SEO page not found');
+            return res.redirect('/admin/seo');
+        }
+
+        seoPage.pageTitle = pageTitle;
+        seoPage.metaDescription = metaDescription;
+        seoPage.metaRobots = metaRobots || 'index, follow';
+        seoPage.ogTitle = ogTitle || pageTitle;
+        seoPage.ogDescription = ogDescription || metaDescription;
+        seoPage.ogImage = ogImage || '';
+        seoPage.canonicalUrl = canonicalUrl || '';
+
+        await seoPage.save();
+
+        req.flash('success', 'SEO meta tags updated successfully');
+        res.redirect('/admin/seo');
+    } catch (error) {
+        console.error('Update SEO error:', error);
+        req.flash('error', 'Error updating SEO meta tags');
+        res.redirect(`/admin/seo/${req.params.id}/edit`);
+    }
+};
+
 module.exports = {
     getLogin,
     postLogin,
@@ -364,4 +450,7 @@ module.exports = {
     getEditUser,
     postUpdateUser,
     deleteUser,
+    getSeoList,
+    getEditSeo,
+    postUpdateSeo,
 };
