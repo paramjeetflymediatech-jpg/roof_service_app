@@ -74,9 +74,10 @@ const sendCustomerConfirmation = async (leadData) => {
                 <p>We've received your inquiry and will get back to you within 24 hours.</p>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Your Submission Details:</h3>
-                    <p><strong>Service:</strong> ${leadData.serviceType || 'General Inquiry'}</p>
-                    ${leadData.roofType ? `<p><strong>Roof Type:</strong> ${leadData.roofType}</p>` : ''}
-                    <p><strong>Contact Phone:</strong> ${leadData.phone}</p>
+                    <p><strong>Name:</strong> ${leadData.name}</p>
+                    <p><strong>Email:</strong> ${leadData.email}</p>
+                    <p><strong>Phone:</strong> ${leadData.phone || 'Not provided'}</p>
+                    ${leadData.message ? `<p><strong>Message:</strong><br/>${leadData.message}</p>` : ''}
                 </div>
                 <p>If you have any urgent questions, please call us at <strong>604-720-4313</strong></p>
                 <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
