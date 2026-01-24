@@ -28,7 +28,7 @@ const sendLeadNotification = async (leadData) => {
         subject: `New Lead: ${leadData.name}`,
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0ea5e9;">New Lead Submission</h2>
+                <h2 style="color: #00000007;">New Lead Submission</h2>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
                     <p><strong>Name:</strong> ${leadData.name}</p>
                     <p><strong>Email:</strong> ${leadData.email}</p>
@@ -42,7 +42,7 @@ const sendLeadNotification = async (leadData) => {
                     ${leadData.message ? `<p><strong>Message:</strong><br/>${leadData.message}</p>` : ''}
                 </div>
                 <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">
-                    This email was sent from Premium Roofing website contact form.
+                    This email was sent from Mainstreet Roofing Ltd website contact form.
                 </p>
             </div>
         `,
@@ -67,20 +67,21 @@ const sendCustomerConfirmation = async (leadData) => {
     const mailOptions = {
         from: process.env.EMAIL_FROM,
         to: leadData.email,
-        subject: 'Thank You for Contacting Premium Roofing',
+        subject: 'Thank You for Contacting Mainstreet Roofing Ltd',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0ea5e9;">Thank You, ${leadData.name.split(' ')[0]}!</h2>
+                <h2 style="color: #EA580C;">Thank You, ${leadData.name.split(' ')[0]}!</h2>
                 <p>We've received your inquiry and will get back to you within 24 hours.</p>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Your Submission Details:</h3>
-                    <p><strong>Service:</strong> ${leadData.serviceType || 'General Inquiry'}</p>
-                    ${leadData.roofType ? `<p><strong>Roof Type:</strong> ${leadData.roofType}</p>` : ''}
-                    <p><strong>Contact Phone:</strong> ${leadData.phone}</p>
+                    <p><strong>Name:</strong> ${leadData.name}</p>
+                    <p><strong>Email:</strong> ${leadData.email}</p>
+                    <p><strong>Phone:</strong> ${leadData.phone || 'Not provided'}</p>
+                    ${leadData.message ? `<p><strong>Message:</strong><br/>${leadData.message}</p>` : ''}
                 </div>
                 <p>If you have any urgent questions, please call us at <strong>604-720-4313</strong></p>
                 <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-                    Premium Roofing - Quality materials designed to protect your investment for decades
+                    Mainstreet Roofing Ltd - Quality materials designed to protect your investment for decades
                 </p>
             </div>
         `,

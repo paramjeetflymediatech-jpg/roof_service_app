@@ -20,6 +20,11 @@ export default function QuoteForm() {
             return; // Block numeric input in Name field
         }
 
+        // Phone validation: only allow numbers, spaces, dashes, and parentheses
+        if (name === 'phone' && value && !/^[0-9\s\-()]*$/.test(value)) {
+            return; // Block non-numeric input in Phone field
+        }
+
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -83,10 +88,10 @@ export default function QuoteForm() {
                         className="space-y-8"
                     >
                         <div>
-                            <   h2 className="text-4xl font-bold mb-4 text-gray-900 uppercase tracking-wider">
+                            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900 uppercase tracking-wider text-center md:text-left">
                                 GET IN <span className="gradient-text">TOUCH</span>
                             </h2>
-                            <p className="text-xl text-gray-600 mb-8">
+                            <p className="text-base md:text-xl text-gray-600 mb-8 text-center md:text-left">
                                 Visit one of our Company and contact us today
                             </p>
 

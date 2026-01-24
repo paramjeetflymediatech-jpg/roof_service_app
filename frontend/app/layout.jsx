@@ -4,8 +4,8 @@ import LayoutShell from '@/components/LayoutShell';
 import { ToastContainer } from 'react-toastify';
 
 export const metadata = {
-    title: 'Premium Roofing',
-    description: 'Premium Roofing Solutions',
+    title: 'Mainstreet Roofing Ltd',
+    description: 'Mainstreet Roofing Ltd Solutions',
 };
 
 export default function RootLayout({ children }) {
