@@ -191,9 +191,7 @@ export default function LayoutShell({ children }) {
                     </Link>
                   );
                 })}
-                <div className="mt-auto pt-6 border-t space-y-4">
-
-                </div>
+                
               </nav>
             </motion.div>
           )}
