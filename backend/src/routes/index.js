@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.use('/services', serviceRoutes);
 router.use('/leads', leadRoutes);
-router.use('/api', apiRoutes);
+router.use('/', apiRoutes);
 
 module.exports = router;
 

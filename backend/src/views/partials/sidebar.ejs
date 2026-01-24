@@ -47,7 +47,8 @@
             <span class="badge-dot"></span>
         </a>
 
-        <a href="/admin/leads" class="nav-item <%= title === 'Lead List' ? 'active' : '' %>">
+        <a href="/admin/leads"
+            class="nav-item <%= title === 'Lead List' || title === 'Add New Lead' || title === 'Edit Lead' ? 'active' : '' %>">
             <span class="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -60,7 +61,7 @@
         </a>
 
         <a href="/admin/seo"
-            class="nav-item <%= title === 'SEO Management' || title === 'Edit SEO Meta Tags' ? 'active' : '' %>">
+            class="nav-item <%= title === 'SEO Management' || title === 'Edit SEO Meta Tags' || title === 'Add New SEO Page' ? 'active' : '' %>">
             <span class="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">

@@ -163,6 +163,136 @@ const getLeadList = async (req, res) => {
     }
 };
 
+// GET /admin/leads/create - Render create lead form
+const getCreateLead = (req, res) => {
+    res.render('admin/leads/create', {
+        title: 'Add New Lead',
+        userName: req.session.userName,
+    });
+};
+
+// POST /admin/leads - Create new lead
+const postCreateLead = async (req, res) => {
+    try {
+        const { name, email, phone, leadType, address, city, serviceType, status, message } = req.body;
+
+        if (!name) {
+            req.flash('error', 'Name is required');
+            return res.redirect('/admin/leads/create');
+        }
+
+        const newLead = new Lead({
+            name,
+            email,
+            phone,
+            leadType,
+            address,
+            city,
+            serviceType,
+            status: status || 'new',
+            message,
+            source: 'other' // Manual entry
+        });
+
+        await newLead.save();
+
+        req.flash('success', 'Lead created successfully');
+        res.redirect('/admin/leads');
+    } catch (error) {
+        console.error('Create lead error:', error);
+        req.flash('error', 'Error creating lead');
+        res.redirect('/admin/leads/create');
+    }
+};
+
+// GET /admin/leads/:id/edit - Render edit lead form
+const getEditLead = async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+
+        if (!lead) {
+            req.flash('error', 'Lead not found');
+            return res.redirect('/admin/leads');
+        }
+
+        res.render('admin/leads/edit', {
+            title: 'Edit Lead',
+            userName: req.session.userName,
+            lead,
+        });
+    } catch (error) {
+        console.error('Edit lead error:', error);
+        req.flash('error', 'Error loading lead');
+        res.redirect('/admin/leads');
+    }
+};
+
+// POST /admin/leads/:id - Update lead
+const postUpdateLead = async (req, res) => {
+    try {
+        const { name, email, phone, leadType, address, city, serviceType, status, message } = req.body;
+        const leadId = req.params.id;
+
+        const lead = await Lead.findById(leadId);
+        if (!lead) {
+            req.flash('error', 'Lead not found');
+            return res.redirect('/admin/leads');
+        }
+
+        lead.name = name;
+        lead.email = email;
+        lead.phone = phone;
+        lead.leadType = leadType;
+        lead.address = address;
+        lead.city = city;
+        lead.serviceType = serviceType;
+        lead.status = status;
+        lead.message = message;
+
+        await lead.save();
+
+        req.flash('success', 'Lead updated successfully');
+        res.redirect('/admin/leads');
+    } catch (error) {
+        console.error('Update lead error:', error);
+        req.flash('error', 'Error updating lead');
+        res.redirect(`/admin/leads/${req.params.id}/edit`);
+    }
+};
+
+// POST /admin/leads/:id/delete - Delete lead
+const deleteLead = async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const lead = await Lead.findByIdAndDelete(leadId);
+
+        if (!lead) {
+            req.flash('error', 'Lead not found');
+            return res.redirect('/admin/leads');
+        }
+
+        req.flash('success', 'Lead deleted successfully');
+        res.redirect('/admin/leads');
+    } catch (error) {
+        console.error('Delete lead error:', error);
+        req.flash('error', 'Error deleting lead');
+        res.redirect('/admin/leads');
+    }
+};
+
+// POST /admin/leads/delete-all - Delete all leads
+const deleteAllLeads = async (req, res) => {
+    try {
+        await Lead.deleteMany({});
+        req.flash('success', 'All leads deleted successfully');
+        res.redirect('/admin/leads');
+    } catch (error) {
+        console.error('Delete all leads error:', error);
+        req.flash('error', 'Error deleting all leads');
+        res.redirect('/admin/leads');
+    }
+};
+
 // GET /admin/users/create - Render create user form
 const getCreateUser = (req, res) => {
     res.render('admin/users/create', {
@@ -353,6 +483,23 @@ const deleteUser = async (req, res) => {
     }
 };
 
+// POST /admin/users/delete-all - Delete all users except current
+const deleteAllUsers = async (req, res) => {
+    try {
+        const currentUserId = req.session.userId;
+
+        // Delete all users except the current admin
+        await User.deleteMany({ _id: { $ne: currentUserId } });
+
+        req.flash('success', 'All users deleted successfully (except yourself)');
+        res.redirect('/admin/users');
+    } catch (error) {
+        console.error('Delete all users error:', error);
+        req.flash('error', 'Error deleting users');
+        res.redirect('/admin/users');
+    }
+};
+
 // GET /admin/seo - Render SEO list
 const getSeoList = async (req, res) => {
     try {
@@ -367,6 +514,66 @@ const getSeoList = async (req, res) => {
         console.error('SEO list error:', error);
         req.flash('error', 'Error loading SEO list');
         res.redirect('/admin/dashboard');
+    }
+};
+
+
+
+// GET /admin/seo/create - Render create SEO form
+const getCreateSeo = (req, res) => {
+    res.render('admin/seo/create', {
+        title: 'Add New SEO Page',
+        userName: req.session.userName,
+    });
+};
+
+// POST /admin/seo - Create new SEO page
+const postCreateSeo = async (req, res) => {
+    try {
+        const {
+            pageName,
+            pageTitle,
+            metaDescription,
+            metaRobots,
+            ogTitle,
+            ogDescription,
+            ogImage,
+            canonicalUrl,
+        } = req.body;
+
+        // Validation
+        if (!pageName || !pageTitle || !metaDescription) {
+            req.flash('error', 'Page name, title, and description are required');
+            return res.redirect('/admin/seo/create');
+        }
+
+        // Check if page already exists
+        const existingPage = await SeoMeta.findOne({ pageName: pageName.toLowerCase() });
+        if (existingPage) {
+            req.flash('error', 'SEO for this page already exists');
+            return res.redirect('/admin/seo/create');
+        }
+
+        // Create new SEO entry
+        const newSeoPage = new SeoMeta({
+            pageName: pageName.toLowerCase(),
+            pageTitle,
+            metaDescription,
+            metaRobots: metaRobots || 'index, follow',
+            ogTitle: ogTitle || pageTitle,
+            ogDescription: ogDescription || metaDescription,
+            ogImage: ogImage || '',
+            canonicalUrl: canonicalUrl || '',
+        });
+
+        await newSeoPage.save();
+
+        req.flash('success', 'SEO page created successfully');
+        res.redirect('/admin/seo');
+    } catch (error) {
+        console.error('Create SEO error:', error);
+        req.flash('error', 'Error creating SEO page');
+        res.redirect('/admin/seo/create');
     }
 };
 
@@ -438,6 +645,26 @@ const postUpdateSeo = async (req, res) => {
     }
 };
 
+// POST /admin/seo/:id/delete - Delete SEO page
+const deleteSeo = async (req, res) => {
+    try {
+        const seoId = req.params.id;
+        const seoPage = await SeoMeta.findByIdAndDelete(seoId);
+
+        if (!seoPage) {
+            req.flash('error', 'SEO page not found');
+            return res.redirect('/admin/seo');
+        }
+
+        req.flash('success', 'SEO page deleted successfully');
+        res.redirect('/admin/seo');
+    } catch (error) {
+        console.error('Delete SEO error:', error);
+        req.flash('error', 'Error deleting SEO page');
+        res.redirect('/admin/seo');
+    }
+};
+
 module.exports = {
     getLogin,
     postLogin,
@@ -445,12 +672,22 @@ module.exports = {
     getLogout,
     getUserList,
     getLeadList,
+    getCreateLead,
+    postCreateLead,
+    getEditLead,
+    postUpdateLead,
+    deleteLead,
+    deleteAllLeads,
     getCreateUser,
     postCreateUser,
     getEditUser,
     postUpdateUser,
     deleteUser,
+    deleteAllUsers,
     getSeoList,
+    getCreateSeo,
+    postCreateSeo,
     getEditSeo,
     postUpdateSeo,
+    deleteSeo,
 };

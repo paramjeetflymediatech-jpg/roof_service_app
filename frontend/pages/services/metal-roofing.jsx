@@ -12,7 +12,7 @@ export default function MetalRoofingPage() {
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-           backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: 'center'
         }}
       >
@@ -34,7 +34,7 @@ export default function MetalRoofingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-3">
               <motion.div className="mb-8 rounded-lg overflow-hidden shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-                <img src="/assets/Metal-Roofing.jpg" alt="Metal Roofing" className="w-full h-[400px] object-cover" />
+                <img src="/assets/Metal-Roofing-New.jpg" alt="Metal Roofing" className="w-full h-[400px] object-cover" />
               </motion.div>
 
               <motion.div className="bg-white rounded-lg shadow-md p-8 space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>

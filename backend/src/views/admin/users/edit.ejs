@@ -9,65 +9,11 @@
     </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/admin.css">
-    <style>
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 300px;
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease-out;
-            z-index: 1000;
-        }
-
-        .toast-success {
-            background-color: #10b981;
-            color: white;
-        }
-
-        .toast-error {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
-        .toast.hiding {
-            animation: slideOut 0.3s ease-out forwards;
-        }
-    </style>
 </head>
 
 <body <% if (error && error.length> 0) { %>data-flash-error="<%= error %>"<% } %>
-            <% if (success && success.length> 0) { %>data-flash-success="<%= success %>"<% } %>
-                        >
+            <% if (success && success.length> 0) { %>data-flash-success="<%= success %>"<% } %>>
+
                         <!-- Toast Container -->
                         <div id="toast-container"></div>
 
@@ -85,116 +31,168 @@
                                     </header>
 
                                     <div class="content">
-                                        <div class="bg-white rounded-lg shadow-md p-6">
-                                            <form action="/admin/users/<%= user._id %>" method="POST" class="space-y-6">
-                                                <!-- Name Field -->
-                                                <div>
-                                                    <label for="name"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">
-                                                        Full Name <span class="text-red-500">*</span>
-                                                    </label>
-                                                    <input type="text" id="name" name="name" value="<%= user.name %>"
-                                                        required
-                                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Enter full name">
-                                                </div>
+                                        <div class="max-w-4xl">
+                                            <!-- Back Button -->
+                                            <div class="mb-6">
+                                                <a href="/admin/users"
+                                                    class="text-indigo-600 hover:text-indigo-900 flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2">
+                                                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                                                        <polyline points="12 19 5 12 12 5"></polyline>
+                                                    </svg>
+                                                    Back to User List
+                                                </a>
+                                            </div>
 
-                                                <!-- Email Field -->
-                                                <div>
-                                                    <label for="email"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">
-                                                        Email Address <span class="text-red-500">*</span>
-                                                    </label>
-                                                    <input type="email" id="email" name="email"
-                                                        value="<%= user.email %>" required
-                                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="user@example.com">
-                                                </div>
-
-                                                <!-- Phone Field -->
-                                                <div>
-                                                    <label for="phone"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">
-                                                        Phone Number
-                                                    </label>
-                                                    <input type="text" id="phone" name="phone"
-                                                        value="<%= user.phone || '' %>" maxlength="16"
-                                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Enter phone number">
-                                                </div>
-
-                                                <!-- Password Field -->
-                                                <div>
-                                                    <label for="password"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">
-                                                        Password <span class="text-gray-500 text-xs">(Leave blank to
-                                                            keep current password)</span>
-                                                    </label>
-                                                    <div class="relative">
-                                                        <input type="password" id="password" name="password"
-                                                            minlength="6"
-                                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-                                                            placeholder="Enter new password (optional)">
-                                                        <button type="button" onclick="togglePassword('password', this)"
-                                                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-blue-600 focus:outline-none">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="w-5 h-5 eye-open">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="w-5 h-5 eye-closed hidden">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                                                            </svg>
-                                                        </button>
+                                            <!-- Edit Form -->
+                                            <div class="bg-white rounded-lg shadow-md p-8">
+                                                <div class="flex justify-between items-start mb-6">
+                                                    <div>
+                                                        <h2 class="text-2xl font-semibold text-gray-800">Edit User
+                                                            Details</h2>
+                                                        <p class="text-sm text-gray-600 mt-1">Update personal
+                                                            information and permissions</p>
                                                     </div>
+                                                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                                <%= user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                                        <%= user.isActive ? 'Active Account' : 'Inactive Account' %>
+                                                    </span>
                                                 </div>
 
-                                                <!-- Role Field -->
-                                                <div>
-                                                    <label for="role"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">
-                                                        Role <span class="text-red-500">*</span>
-                                                    </label>
-                                                    <select id="role" name="role"
-                                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                        <option value="user" <%=user.role==='user' ? 'selected' : '' %>
-                                                            >User</option>
-                                                        <option value="admin" <%=user.role==='admin' ? 'selected' : ''
-                                                            %>>Admin</option>
-                                                    </select>
-                                                </div>
+                                                <form action="/admin/users/<%= user._id %>" method="POST"
+                                                    class="space-y-6">
+                                                    <!-- Basic Info -->
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div>
+                                                            <label for="name"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">Full
+                                                                Name <span class="text-red-500">*</span></label>
+                                                            <input type="text" id="name" name="name"
+                                                                value="<%= user.name %>" required
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                                placeholder="Enter full name">
+                                                        </div>
+                                                        <div>
+                                                            <label for="email"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">Email
+                                                                Address <span class="text-red-500">*</span></label>
+                                                            <input type="email" id="email" name="email"
+                                                                value="<%= user.email %>" required
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                                placeholder="user@example.com">
+                                                        </div>
+                                                    </div>
 
-                                                <!-- Status Field -->
-                                                <div class="flex items-center">
-                                                    <input type="checkbox" id="isActive" name="isActive"
-                                                        <%=user.isActive ? 'checked' : '' %>
-                                                    class="w-4 h-4 text-blue-600 border-gray-300 rounded
-                                                    focus:ring-blue-500"
-                                                    >
-                                                    <label for="isActive"
-                                                        class="ml-2 text-sm font-medium text-gray-700">
-                                                        Active
-                                                    </label>
-                                                </div>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div>
+                                                            <label for="phone"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">Phone
+                                                                Number</label>
+                                                            <input type="tel" id="phone" name="phone"
+                                                                value="<%= user.phone || '' %>" maxlength="16"
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                                placeholder="Enter phone number">
+                                                        </div>
+                                                        <div>
+                                                            <label for="role"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">Role
+                                                                <span class="text-red-500">*</span></label>
+                                                            <select id="role" name="role"
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                                <option value="user" <%=user.role==='user' ? 'selected'
+                                                                    : '' %>>User (Standard Access)</option>
+                                                                <option value="admin" <%=user.role==='admin'
+                                                                    ? 'selected' : '' %>>Admin (Full Access)</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
 
-                                                <!-- Buttons -->
-                                                <div class="flex gap-4 pt-4">
-                                                    <button type="submit"
-                                                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                                        Update User
-                                                    </button>
-                                                    <a href="/admin/users"
-                                                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                                                        Cancel
-                                                    </a>
-                                                </div>
-                                            </form>
+                                                    <!-- Security Section -->
+                                                    <div class="pt-4 border-t border-gray-100">
+                                                        <h3 class="text-lg font-medium text-gray-800 mb-4">Security &
+                                                            Access</h3>
+
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            <div>
+                                                                <label for="password"
+                                                                    class="block text-sm font-medium text-gray-700 mb-2">
+                                                                    Change Password
+                                                                    <span
+                                                                        class="text-xs text-gray-500 font-normal">(Leave
+                                                                        blank to keep current)</span>
+                                                                </label>
+                                                                <div class="relative">
+                                                                    <input type="password" id="password" name="password"
+                                                                        minlength="6"
+                                                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10"
+                                                                        placeholder="New password">
+                                                                    <button type="button"
+                                                                        onclick="togglePassword('password', this)"
+                                                                        class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-indigo-600 focus:outline-none">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none" viewBox="0 0 24 24"
+                                                                            stroke-width="1.5" stroke="currentColor"
+                                                                            class="w-5 h-5 eye-open">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        </svg>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none" viewBox="0 0 24 24"
+                                                                            stroke-width="1.5" stroke="currentColor"
+                                                                            class="w-5 h-5 eye-closed hidden">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="flex items-center pt-8">
+                                                                <div class="relative flex items-start">
+                                                                    <div class="flex text-sm">
+                                                                        <label
+                                                                            class="font-medium text-gray-700 select-none cursor-pointer flex items-center gap-3">
+                                                                            <input type="checkbox" id="isActive"
+                                                                                name="isActive" <%=user.isActive
+                                                                                ? 'checked' : '' %>
+                                                                            class="w-5 h-5 text-indigo-600
+                                                                            border-gray-300 rounded
+                                                                            focus:ring-indigo-500">
+                                                                            <div>
+                                                                                <span
+                                                                                    class="block text-gray-800">Account
+                                                                                    Active</span>
+                                                                                <span
+                                                                                    class="block text-gray-500 font-normal">Allow
+                                                                                    this user to log in</span>
+                                                                            </div>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Buttons -->
+                                                    <div class="flex gap-4 pt-6">
+                                                        <button type="submit"
+                                                            class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                                                            Update User Details
+                                                        </button>
+                                                        <a href="/admin/users"
+                                                            class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition">
+                                                            Cancel
+                                                        </a>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </main>
@@ -202,44 +200,6 @@
 
                         <script src="/js/toast.js"></script>
                         <script>
-                            // Real-time name validation
-                            const nameInput = document.getElementById('name');
-                            if (nameInput) {
-                                nameInput.addEventListener('input', function (e) {
-                                    const value = e.target.value;
-                                    // Remove any numbers or special characters except spaces
-                                    const cleaned = value.replace(/[^A-Za-z\s]/g, '');
-                                    if (value !== cleaned) {
-                                        e.target.value = cleaned;
-                                    }
-                                });
-
-                                nameInput.addEventListener('blur', function (e) {
-                                    const value = e.target.value.trim();
-                                    if (value.length > 0 && value.length < 3) {
-                                        e.target.setCustomValidity('Name must be at least 3 characters long');
-                                    } else if (value.length > 0 && !/^[A-Za-z\s]+$/.test(value)) {
-                                        e.target.setCustomValidity('Name can only contain letters and spaces');
-                                    } else {
-                                        e.target.setCustomValidity('');
-                                    }
-                                    e.target.reportValidity();
-                                });
-                            }
-
-                            // Phone validation
-                            const phoneInput = document.getElementById('phone');
-                            if (phoneInput) {
-                                phoneInput.addEventListener('input', function (e) {
-                                    const value = e.target.value;
-                                    // Remove any non-numeric characters
-                                    const cleaned = value.replace(/[^0-9]/g, '');
-                                    if (value !== cleaned) {
-                                        e.target.value = cleaned;
-                                    }
-                                });
-                            }
-
                             // Password Toggle
                             function togglePassword(inputId, btn) {
                                 const input = document.getElementById(inputId);

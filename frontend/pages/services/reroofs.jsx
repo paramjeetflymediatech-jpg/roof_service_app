@@ -13,7 +13,7 @@ export default function ReroofsPage() {
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-         backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: 'center'
         }}
       >
@@ -51,7 +51,7 @@ export default function ReroofsPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                  src="/assets/Repai.jpg"
+                  src="/assets/Reroofs-New.jpg"
                   alt="Reroofing Services"
                   className="w-full h-[400px] object-cover"
                 />
