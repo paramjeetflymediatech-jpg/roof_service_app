@@ -5,10 +5,33 @@ import Link from 'next/link';
 import { HiPhone } from 'react-icons/hi';
 import { SERVICES_DROPDOWN, COMPANY_INFO } from '@/lib/constants';
 import LayoutShell from '@/components/LayoutShell';
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function MetalRoofingPage() {
+export async function getServerSideProps() {
+  try {
+    console.log('Fetching SEO data for metal-roofing...');
+    const data = await getSeoData('metal-roofing');
+    console.log('SEO Data received:', data);
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Metal Roofing SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function MetalRoofingPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="metal-roofing" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{

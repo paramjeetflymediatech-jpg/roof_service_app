@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from 'react-icons/hi';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 
 import { COMPANY_INFO, NAV_LINKS, SERVICES_DROPDOWN, SOCIAL_LINKS } from '@/lib/constants';
@@ -40,7 +40,7 @@ export default function LayoutShell({ children }) {
       {/* Header & Top Bar Wrapper (Fixed) */}
       <div className="fixed top-0 left-0 right-0 z-50">
         {/* Top Bar */}
-        <div className="bg-dark-900 text-white py-2 hidden md:block">
+        <div className="bg-dark-900 text-white py-2 hidden lg:block">
           <div className="container-custom flex justify-between items-center text-sm">
             <div className="flex gap-6">
               <a href={`tel:${COMPANY_INFO.phone}`} className="flex gap-2">
@@ -68,11 +68,11 @@ export default function LayoutShell({ children }) {
         >
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
-              <Logo className="w-20 h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-105" />
+              <Logo className="w-20 h-20 lg:w-24 lg:h-24 transition-transform duration-300 group-hover:scale-105" />
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex gap-8 items-center">
+            <nav className="hidden lg:flex gap-8 items-center">
               {NAV_LINKS.map(link => {
                 if (link.label === 'Services') {
                   return (
@@ -112,8 +112,9 @@ export default function LayoutShell({ children }) {
               })}
             </nav>
 
+
             {/* Phone & CTA Group */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
               {/* Phone Number */}
               <a
                 href="tel:604-720-4313"
@@ -132,7 +133,7 @@ export default function LayoutShell({ children }) {
             {/* Mobile Button */}
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
-              className="md:hidden"
+              className="lg:hidden"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <HiX size={30} /> : <HiMenu size={30} />}
@@ -148,7 +149,7 @@ export default function LayoutShell({ children }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.25 }}
-              className="md:hidden bg-white shadow-lg border-t"
+              className="lg:hidden bg-white shadow-lg border-t max-h-[85vh] overflow-y-auto"
             >
               <nav className="container-custom py-6 flex flex-col gap-4">
                 {NAV_LINKS.map(link => {
@@ -191,7 +192,7 @@ export default function LayoutShell({ children }) {
                     </Link>
                   );
                 })}
-                
+
               </nav>
             </motion.div>
           )}
@@ -199,40 +200,26 @@ export default function LayoutShell({ children }) {
       </div>
 
       {/* Content */}
-      <main className="flex-1 pt-[102px] md:pt-[138px]">
+      <main className="flex-1 pt-[102px] lg:pt-[138px]">
         {children}
       </main>
 
       {/* Footer */}
       <footer className="bg-dark-900 text-gray-300 pt-16 pb-8">
         <div className="container-custom">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
-              <Link href="/" className="flex items-center justify-start group">
+              <Link href="/" className="flex items-center justify-center md:justify-start group w-full">
                 <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105 brightness-0 invert" />
               </Link>
-              <p className="text-white leading-relaxed">
+              <p className="text-white leading-relaxed text-center md:text-left">
                 {COMPANY_INFO.tagline || 'Quality materials designed to protect your investment for decades.'}
               </p>
-              <div className="flex gap-4">
-                <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
-                  <FaFacebook />
-                </a>
-                <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
-                  <FaTwitter />
-                </a>
-                <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
-                  <FaInstagram />
-                </a>
-                <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
-                  <FaLinkedin />
-                </a>
-              </div>
             </div>
 
             {/* Quick Links */}
-            <div>
+            {/* <div>
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">Quick Links</h3>
               <ul className="space-y-4">
                 {NAV_LINKS.map((link) => (
@@ -244,10 +231,10 @@ export default function LayoutShell({ children }) {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
 
             {/* Services */}
-            <div>
+            {/* <div>
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider flex items-center gap-2">
                 Our Services
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,10 +273,10 @@ export default function LayoutShell({ children }) {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             {/* Contact Info */}
-            <div>
+            {/* <div>
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">Contact Us</h3>
               <ul className="space-y-4">
                 <li className="flex gap-4 items-start text-gray-400">
@@ -314,7 +301,177 @@ export default function LayoutShell({ children }) {
                   </div>
                 </li>
               </ul>
+              <div className="flex gap-4 mt-8">
+                <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
+                  <FaFacebook />
+                </a>
+                <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
+                  <FaTwitter />
+                </a>
+                <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
+                  <FaInstagram />
+                </a>
+                <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all">
+                  <FaLinkedin />
+                </a>
+              </div>
+            </div> */}
+
+
+            {/* Quick Links */}
+            <div className="text-center md:text-left">
+              <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">
+                Quick Links
+              </h3>
+
+              <ul className="space-y-4">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
+
+            {/* Services */}
+            <div className="text-center md:text-left">
+              <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider flex justify-center md:justify-start items-center gap-2">
+                Our Services
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </h3>
+
+              <ul className="space-y-4">
+                <li>
+                  <Link href="/services/new-construction" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    New construction
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/wall-metals" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Wall Metals
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/solar-panels" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Solar panels
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/leak-repair" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Leak repair
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/services/torch-on" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                    Torch on
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+
+
+
+            <div className="text-center md:text-left">
+              <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">
+                Contact Us
+              </h3>
+
+              <ul className="space-y-4">
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                  <div className="text-primary-500">
+                    <HiPhone size={20} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Phone</p>
+                    <a
+                      href={`tel:${COMPANY_INFO.phone}`}
+                      className="hover:text-primary-400 transition-colors"
+                    >
+                      {COMPANY_INFO.phone}
+                    </a>
+                  </div>
+                </li>
+
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                  <div className="text-primary-500">
+                    <HiMail size={20} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Email</p>
+                    <a
+                      href={`mailto:${COMPANY_INFO.email}`}
+                      className="hover:text-primary-400 transition-colors"
+                    >
+                      {COMPANY_INFO.email}
+                    </a>
+                  </div>
+                </li>
+
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                  <div className="text-primary-500">
+                    <HiLocationMarker size={20} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Location</p>
+                    <p className="hover:text-primary-400 transition-colors">
+                      {COMPANY_INFO.address}
+                    </p>
+                  </div>
+                </li>
+              </ul>
+
+              {/* Social Icons */}
+              <div className="flex justify-center md:justify-start gap-4 mt-8">
+                <a
+                  href={SOCIAL_LINKS.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
+                >
+                  <FaFacebook />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
+                >
+                  <FaTwitter />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
+                >
+                  <FaInstagram />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
+                >
+                  <FaLinkedin />
+                </a>
+              </div>
+            </div>
+
+
           </div>
 
           {/* Bottom Bar */}
@@ -339,7 +496,7 @@ export default function LayoutShell({ children }) {
         </div>
       </footer >
 
-      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between gap-3 px-4 md:hidden">
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between gap-3 px-4 lg:hidden">
         {/* Phone Number */}
         <a
           href="tel:604-720-4313"
@@ -360,7 +517,20 @@ export default function LayoutShell({ children }) {
         </Link>
       </div>
 
-    </div >
+      {/* WhatsApp Floating Button */}
+      <a
+        href="https://wa.me/16047204313"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 hover:bg-[#128C7E] transition-all duration-300 group"
+        aria-label="Chat on WhatsApp"
+      >
+        <FaWhatsapp size={30} />
+        <span className="absolute right-full mr-3 bg-white text-gray-800 px-3 py-1 rounded-lg text-sm font-medium shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap">
+          Chat with us
+        </span>
+      </a>
+    </div>
 
   );
 }

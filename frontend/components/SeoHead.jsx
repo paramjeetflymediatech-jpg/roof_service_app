@@ -1,10 +1,15 @@
 import Head from 'next/head';
 import { useSeo } from '@/hooks/useSeo';
 
-const SeoHead = ({ pageName }) => {
-    const { seoData, loading, error } = useSeo(pageName);
+const SeoHead = ({ pageName, initialSeoData }) => {
+    const { seoData: fetchedData, loading, error } = useSeo(pageName, { skip: !!initialSeoData });
+    const seoData = initialSeoData || fetchedData;
 
-    if (loading) {
+    // If we have initial data (even null), we are not loading.
+    // If not, we fall back to hook's loading state.
+    const isLoading = initialSeoData !== undefined ? false : loading;
+
+    if (isLoading) {
         return (
             <Head>
                 <title>Loading...</title>

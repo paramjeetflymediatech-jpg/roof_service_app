@@ -4,14 +4,35 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function SolarPanelsPage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('solar-panels');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Solar Panels SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function SolarPanelsPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="solar-panels" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-            backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: "center",
         }}
       >
@@ -50,7 +71,7 @@ export default function SolarPanelsPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                  src="/assets/Solar.jpg" 
+                  src="/assets/Solar.jpg"
                   alt="Solar Panel Installation"
                   className="w-full h-[400px] object-cover"
                 />

@@ -4,14 +4,35 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function EPDMPage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('epdm');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching EPDM SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function EPDMPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="epdm" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-            backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: "center",
         }}
       >
@@ -50,7 +71,7 @@ export default function EPDMPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                 src="/assets/Epdm.jpg"
+                  src="/assets/Epdm.jpg"
                   alt="EPDM Roofing"
                   className="w-full h-[400px] object-cover"
                 />

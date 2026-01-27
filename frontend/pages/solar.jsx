@@ -1,10 +1,30 @@
 import { motion } from 'framer-motion';
 import Layout from '@/components/LayoutShell';
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
+export async function getServerSideProps() {
+    try {
+        const data = await getSeoData('solar');
+        return {
+            props: {
+                seoData: data.success ? data.data : null,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching Solar SEO data:', error);
+        return {
+            props: {
+                seoData: null,
+            },
+        };
+    }
+}
 
-export default function SolarPage() {
+export default function SolarPage({ seoData }) {
     return (
         <Layout>
+            <SeoHead pageName="solar" initialSeoData={seoData} />
             {/* Page Hero */}
             <section className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white py-24">
                 <div className="container-custom text-center">

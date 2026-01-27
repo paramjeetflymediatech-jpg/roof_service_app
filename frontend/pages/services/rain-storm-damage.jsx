@@ -4,14 +4,35 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function RainStormDamagePage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('rain-storm-damage');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Rain/Storm Damage SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function RainStormDamagePage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="rain-storm-damage" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-         backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: "center",
         }}
       >

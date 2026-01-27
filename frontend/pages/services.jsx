@@ -23,12 +23,32 @@ const SERVICE_DETAILS = {
   'Solar Panels': 'Mainstreet Roofing is a leading provider of solar panel installation and repair services, dedicated to helping you harness renewable energy.',
 };
 
-export default function ServicesPage() {
-  // Load SEO meta tags for services page
-  useSeo('services');
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
+
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('services');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Services SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function ServicesPage({ seoData }) {
 
   return (
     <LayoutShell>
+      <SeoHead pageName="services" initialSeoData={seoData} />
       {/* Hero Banner */}
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"

@@ -5,14 +5,35 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function TorchOnPage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('torch-on');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Torch On SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function TorchOnPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="torch-on" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-             backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: "center",
         }}
       >

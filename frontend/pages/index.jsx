@@ -12,8 +12,27 @@ import Services from '@/components/Services';
 import Secondsechome from '@/components/Secondsechome';
 import OurProcess from '@/components/OurProcess';
 import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function HomePage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('home');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Home SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function HomePage({ seoData }) {
   useEffect(() => {
     // Cleanup GSAP ScrollTriggers on unmount
     return () => {
@@ -23,7 +42,7 @@ export default function HomePage() {
 
   return (
     <Layout>
-      <SeoHead pageName="home" />
+      <SeoHead pageName="home" initialSeoData={seoData} />
       <Hero />
       <div id="services">
       </div>

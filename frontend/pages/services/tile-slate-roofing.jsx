@@ -5,10 +5,31 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function TileSlateRoofingPage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('tile-slate-roofing');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Tile/Slate Roofing SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function TileSlateRoofingPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="tile-slate-roofing" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
@@ -51,7 +72,7 @@ export default function TileSlateRoofingPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                   src="/assets/Tile.jpg"
+                  src="/assets/Tile.jpg"
                   alt="Tile and Slate Roofing"
                   className="w-full h-[400px] object-cover"
                 />

@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getSeoData } from '@/lib/api/seo';
 
-export const useSeo = (pageName) => {
+export const useSeo = (pageName, options = {}) => {
     const [seoData, setSeoData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!options.skip);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!pageName) return;
+        if (!pageName || options.skip) return;
 
         const fetchSeoData = async () => {
             try {
                 setLoading(true);
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                const response = await fetch(`${apiUrl}/api/seo/${pageName}`);
+                const data = await getSeoData(pageName);
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch SEO data');
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    setSeoData(result.data);
+                if (data.success) {
+                    setSeoData(data.data);
                 }
             } catch (err) {
                 console.error('SEO fetch error:', err);
@@ -32,7 +26,7 @@ export const useSeo = (pageName) => {
         };
 
         fetchSeoData();
-    }, [pageName]);
+    }, [pageName, options.skip]);
 
     return { seoData, loading, error };
 };

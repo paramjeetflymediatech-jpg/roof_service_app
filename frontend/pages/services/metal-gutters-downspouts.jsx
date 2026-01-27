@@ -5,14 +5,35 @@ import Link from "next/link";
 import { HiPhone } from "react-icons/hi";
 import { SERVICES_DROPDOWN, COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function MetalGuttersDownspoutsPage() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('metal-gutters-downspouts');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Metal Gutters SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function MetalGuttersDownspoutsPage({ seoData }) {
   return (
     <LayoutShell>
+      <SeoHead pageName="metal-gutters-downspouts" initialSeoData={seoData} />
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-            backgroundImage: "url('/assets/ban.jpg')",
+          backgroundImage: "url('/assets/ban.jpg')",
           backgroundPosition: "center",
         }}
       >
@@ -51,7 +72,7 @@ export default function MetalGuttersDownspoutsPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <img
-                 src="/assets/mattelg.jpg"
+                  src="/assets/mattelg.jpg"
                   alt="Metal Gutters and Downspouts"
                   className="w-full h-[400px] object-cover"
                 />

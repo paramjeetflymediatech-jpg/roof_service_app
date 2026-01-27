@@ -2,10 +2,31 @@ import { motion } from 'framer-motion';
 import Layout from '@/components/LayoutShell';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import { COMPANY_INFO } from '@/lib/constants';
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function CompanyPage() {
+export async function getServerSideProps() {
+    try {
+        const data = await getSeoData('company');
+        return {
+            props: {
+                seoData: data.success ? data.data : null,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching Company SEO data:', error);
+        return {
+            props: {
+                seoData: null,
+            },
+        };
+    }
+}
+
+export default function CompanyPage({ seoData }) {
     return (
         <Layout>
+            <SeoHead pageName="company" initialSeoData={seoData} />
             {/* Page Hero */}
             <section className="bg-gradient-to-br from-dark-900 to-dark-700 text-white py-24">
                 <div className="container-custom text-center">

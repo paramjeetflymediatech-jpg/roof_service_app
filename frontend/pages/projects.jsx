@@ -1,10 +1,31 @@
 import { motion } from 'framer-motion';
 import Layout from '@/components/LayoutShell';
 import FeaturedProjects from '@/components/FeaturedProjects';
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function ProjectsPage() {
+export async function getServerSideProps() {
+    try {
+        const data = await getSeoData('projects');
+        return {
+            props: {
+                seoData: data.success ? data.data : null,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching Projects SEO data:', error);
+        return {
+            props: {
+                seoData: null,
+            },
+        };
+    }
+}
+
+export default function ProjectsPage({ seoData }) {
     return (
         <Layout>
+            <SeoHead pageName="projects" initialSeoData={seoData} />
             {/* Page Hero */}
             <section className="bg-gradient-to-br from-gray-900 to-primary-900 text-white py-24">
                 <div className="container-custom text-center">

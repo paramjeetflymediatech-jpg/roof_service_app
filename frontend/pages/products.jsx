@@ -1,10 +1,31 @@
 import { motion } from 'framer-motion';
 import Layout from '@/components/LayoutShell';
 import RoofingProducts from '@/components/RoofingProducts';
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
 
-export default function ProductsPage() {
+export async function getServerSideProps() {
+    try {
+        const data = await getSeoData('products');
+        return {
+            props: {
+                seoData: data.success ? data.data : null,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching Products SEO data:', error);
+        return {
+            props: {
+                seoData: null,
+            },
+        };
+    }
+}
+
+export default function ProductsPage({ seoData }) {
     return (
         <Layout>
+            <SeoHead pageName="products" initialSeoData={seoData} />
             {/* Page Hero */}
             <section className="bg-gradient-to-br from-primary-700 to-accent-700 text-white py-24">
                 <div className="container-custom text-center">

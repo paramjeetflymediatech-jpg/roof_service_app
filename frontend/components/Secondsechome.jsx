@@ -79,7 +79,7 @@ export default function Secondsechome() {
                         <div className="h-px bg-gray-200 mb-6"></div>
 
                         <p className="text-gray-600 leading-relaxed mb-6">
-                            20 years of experience in the roofing industry, proudly serving
+                            20 years of team combined experience in the roofing industry, proudly serving
                             Accrington, Burnley, Hyndburn, Blackburn, and surrounding areas.
                             Our team offers a wide range of services, including roof
                             installations, repairs, and surveys.

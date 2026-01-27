@@ -7,12 +7,32 @@ import LayoutShell from "@/components/LayoutShell";
 import { COMPANY_INFO } from "@/lib/constants";
 import { useSeo } from '@/hooks/useSeo';
 
-export default function AboutPage() {
-  // Load SEO meta tags for about page
-  useSeo('about');
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
+
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('about');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function AboutPage({ seoData }) {
 
   return (
     <LayoutShell>
+      <SeoHead pageName="about" initialSeoData={seoData} />
       {/* Breadcrumb / Hero Section */}
       <section className="relative h-[300px] md:h-[400px] bg-dark-900 overflow-hidden">
         {/* Dark overlay with background image */}
@@ -71,16 +91,16 @@ export default function AboutPage() {
 
                 {/* Image 2: Right/Middle (Chimneys) - offset down */}
                 <motion.div
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
-                  className="rounded-lg overflow-hidden shadow-xl mt-12 z-10"
+                  className="rounded-lg overflow-hidden shadow-xl -mt-6 z-20"
                 >
                   <img
                     src="/assets/ab-roof-chimney.jpg"
                     alt="Professional Roofing Services"
-                    className="w-full h-[320px] object-cover"
+                    className="w-full h-[320px] object-cover object-center"
                   />
                 </motion.div>
 
@@ -135,7 +155,7 @@ export default function AboutPage() {
               <div className="text-gray-600 text-base md:text-lg leading-relaxed flex flex-col gap-4">
                 <p>
                   specializing in a wide range of services to meet all your roofing needs.
-                  With expertise in neroofs, metal roofing, wall metals, torch on, Edpm,
+                  With expertise in reroofs, metal roofing, wall metals, torch on, Edpm,
                   metal gutters and downspouts, leak repair, and rain and storm damage repairs
                   — Mainstreet Roofing has you covered from top to bottom.
                 </p>

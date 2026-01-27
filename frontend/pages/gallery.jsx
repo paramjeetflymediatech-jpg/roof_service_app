@@ -7,9 +7,28 @@ import LayoutShell from '@/components/LayoutShell';
 import { useState, useCallback, useEffect } from 'react';
 import { useSeo } from '@/hooks/useSeo';
 
-export default function GalleryPage() {
-  // Load SEO meta tags for gallery page
-  useSeo('gallery');
+import SeoHead from '@/components/SeoHead';
+import { getSeoData } from '@/lib/api/seo';
+
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData('gallery');
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching Gallery SEO data:', error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function GalleryPage({ seoData }) {
 
   const [selectedIndex, setSelectedIndex] = useState(null);
 
@@ -41,6 +60,7 @@ export default function GalleryPage() {
 
   return (
     <LayoutShell>
+      <SeoHead pageName="gallery" initialSeoData={seoData} />
       {/* Hero Section */}
       <div className="relative h-80 bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/assets/project-1.jpg')", backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black/60"></div>

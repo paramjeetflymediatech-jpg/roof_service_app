@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import apiClient from '@/lib/apiClient';
+import { submitLead } from '@/lib/api/leads';
 
 export default function QuoteForm() {
     const [form, setForm] = useState({
@@ -44,18 +44,17 @@ export default function QuoteForm() {
 
         try {
             setLoading(true);
-            const response = await apiClient.post('/leads', {
+            const response = await submitLead({
                 leadType: 'quote',
                 source: 'website',
                 name: form.name,
                 email: form.email,
                 phone: form.phone,
                 message: form.message,
-
             });
 
             // Show success toast
-            toast.success(response.data.message || 'Thank you! We will contact you soon.');
+            toast.success(response.message || 'Thank you! We will contact you soon.');
 
             // Reset form
             setForm({
