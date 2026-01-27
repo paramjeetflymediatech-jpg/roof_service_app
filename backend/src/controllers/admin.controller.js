@@ -539,6 +539,9 @@ const postCreateSeo = async (req, res) => {
             ogDescription,
             ogImage,
             canonicalUrl,
+            schemaMarkup,
+            googleAnalyticsId,
+            googleTagManagerId,
         } = req.body;
 
         // Validation
@@ -564,6 +567,9 @@ const postCreateSeo = async (req, res) => {
             ogDescription: ogDescription || metaDescription,
             ogImage: ogImage || '',
             canonicalUrl: canonicalUrl || '',
+            schemaMarkup: schemaMarkup || '',
+            googleAnalyticsId: googleAnalyticsId || '',
+            googleTagManagerId: googleTagManagerId || '',
         });
 
         await newSeoPage.save();
@@ -610,6 +616,9 @@ const postUpdateSeo = async (req, res) => {
             ogDescription,
             ogImage,
             canonicalUrl,
+            schemaMarkup,
+            googleAnalyticsId,
+            googleTagManagerId,
         } = req.body;
         const seoId = req.params.id;
 
@@ -633,6 +642,9 @@ const postUpdateSeo = async (req, res) => {
         seoPage.ogDescription = ogDescription || metaDescription;
         seoPage.ogImage = ogImage || '';
         seoPage.canonicalUrl = canonicalUrl || '';
+        seoPage.schemaMarkup = schemaMarkup || '';
+        seoPage.googleAnalyticsId = googleAnalyticsId || '';
+        seoPage.googleTagManagerId = googleTagManagerId || '';
 
         await seoPage.save();
 

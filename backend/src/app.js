@@ -64,6 +64,7 @@ app.use(flash());
 app.use((req, res, next) => {
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
+  res.locals.frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   next();
 });
 

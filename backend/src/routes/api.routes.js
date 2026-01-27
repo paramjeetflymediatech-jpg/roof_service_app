@@ -26,6 +26,9 @@ router.get('/seo/:pageName', async (req, res) => {
                 ogDescription: seoData.ogDescription || seoData.metaDescription,
                 ogImage: seoData.ogImage,
                 canonicalUrl: seoData.canonicalUrl,
+                schemaMarkup: seoData.schemaMarkup,
+                googleAnalyticsId: seoData.googleAnalyticsId,
+                googleTagManagerId: seoData.googleTagManagerId,
             },
         });
     } catch (error) {

@@ -241,6 +241,44 @@
                                                             page (helps prevent duplicate content)</p>
                                                     </div>
 
+                                                    <!-- Schema Markup -->
+                                                    <div>
+                                                        <label for="schemaMarkup"
+                                                            class="block text-sm font-medium text-gray-700 mb-2">
+                                                            Schema Markup (JSON-LD)
+                                                        </label>
+                                                        <textarea id="schemaMarkup" name="schemaMarkup" rows="5"
+                                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-sm"
+                                                            placeholder='{ "@context": "https://schema.org", ... }'><%= seoPage.schemaMarkup || '' %></textarea>
+                                                        <p class="text-xs text-gray-500 mt-1">Valid JSON-LD only</p>
+                                                    </div>
+
+                                                    <!-- Google Tracking -->
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                        <div>
+                                                            <label for="googleAnalyticsId"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">
+                                                                Google Analytics ID
+                                                            </label>
+                                                            <input type="text" id="googleAnalyticsId"
+                                                                name="googleAnalyticsId"
+                                                                value="<%= seoPage.googleAnalyticsId || '' %>"
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                                placeholder="G-XXXXXXXXXX">
+                                                        </div>
+                                                        <div>
+                                                            <label for="googleTagManagerId"
+                                                                class="block text-sm font-medium text-gray-700 mb-2">
+                                                                Google Tag Manager ID
+                                                            </label>
+                                                            <input type="text" id="googleTagManagerId"
+                                                                name="googleTagManagerId"
+                                                                value="<%= seoPage.googleTagManagerId || '' %>"
+                                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                                placeholder="GTM-XXXXXXX">
+                                                        </div>
+                                                    </div>
+
                                                     <!-- Submit Button -->
                                                     <div class="flex gap-4 pt-4">
                                                         <button type="submit"

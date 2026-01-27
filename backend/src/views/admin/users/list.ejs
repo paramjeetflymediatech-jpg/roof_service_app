@@ -169,8 +169,62 @@
                                                 <% } %>
                                         </div>
 
-                                        <!-- Users Table -->
-                                        <div class="table-container">
+                                        <!-- Mobile View (Cards) -->
+                                        <div class="block md:hidden space-y-4">
+                                            <% if (users && users.length> 0) { %>
+                                                <% users.forEach(user=> { %>
+                                                    <div class="bg-white rounded-lg shadow border border-gray-200 p-4">
+                                                        <div class="flex justify-between items-start mb-3">
+                                                            <div>
+                                                                <h3 class="font-semibold text-gray-900 truncate"
+                                                                    title="<%= user.name %>">
+                                                                    <%= user.name %>
+                                                                </h3>
+                                                                <p class="text-sm text-gray-500 truncate"
+                                                                    title="<%= user.email %>">
+                                                                    <%= user.email %>
+                                                                </p>
+                                                            </div>
+                                                            <span
+                                                                class="px-2 py-0.5 text-xs font-medium rounded-full <%= user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                                                <%= user.isActive ? 'Active' : 'Inactive' %>
+                                                            </span>
+                                                        </div>
+
+                                                        <div
+                                                            class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                                            <span
+                                                                class="bg-gray-100 px-2 py-1 rounded text-gray-700 font-medium text-xs">
+                                                                <%= user.role.toUpperCase() %>
+                                                            </span>
+                                                            <span>
+                                                                <%= new Date(user.createdAt).toLocaleDateString() %>
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex gap-2 pt-3 border-t border-gray-100">
+                                                            <a href="/admin/users/<%= user._id %>/edit"
+                                                                class="flex-1 text-center py-2 bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition text-sm font-medium">
+                                                                Edit
+                                                            </a>
+                                                            <button
+                                                                onclick="confirmDelete('<%= user._id %>', '<%= user.name %>')"
+                                                                class="flex-1 text-center py-2 bg-red-50 text-red-700 rounded hover:bg-red-100 transition text-sm font-medium">
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                                        <% } else { %>
+                                                            <div
+                                                                class="text-center py-8 bg-white rounded-lg border border-gray-200 text-gray-500">
+                                                                No users found
+                                                            </div>
+                                                            <% } %>
+                                        </div>
+
+                                        <!-- Desktop View (Table) -->
+                                        <div class="hidden md:block table-container text-black">
                                             <table class="data-table">
                                                 <thead>
                                                     <tr>

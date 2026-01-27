@@ -44,6 +44,18 @@ const SeoMetaSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        schemaMarkup: {
+            type: String,
+            trim: true,
+        },
+        googleAnalyticsId: {
+            type: String,
+            trim: true,
+        },
+        googleTagManagerId: {
+            type: String,
+            trim: true,
+        },
     },
     { timestamps: true }
 );

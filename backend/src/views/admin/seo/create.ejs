@@ -4,13 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %> - Admin Panel</title>
+  <title>
+    <%= title %> - Admin Panel
+  </title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/admin.css">
 
   <style>
-    html, body {
+    html,
+    body {
       width: 100%;
       overflow-x: hidden;
       background: #f8fafc;
@@ -52,188 +55,246 @@
 
 <body>
 
-<div class="admin-wrapper">
+  <div class="admin-wrapper">
 
-  <!-- Sidebar -->
-  <%- include('../../partials/sidebar') %>
+    <!-- Sidebar -->
+    <%- include('../../partials/sidebar') %>
 
-  <!-- Main Content -->
-  <main class="main-content">
+      <!-- Main Content -->
+      <main class="main-content">
 
-    <!-- Header -->
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800"><%= title %></h1>
-      <div class="text-sm text-gray-600">Welcome, <%= userName %></div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mb-4">
-      <a href="/admin/seo"
-        class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-        ← Back to SEO List
-      </a>
-    </div>
-
-    <!-- Main Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8 w-full">
-
-      <div class="mb-6">
-        <h2 class="text-xl font-semibold text-gray-800">SEO Management</h2>
-        <p class="text-sm text-gray-500">Create and manage SEO meta tags for your pages</p>
-      </div>
-
-      <form action="/admin/seo" method="POST" class="space-y-6 w-full">
-
-        <!-- Basic Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-          <!-- Page Name -->
-          <div class="w-full">
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Page Name <span class="text-red-500">*</span>
-            </label>
-            <input type="text" name="pageName" required
-              placeholder="home, about, services"
-              class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-            <p class="text-xs text-gray-400 mt-1">Unique page key (lowercase, no spaces)</p>
-          </div>
-
-          <!-- Meta Robots -->
-          <div class="w-full">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Meta Robots</label>
-            <select name="metaRobots"
-              class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-              <option value="index, follow">Index, Follow</option>
-              <option value="noindex, follow">No Index, Follow</option>
-              <option value="index, nofollow">Index, No Follow</option>
-              <option value="noindex, nofollow">No Index, No Follow</option>
-            </select>
-          </div>
-
-        </div>
-
-        <!-- Page Title -->
-        <div class="w-full">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Page Title <span class="text-red-500">*</span>
-          </label>
-          <input type="text" id="pageTitle" name="pageTitle" required maxlength="100"
-            class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            oninput="updateCharCount('pageTitle','pageTitleCount',60); updatePreview();">
-          <div class="flex justify-between mt-1 text-xs">
-            <span class="text-gray-400">Recommended: 50–60 characters</span>
-            <span id="pageTitleCount" class="char-count">0 / 100</span>
+        <!-- Header -->
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <h1 class="text-2xl font-bold text-gray-800">
+            <%= title %>
+          </h1>
+          <div class="text-sm text-gray-600">Welcome, <%= userName %>
           </div>
         </div>
 
-        <!-- Meta Description -->
-        <div class="w-full">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Meta Description <span class="text-red-500">*</span>
-          </label>
-          <textarea id="metaDescription" name="metaDescription" rows="3" maxlength="200"
-            class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            oninput="updateCharCount('metaDescription','metaDescCount',160); updatePreview();"></textarea>
-          <div class="flex justify-between mt-1 text-xs">
-            <span class="text-gray-400">Recommended: 150–160 characters</span>
-            <span id="metaDescCount" class="char-count">0 / 200</span>
-          </div>
-        </div>
-
-        <!-- Open Graph Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-          <div class="w-full">
-            <label class="block text-sm font-medium text-gray-700 mb-1">OG Title</label>
-            <input type="text" name="ogTitle"
-              class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-          </div>
-
-          <div class="w-full">
-            <label class="block text-sm font-medium text-gray-700 mb-1">OG Image URL</label>
-            <input type="url" name="ogImage"
-              class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-          </div>
-
-        </div>
-
-        <div class="w-full">
-          <label class="block text-sm font-medium text-gray-700 mb-1">OG Description</label>
-          <textarea name="ogDescription" rows="2"
-            class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-        </div>
-
-        <!-- Canonical URL -->
-        <div class="w-full">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
-          <input type="url" name="canonicalUrl"
-            class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-        </div>
-
-        <!-- SEO Preview (Google Style) -->
-        <div class="bg-gray-50 border rounded-xl p-4 mt-4">
-          <p class="text-xs text-gray-500 mb-2">Google Search Preview</p>
-          <h3 id="previewTitle" class="text-blue-700 text-lg font-medium truncate">
-            Your Page Title
-          </h3>
-          <p class="text-green-700 text-sm">
-            https://yourdomain.com/<span id="previewSlug">page</span>
-          </p>
-          <p id="previewDesc" class="text-gray-700 text-sm mt-1 line-clamp-2">
-            Your meta description will appear here...
-          </p>
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-4">
-          <button type="submit"
-            class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-            Save SEO
-          </button>
+        <!-- Back Button -->
+        <div class="mb-4">
           <a href="/admin/seo"
-            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-            Cancel
+            class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+            ← Back to SEO List
           </a>
         </div>
 
-      </form>
-    </div>
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8 w-full">
 
-  </main>
-</div>
+          <div class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">SEO Management</h2>
+            <p class="text-sm text-gray-500">Create and manage SEO meta tags for your pages</p>
+          </div>
 
-<script>
-  function updateCharCount(inputId, countId, recommendedLength) {
-    const input = document.getElementById(inputId);
-    const counter = document.getElementById(countId);
-    const length = input.value.length;
-    const maxLength = input.getAttribute('maxlength');
+          <form action="/admin/seo" method="POST" class="space-y-6 w-full">
 
-    counter.textContent = `${length} / ${maxLength}`;
-    counter.classList.remove('warning', 'danger');
+            <!-- Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-    if (length > recommendedLength && length < maxLength) {
-      counter.classList.add('warning');
-    } else if (length >= maxLength) {
-      counter.classList.add('danger');
+              <!-- Page Name -->
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Page Name <span class="text-red-500">*</span>
+                </label>
+                <select name="pageName" required
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                  <option value="" disabled selected>Select a page...</option>
+
+                  <!-- Main Pages -->
+                  <optgroup label="Main Pages">
+                    <option value="home">Home</option>
+                    <option value="about">About Us</option>
+                    <option value="services">Services (Main)</option>
+                    <option value="gallery">Gallery</option>
+                    <option value="projects">Projects</option>
+                    <option value="products">Products</option>
+                    <option value="company">Company</option>
+                    <option value="solar">Solar (Main)</option>
+                    <option value="contact">Contact Us</option>
+                  </optgroup>
+
+                  <!-- Service Pages -->
+                  <optgroup label="Services">
+                    <option value="new-construction">New Construction</option>
+                    <option value="reroofs">Reroofs</option>
+                    <option value="metal-roofing">Metal Roofing</option>
+                    <option value="wall-metals">Wall Metals</option>
+                    <option value="torch-on">Torch On</option>
+                    <option value="epdm">EPDM</option>
+                    <option value="metal-gutters-downspouts">Metal Gutters & Downspouts</option>
+                    <option value="leak-repair">Leak Repair</option>
+                    <option value="tile-slate-roofing">Tile & Slate Roofing</option>
+                    <option value="rain-storm-damage">Rain & Storm Damage</option>
+                    <option value="insulation">Insulation</option>
+                    <option value="restorations-servicing">Restorations Servicing</option>
+                    <option value="solar-panels">Solar Panels</option>
+                  </optgroup>
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Select the page you want to configure SEO for.</p>
+              </div>
+
+              <!-- Meta Robots -->
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Meta Robots</label>
+                <select name="metaRobots"
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                  <option value="index, follow">Index, Follow</option>
+                  <option value="noindex, follow">No Index, Follow</option>
+                  <option value="index, nofollow">Index, No Follow</option>
+                  <option value="noindex, nofollow">No Index, No Follow</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Page Title -->
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Page Title <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="pageTitle" name="pageTitle" required maxlength="100"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                oninput="updateCharCount('pageTitle','pageTitleCount',60); updatePreview();">
+              <div class="flex justify-between mt-1 text-xs">
+                <span class="text-gray-400">Recommended: 50–60 characters</span>
+                <span id="pageTitleCount" class="char-count">0 / 100</span>
+              </div>
+            </div>
+
+            <!-- Meta Description -->
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Meta Description <span class="text-red-500">*</span>
+              </label>
+              <textarea id="metaDescription" name="metaDescription" rows="3" maxlength="200"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                oninput="updateCharCount('metaDescription','metaDescCount',160); updatePreview();"></textarea>
+              <div class="flex justify-between mt-1 text-xs">
+                <span class="text-gray-400">Recommended: 150–160 characters</span>
+                <span id="metaDescCount" class="char-count">0 / 200</span>
+              </div>
+            </div>
+
+            <!-- Open Graph Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">OG Title</label>
+                <input type="text" name="ogTitle"
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">OG Image URL</label>
+                <input type="url" name="ogImage"
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+
+            </div>
+
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">OG Description</label>
+              <textarea name="ogDescription" rows="2"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+            </div>
+
+            <!-- Canonical URL -->
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
+              <input type="url" name="canonicalUrl"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <!-- Schema Markup -->
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Schema Markup (JSON-LD)</label>
+              <textarea name="schemaMarkup" rows="5"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-sm"
+                placeholder='{ "@context": "https://schema.org", ... }'></textarea>
+              <p class="text-xs text-gray-400 mt-1">Provide valid JSON-LD structure.</p>
+            </div>
+
+            <!-- Google Tracking -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Google Analytics ID</label>
+                <input type="text" name="googleAnalyticsId" placeholder="G-XXXXXXXXXX"
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+              <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Google Tag Manager ID</label>
+                <input type="text" name="googleTagManagerId" placeholder="GTM-XXXXXXX"
+                  class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+            </div>
+
+            <!-- SEO Preview (Google Style) -->
+            <div class="bg-gray-50 border rounded-xl p-4 mt-4">
+              <p class="text-xs text-gray-500 mb-2">Google Search Preview</p>
+              <h3 id="previewTitle" class="text-blue-700 text-lg font-medium truncate">
+                Your Page Title
+              </h3>
+              <p class="text-green-700 text-sm">
+                https://yourdomain.com/<span id="previewSlug">page</span>
+              </p>
+              <p id="previewDesc" class="text-gray-700 text-sm mt-1 line-clamp-2">
+                Your meta description will appear here...
+              </p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+              <button type="submit"
+                class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                Save SEO
+              </button>
+              <a href="/admin/seo"
+                class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                Cancel
+              </a>
+            </div>
+
+          </form>
+        </div>
+
+      </main>
+  </div>
+
+  <script>
+    function updateCharCount(inputId, countId, recommendedLength) {
+      const input = document.getElementById(inputId);
+      const counter = document.getElementById(countId);
+      const length = input.value.length;
+      const maxLength = input.getAttribute('maxlength');
+
+      counter.textContent = `${length} / ${maxLength}`;
+      counter.classList.remove('warning', 'danger');
+
+      if (length > recommendedLength && length < maxLength) {
+        counter.classList.add('warning');
+      } else if (length >= maxLength) {
+        counter.classList.add('danger');
+      }
     }
-  }
 
-  function updatePreview() {
-    const title = document.getElementById('pageTitle').value || "Your Page Title";
-    const desc = document.getElementById('metaDescription').value || "Your meta description will appear here...";
-    const slug = document.querySelector('input[name="pageName"]').value || "page";
+    function updatePreview() {
+      const title = document.getElementById('pageTitle').value || "Your Page Title";
+      const desc = document.getElementById('metaDescription').value || "Your meta description will appear here...";
+      const slug = document.querySelector('select[name="pageName"]').value || "page";
 
-    document.getElementById('previewTitle').innerText = title;
-    document.getElementById('previewDesc').innerText = desc;
-    document.getElementById('previewSlug').innerText = slug;
-  }
+      document.getElementById('previewTitle').innerText = title;
+      document.getElementById('previewDesc').innerText = desc;
+      document.getElementById('previewSlug').innerText = slug;
+    }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    updateCharCount('pageTitle', 'pageTitleCount', 60);
-    updateCharCount('metaDescription', 'metaDescCount', 160);
-  });
-</script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateCharCount('pageTitle', 'pageTitleCount', 60);
+      updateCharCount('metaDescription', 'metaDescCount', 160);
+    });
+  </script>
 
 </body>
+
 </html>
