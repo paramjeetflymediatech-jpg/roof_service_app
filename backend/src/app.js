@@ -21,6 +21,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3001",
   "http://localhost:3000", // Add frontend local port
+  "exp://localhost:8081", // React Native Expo
+  "exp://127.0.0.1:8081", // React Native localhost
   process.env.BACKEND_URL || "http://localhost:5000",
 ].filter(Boolean);
 

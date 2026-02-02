@@ -71,8 +71,9 @@ const Lead = sequelize.define('Lead', {
     type: DataTypes.ENUM('website', 'mobile_app', 'other'),
     defaultValue: 'website',
   },
+  // Mobile app status flow: new -> pending -> reviewed -> approved -> assigned -> in_progress -> completed
   status: {
-    type: DataTypes.ENUM('new', 'in_progress', 'quoted', 'closed_won', 'closed_lost', 'spam'),
+    type: DataTypes.ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
     defaultValue: 'new',
   },
   assignedToId: {
@@ -82,6 +83,33 @@ const Lead = sequelize.define('Lead', {
       model: 'users',
       key: 'id',
     },
+  },
+  // Employee time tracking
+  inTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  outTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  employeeNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  // Client images for quote request
+  clientImages: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
+  // Completion images from employee
+  completionImages: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
+  preferredDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
   },
 }, {
   tableName: 'leads',

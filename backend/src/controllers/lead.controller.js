@@ -1,5 +1,5 @@
-const { Lead, Service } = require('../models');
-const { sendLeadNotification, sendCustomerConfirmation } = require('../../services/emailService');
+const { Lead, Service, User } = require('../models');
+const { sendLeadNotification, sendCustomerConfirmation, sendAssignmentEmail } = require('../../services/emailService');
 
 // Create new lead (contact / quote)
 exports.createLead = async (req, res, next) => {
@@ -8,6 +8,16 @@ exports.createLead = async (req, res, next) => {
 
     if (!payload.name) {
       return res.status(400).json({ message: 'Name is required' });
+    }
+
+    // Set source to mobile_app if not specified
+    if (!payload.source) {
+      payload.source = 'mobile_app';
+    }
+
+    // Set initial status for quotes
+    if (payload.leadType === 'quote') {
+      payload.status = 'pending';
     }
 
     // Create lead
@@ -44,6 +54,7 @@ exports.getLeads = async (req, res, next) => {
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.leadType) where.leadType = req.query.leadType;
+    if (req.query.assignedToId) where.assignedToId = req.query.assignedToId;
 
     const [items, total] = await Promise.all([
       Lead.findAll({
@@ -73,6 +84,73 @@ exports.getLeadById = async (req, res, next) => {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: 'Lead not found' });
     res.json(lead.dataValues || lead);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Update lead (admin review, approve, reject)
+exports.updateLead = async (req, res, next) => {
+  try {
+    const lead = await Lead.findByPk(req.params.id);
+    if (!lead) return res.status(404).json({ message: 'Lead not found' });
+
+    await lead.update(req.body);
+
+    res.json({
+      success: true,
+      message: 'Lead updated successfully',
+      lead: lead.dataValues || lead,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Assign lead to employee
+exports.assignLead = async (req, res, next) => {
+  try {
+    const { employeeId } = req.body;
+    const lead = await Lead.findByPk(req.params.id);
+    
+    if (!lead) return res.status(404).json({ message: 'Lead not found' });
+
+    const employee = await User.findByPk(employeeId);
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    await lead.update({
+      assignedToId: employeeId,
+      status: 'assigned',
+    });
+
+    // Send email notification to employee
+    sendAssignmentEmail(employee, lead).catch(err => console.error('Assignment email error:', err));
+
+    res.json({
+      success: true,
+      message: 'Lead assigned successfully',
+      lead: lead.dataValues || lead,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get leads assigned to employee
+exports.getEmployeeLeads = async (req, res, next) => {
+  try {
+    const { employeeId } = req.params;
+    
+    const leads = await Lead.findAll({
+      where: { assignedToId: employeeId },
+      order: [['createdAt', 'DESC']],
+      raw: true,
+    });
+
+    res.json({
+      success: true,
+      items: leads,
+    });
   } catch (err) {
     next(err);
   }
