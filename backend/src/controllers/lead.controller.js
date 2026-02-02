@@ -1,4 +1,4 @@
-const Lead = require('../models/Lead');
+const { Lead, Service } = require('../models');
 const { sendLeadNotification, sendCustomerConfirmation } = require('../../services/emailService');
 
 // Create new lead (contact / quote)
@@ -20,11 +20,11 @@ exports.createLead = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Thank you! We will contact you soon.',
-      lead,
+      lead: lead.dataValues || lead,
     });
   } catch (err) {
-    // Handle duplicate email error
-    if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+    // Handle unique constraint error (SequelizeValidationError or SequelizeUniqueConstraintError)
+    if (err.name === 'SequelizeUniqueConstraintError' && err.errors && err.errors[0] && err.errors[0].path === 'email') {
       return res.status(400).json({
         success: false,
         message: 'This email has already been submitted. Please use a different email or contact us directly.',
@@ -39,15 +39,21 @@ exports.getLeads = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const filter = {};
-    if (req.query.status) filter.status = req.query.status;
-    if (req.query.leadType) filter.leadType = req.query.leadType;
+    const where = {};
+    if (req.query.status) where.status = req.query.status;
+    if (req.query.leadType) where.leadType = req.query.leadType;
 
     const [items, total] = await Promise.all([
-      Lead.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Lead.countDocuments(filter),
+      Lead.findAll({
+        where,
+        order: [['createdAt', 'DESC']],
+        limit: limit,
+        offset: offset,
+        raw: true,
+      }),
+      Lead.count({ where }),
     ]);
 
     res.json({
@@ -64,9 +70,9 @@ exports.getLeads = async (req, res, next) => {
 // Get single lead by id
 exports.getLeadById = async (req, res, next) => {
   try {
-    const lead = await Lead.findById(req.params.id);
+    const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: 'Lead not found' });
-    res.json(lead);
+    res.json(lead.dataValues || lead);
   } catch (err) {
     next(err);
   }

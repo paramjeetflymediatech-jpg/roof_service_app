@@ -5,12 +5,11 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const cookieParser = require('cookie-parser');
-const { MongoStore } = require('connect-mongo');
+const MySQLStore = require('connect-mysql');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
-const app = express();
-
+const app = express(); 
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -22,7 +21,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3001",
   "http://localhost:3000", // Add frontend local port
-  process.env.BACKEND_URL || "http://localhost:4000",
+  process.env.BACKEND_URL || "http://localhost:5000",
 ].filter(Boolean);
 
 app.use(
@@ -41,14 +40,20 @@ app.use(cookieParser());
 
 // Session middleware
 app.use(session({
-  secret: 'roof-service-secret-key-123',
+  secret: process.env.SESSION_SECRET || 'roof-service-secret-key-123',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/roof_service',
-    collectionName: 'sessions',
-    ttl: 24 * 60 * 60 // 1 day
-  }),
+  // store: new MySQLStore({
+  //   config: {
+  //     host: process.env.MYSQL_HOST || 'localhost',
+  //     port: process.env.MYSQL_PORT || 3306,
+  //     user: process.env.MYSQL_USER || 'root',
+  //     password: process.env.MYSQL_PASSWORD || 'Param@1102',
+  //     database: process.env.MYSQL_DATABASE || 'roof_service'
+  //   },
+  //   table: 'sessions',
+  //   ttl: 86400 // 1 day in seconds
+  // }),
   cookie: {
     secure: false, // false for localhost
     httpOnly: true,

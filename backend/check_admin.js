@@ -1,19 +1,20 @@
-const mongoose = require('mongoose');
-const User = require('./src/models/User');
+const { User } = require('./src/models');
+const connectDB = require('./src/config/db');
 require('dotenv').config();
 
-const connectDB = async () => {
+const checkAdmin = async () => {
     try {
-        await mongoose.connect('mongodb://localhost:27017/roof_service');
-        console.log('MongoDB Connected');
+        // Connect to MySQL
+        await connectDB();
+        console.log('MySQL Connected');
 
         const email = 'admin@roofservice.com';
         const password = 'Admin@123';
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ where: { email } });
 
         if (user) {
-            console.log('Admin user exists:', user.email);
+            console.log(`Admin user exists: ${user.email}`);
             // Verify password
             const isMatch = await user.comparePassword(password);
             console.log('Password match:', isMatch);
@@ -26,14 +27,13 @@ const connectDB = async () => {
             }
         } else {
             console.log('Admin user not found. Creating...');
-            user = new User({
+            user = await User.create({
                 name: 'Admin User',
-                email,
-                password,
+                email: email,
+                password: password,
                 role: 'admin',
                 isActive: true
             });
-            await user.save();
             console.log('Admin user created.');
         }
 
@@ -44,4 +44,4 @@ const connectDB = async () => {
     }
 };
 
-connectDB();
+checkAdmin();

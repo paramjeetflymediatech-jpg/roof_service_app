@@ -1,63 +1,77 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/mysql');
 
-const SeoMetaSchema = new mongoose.Schema(
-    {
-        pageName: {
-            type: String,
-            required: [true, 'Page name is required'],
-            unique: true,
-            trim: true,
-            lowercase: true,
-        },
-        pageTitle: {
-            type: String,
-            required: [true, 'Page title is required'],
-            trim: true,
-            maxlength: [100, 'Page title cannot exceed 100 characters'],
-        },
-        metaDescription: {
-            type: String,
-            required: [true, 'Meta description is required'],
-            trim: true,
-            maxlength: [200, 'Meta description cannot exceed 200 characters'],
-        },
-        metaRobots: {
-            type: String,
-            default: 'index, follow',
-            trim: true,
-        },
-        ogTitle: {
-            type: String,
-            trim: true,
-            maxlength: [100, 'OG title cannot exceed 100 characters'],
-        },
-        ogDescription: {
-            type: String,
-            trim: true,
-            maxlength: [200, 'OG description cannot exceed 200 characters'],
-        },
-        ogImage: {
-            type: String,
-            trim: true,
-        },
-        canonicalUrl: {
-            type: String,
-            trim: true,
-        },
-        schemaMarkup: {
-            type: String,
-            trim: true,
-        },
-        googleAnalyticsId: {
-            type: String,
-            trim: true,
-        },
-        googleTagManagerId: {
-            type: String,
-            trim: true,
-        },
+const SeoMeta = sequelize.define('SeoMeta', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  pageName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: { msg: 'Page name is required' },
     },
-    { timestamps: true }
-);
+  },
+  pageTitle: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: 'Page title is required' },
+      len: { args: [0, 100], msg: 'Page title cannot exceed 100 characters' },
+    },
+  },
+  metaDescription: {
+    type: DataTypes.STRING(200),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: 'Meta description is required' },
+      len: { args: [0, 200], msg: 'Meta description cannot exceed 200 characters' },
+    },
+  },
+  metaRobots: {
+    type: DataTypes.STRING,
+    defaultValue: 'index, follow',
+  },
+  ogTitle: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    validate: {
+      len: { args: [0, 100], msg: 'OG title cannot exceed 100 characters' },
+    },
+  },
+  ogDescription: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+    validate: {
+      len: { args: [0, 200], msg: 'OG description cannot exceed 200 characters' },
+    },
+  },
+  ogImage: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  canonicalUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  schemaMarkup: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  googleAnalyticsId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  googleTagManagerId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+}, {
+  tableName: 'seo_metas',
+  timestamps: true,
+});
 
-module.exports = mongoose.model('SeoMeta', SeoMetaSchema);
+module.exports = SeoMeta;

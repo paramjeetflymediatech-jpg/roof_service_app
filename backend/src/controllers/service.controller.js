@@ -1,10 +1,10 @@
-const Service = require('../models/Service');
+const { Service } = require('../models');
 
 // Create new service
 exports.createService = async (req, res, next) => {
   try {
     const service = await Service.create(req.body);
-    res.status(201).json(service);
+    res.status(201).json(service.dataValues || service);
   } catch (err) {
     next(err);
   }
@@ -15,11 +15,16 @@ exports.getServices = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
-      Service.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Service.countDocuments(),
+      Service.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: limit,
+        offset: offset,
+        raw: true,
+      }),
+      Service.count(),
     ]);
 
     res.json({
@@ -36,9 +41,9 @@ exports.getServices = async (req, res, next) => {
 // Get single service by id
 exports.getServiceById = async (req, res, next) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findByPk(req.params.id);
     if (!service) return res.status(404).json({ message: 'Service not found' });
-    res.json(service);
+    res.json(service.dataValues || service);
   } catch (err) {
     next(err);
   }
@@ -47,12 +52,13 @@ exports.getServiceById = async (req, res, next) => {
 // Update service
 exports.updateService = async (req, res, next) => {
   try {
-    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const service = await Service.findByPk(req.params.id);
     if (!service) return res.status(404).json({ message: 'Service not found' });
-    res.json(service);
+
+    await Service.update(req.body, { where: { id: req.params.id } });
+
+    const updatedService = await Service.findByPk(req.params.id);
+    res.json(updatedService.dataValues || updatedService);
   } catch (err) {
     next(err);
   }
@@ -61,8 +67,10 @@ exports.updateService = async (req, res, next) => {
 // Delete service
 exports.deleteService = async (req, res, next) => {
   try {
-    const service = await Service.findByIdAndDelete(req.params.id);
+    const service = await Service.findByPk(req.params.id);
     if (!service) return res.status(404).json({ message: 'Service not found' });
+
+    await Service.destroy({ where: { id: req.params.id } });
     res.json({ message: 'Service deleted' });
   } catch (err) {
     next(err);
