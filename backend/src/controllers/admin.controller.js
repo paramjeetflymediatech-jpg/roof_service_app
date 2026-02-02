@@ -2,6 +2,7 @@ const { User, Lead, Service, SeoMeta } = require('../models');
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
+    console.log(req.session,'session')
     if (req.session && req.session.userId) {
         return res.redirect('/admin/dashboard');
     }

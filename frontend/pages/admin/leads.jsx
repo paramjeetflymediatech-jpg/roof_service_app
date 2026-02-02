@@ -34,7 +34,7 @@ export default function AdminLeadsPage() {
       {!loading &&
         !error &&
         leads.map((lead) => (
-          <div key={lead._id} className="card">
+          <div key={lead.id} className="card">
             <h3>{lead.name}</h3>
             {lead.email && <p>Email: {lead.email}</p>}
             {lead.phone && <p>Phone: {lead.phone}</p>}

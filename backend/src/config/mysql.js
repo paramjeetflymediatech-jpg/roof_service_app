@@ -5,7 +5,7 @@ const sequelize = new Sequelize({
   port: process.env.MYSQL_PORT || 3306,
   database: process.env.MYSQL_DATABASE || 'roof_service',
   username: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'Param@1102',
+  password: process.env.MYSQL_PASSWORD || 'root',
   dialect: 'mysql',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {

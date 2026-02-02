@@ -1,4 +1,4 @@
-const { Service } = require('../models');
+const { Service } = require("../models");
 
 // Create new service
 exports.createService = async (req, res, next) => {
@@ -19,7 +19,7 @@ exports.getServices = async (req, res, next) => {
 
     const [items, total] = await Promise.all([
       Service.findAll({
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
         limit: limit,
         offset: offset,
         raw: true,
@@ -42,7 +42,7 @@ exports.getServices = async (req, res, next) => {
 exports.getServiceById = async (req, res, next) => {
   try {
     const service = await Service.findByPk(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
+    if (!service) return res.status(404).json({ message: "Service not found" });
     res.json(service.dataValues || service);
   } catch (err) {
     next(err);
@@ -53,7 +53,7 @@ exports.getServiceById = async (req, res, next) => {
 exports.updateService = async (req, res, next) => {
   try {
     const service = await Service.findByPk(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
+    if (!service) return res.status(404).json({ message: "Service not found" });
 
     await Service.update(req.body, { where: { id: req.params.id } });
 
@@ -68,10 +68,10 @@ exports.updateService = async (req, res, next) => {
 exports.deleteService = async (req, res, next) => {
   try {
     const service = await Service.findByPk(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
+    if (!service) return res.status(404).json({ message: "Service not found" });
 
     await Service.destroy({ where: { id: req.params.id } });
-    res.json({ message: 'Service deleted' });
+    res.json({ message: "Service deleted" });
   } catch (err) {
     next(err);
   }

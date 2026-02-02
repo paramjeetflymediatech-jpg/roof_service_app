@@ -2,13 +2,13 @@
  * MySQL Migration Script
  * Creates initial tables for the roof_service_app
  *
- * Tables: users, leads, services, seo_metas
+ * Tables: users, services, leads, seo_metas, sessions
  *
  * Run with: node src/database/migrations/001_create_initial_tables.js
  */
 const dotenv = require("dotenv");
 dotenv.config();
-const mysql = require("mysql2/promise");
+const mysql = require("mysql2/promise"); // use promise API
 
 async function runMigration() {
   // Database connection configuration
@@ -17,7 +17,7 @@ async function runMigration() {
     port: process.env.MYSQL_PORT || 3306,
     database: process.env.MYSQL_DATABASE || "roof_service",
     user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || "Param@1102",
+    password: process.env.MYSQL_PASSWORD || "root",
   });
 
   console.log("Connected to MySQL database");
@@ -43,9 +43,7 @@ async function runMigration() {
         role ENUM('admin', 'user') DEFAULT 'user',
         is_active BOOLEAN DEFAULT TRUE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_email (email),
-        INDEX idx_role (role)
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
@@ -66,14 +64,11 @@ async function runMigration() {
         status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
         seo JSON,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_slug (slug),
-        INDEX idx_status (status),
-        INDEX idx_category_id (category_id)
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-    // Create leads table
+    // Create leads table with all fields from your Sequelize model
     console.log("Creating leads table...");
     await connection.query(`
       CREATE TABLE leads (
@@ -92,16 +87,16 @@ async function runMigration() {
         hear_about_us VARCHAR(255),
         service_id INT,
         source ENUM('website', 'mobile_app', 'other') DEFAULT 'website',
-        status ENUM('new', 'in_progress', 'quoted', 'closed_won', 'closed_lost', 'spam') DEFAULT 'new',
+        status ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled') DEFAULT 'new',
         assigned_to_id INT,
+        in_time DATETIME NULL,
+        out_time DATETIME NULL,
+        employee_notes TEXT NULL,
+        client_images JSON NULL,
+        completion_images JSON NULL,
+        preferred_date DATETIME NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_email (email),
-        INDEX idx_phone (phone),
-        INDEX idx_status (status),
-        INDEX idx_service_id (service_id),
-        INDEX idx_assigned_to_id (assigned_to_id),
-        INDEX idx_created_at (created_at),
         FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL,
         FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -124,12 +119,11 @@ async function runMigration() {
         google_analytics_id VARCHAR(255),
         google_tag_manager_id VARCHAR(255),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_page_name (page_name)
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-    // Create sessions table for express-session storage
+    // Create sessions table for express-session
     console.log("Creating sessions table...");
     await connection.query(`
       CREATE TABLE sessions (
@@ -140,13 +134,7 @@ async function runMigration() {
     `);
 
     console.log("✅ Migration completed successfully!");
-    console.log("");
-    console.log("Created tables:");
-    console.log("  - users");
-    console.log("  - services");
-    console.log("  - leads");
-    console.log("  - seo_metas");
-    console.log("  - sessions");
+    console.log("Created tables: users, services, leads, seo_metas, sessions");
   } catch (error) {
     console.error("❌ Migration failed:", error.message);
     throw error;
