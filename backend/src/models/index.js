@@ -6,6 +6,8 @@ const User = require('./User');
 const Lead = require('./Lead');
 const Service = require('./Service');
 const SeoMeta = require('./SeoMeta');
+const Job = require('./Job');
+const JobLog = require('./JobLog');
 
 // Define associations
 // Lead associations
@@ -16,11 +18,30 @@ Lead.belongsTo(User, { foreignKey: 'assignedToId', as: 'assignedTo' });
 Service.hasMany(Lead, { foreignKey: 'serviceId', as: 'leads' });
 User.hasMany(Lead, { foreignKey: 'assignedToId', as: 'assignedLeads' });
 
+// Job associations
+Job.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });
+Job.belongsTo(User, { foreignKey: 'employeeId', as: 'employee' });
+Job.belongsTo(User, { foreignKey: 'assignedById', as: 'assignedBy' });
+Job.hasMany(JobLog, { foreignKey: 'jobId', as: 'logs' });
+
+// JobLog associations
+JobLog.belongsTo(Job, { foreignKey: 'jobId', as: 'job' });
+JobLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// User job associations
+User.hasMany(Job, { foreignKey: 'employeeId', as: 'employeeJobs' });
+User.hasMany(Job, { foreignKey: 'assignedById', as: 'assignedJobs' });
+
+// Lead job association
+Lead.hasMany(Job, { foreignKey: 'leadId', as: 'jobs' });
+
 // Export sequelize and models
 module.exports = {
   sequelize,
   User,
   Lead,
   Service,
-  SeoMeta
+  SeoMeta,
+  Job,
+  JobLog
 };

@@ -80,10 +80,16 @@ const OnboardingScreen = ({ navigation }) => {
           style={styles.button}
         />
 
-        <Text style={styles.helperText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('AdminDashboard')}>
+        {/* <Text style={styles.helperText}>Already have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={styles.LoginText}> You can Login</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={styles.helperText}>
+          <Text style={styles.LoginText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.loginLink}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </View>
   );
@@ -139,16 +145,20 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   helperText: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
   },
   LoginText: {
-    fontSize: 12,
-    color: 'blue',
-    // textAlign: 'center',
-    marginTop: 5,
+    fontSize: 14,
+    color: COLORS.textLight,
+  },
+
+  loginLink: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
 

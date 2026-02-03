@@ -7,12 +7,15 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import Input from '../components/Input';
 import Button from '../components/Button';
 import ImagePicker from '../components/ImagePicker';
 import { COLORS } from '../utils/constants';
+import { api } from '../config/api';
 
 const serviceTypes = [
   'Roof Repair',
@@ -28,6 +31,7 @@ const serviceTypes = [
 
 const ClientQuoteScreen = () => {
   const navigation = useNavigation();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,26 +42,32 @@ const ClientQuoteScreen = () => {
     description: '',
     preferredDate: '',
   });
+
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors({ ...errors, [field]: null });
+      setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.name) newErrors.name = 'Name is required';
     if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email';
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = 'Invalid email';
     if (!formData.phone) newErrors.phone = 'Phone is required';
     if (!formData.address) newErrors.address = 'Address is required';
-    if (!formData.serviceType) newErrors.serviceType = 'Please select a service';
-    if (!formData.description) newErrors.description = 'Description is required';
+    if (!formData.serviceType)
+      newErrors.serviceType = 'Please select a service';
+    if (!formData.description)
+      newErrors.description = 'Description is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,14 +76,35 @@ const ClientQuoteScreen = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+
     try {
-      // Replace with actual API call
-      // const response = await api.createLead({ ...formData, images });
-      
-      // Simulate image upload if images exist
-      if (images.length > 0) {
-        // const uploadResponse = await api.uploadImage(formData);
-      }
+      const payload = new FormData();
+
+      // text fields
+      Object.keys(formData).forEach(key => {
+        if (formData[key]) {
+          payload.append(key, formData[key]);
+        }
+      });
+
+      // required backend fields
+      payload.append('leadType', 'quote');
+      payload.append('source', 'mobile_app');
+
+      // images
+      images.forEach((img, index) => {
+        payload.append('images', {
+          uri: img.uri,
+          name: img.fileName || `image_${index}.jpg`,
+          type: img.type || 'image/jpeg',
+        });
+      });
+
+      await api.createLead(payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       Alert.alert(
         'Success',
@@ -96,9 +127,10 @@ const ClientQuoteScreen = () => {
               navigation.goBack();
             },
           },
-        ]
+        ],
       );
     } catch (error) {
+      console.log('Submit error:', error?.response || error);
       Alert.alert('Error', 'Failed to submit quote. Please try again.');
     } finally {
       setLoading(false);
@@ -113,7 +145,7 @@ const ClientQuoteScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Request a Quote</Text>
         <Text style={styles.subtitle}>
-          Fill out the form below and we'll get back to you within 24 hours.
+          Fill out the form below and we’ll get back to you within 24 hours.
         </Text>
 
         <View style={styles.form}>
@@ -121,15 +153,16 @@ const ClientQuoteScreen = () => {
             label="Full Name"
             placeholder="Enter your full name"
             value={formData.name}
-            onChangeText={(value) => handleInputChange('name', value)}
+            onChangeText={value => handleInputChange('name', value)}
             error={errors.name}
+            minLength={2}
           />
 
           <Input
             label="Email"
             placeholder="Enter your email"
             value={formData.email}
-            onChangeText={(value) => handleInputChange('email', value)}
+            onChangeText={value => handleInputChange('email', value)}
             keyboardType="email-address"
             autoCapitalize="none"
             error={errors.email}
@@ -139,8 +172,10 @@ const ClientQuoteScreen = () => {
             label="Phone"
             placeholder="Enter your phone number"
             value={formData.phone}
-            onChangeText={(value) => handleInputChange('phone', value)}
+            onChangeText={value => handleInputChange('phone', value)}
             keyboardType="phone-pad"
+            maxLength={15}
+            minLength={6}
             error={errors.phone}
           />
 
@@ -148,7 +183,7 @@ const ClientQuoteScreen = () => {
             label="Address"
             placeholder="Enter your property address"
             value={formData.address}
-            onChangeText={(value) => handleInputChange('address', value)}
+            onChangeText={value => handleInputChange('address', value)}
             error={errors.address}
           />
 
@@ -156,25 +191,28 @@ const ClientQuoteScreen = () => {
             label="City"
             placeholder="Enter your city"
             value={formData.city}
-            onChangeText={(value) => handleInputChange('city', value)}
+            onChangeText={value => handleInputChange('city', value)}
           />
 
           <View style={styles.pickerContainer}>
             <Text style={styles.label}>Service Type</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {serviceTypes.map((service) => (
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+              {serviceTypes.map(service => (
                 <TouchableOpacity
                   key={service}
                   style={[
                     styles.serviceChip,
-                    formData.serviceType === service && styles.serviceChipSelected,
+                    formData.serviceType === service &&
+                      styles.serviceChipSelected,
                   ]}
                   onPress={() => handleInputChange('serviceType', service)}
                 >
                   <Text
                     style={[
                       styles.serviceChipText,
-                      formData.serviceType === service && styles.serviceChipTextSelected,
+                      formData.serviceType === service &&
+                        styles.serviceChipTextSelected,
                     ]}
                   >
                     {service}
@@ -182,6 +220,7 @@ const ClientQuoteScreen = () => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+
             {errors.serviceType && (
               <Text style={styles.errorText}>{errors.serviceType}</Text>
             )}
@@ -191,7 +230,7 @@ const ClientQuoteScreen = () => {
             label="Description"
             placeholder="Describe the work needed..."
             value={formData.description}
-            onChangeText={(value) => handleInputChange('description', value)}
+            onChangeText={value => handleInputChange('description', value)}
             multiline
             numberOfLines={4}
             error={errors.description}
@@ -199,9 +238,9 @@ const ClientQuoteScreen = () => {
 
           <Input
             label="Preferred Date"
-            placeholder="Select preferred date"
+            placeholder="YYYY-MM-DD"
             value={formData.preferredDate}
-            onChangeText={(value) => handleInputChange('preferredDate', value)}
+            onChangeText={value => handleInputChange('preferredDate', value)}
           />
 
           <ImagePicker
@@ -222,7 +261,7 @@ const ClientQuoteScreen = () => {
   );
 };
 
-import { TouchableOpacity } from 'react-native';
+export default ClientQuoteScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -282,8 +321,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   submitButton: {
-    marginTop: 8,
+    marginTop: 12,
   },
 });
-
-export default ClientQuoteScreen;

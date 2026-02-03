@@ -1,11 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-
-const leadController = require('../controllers/lead.controller');
+const upload = require("../middlewares/upload");
+const leadController = require("../controllers/lead.controller");
+const { jwtAuth, isAdmin } = require("../middlewares/auth.middleware");
 
 // /api/leads
-router.post('/', leadController.createLead);
-router.get('/', leadController.getLeads);
-router.get('/:id', leadController.getLeadById);
+router.post("/", upload.array("images", 5), leadController.createLead);
+router.get("/", leadController.getLeads);
+router.get("/:id", leadController.getLeadById);
+router.put("/:id", jwtAuth, isAdmin, leadController.updateLead);
+router.put("/:id/assign", jwtAuth, isAdmin, leadController.assignLead);
 
 module.exports = router;

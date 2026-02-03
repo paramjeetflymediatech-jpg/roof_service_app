@@ -12,6 +12,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import ImagePickerComponent from '../components/ImagePicker';
 import { COLORS, JOB_STATUS } from '../utils/constants';
+import { api } from '../config/api';
 
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
@@ -20,18 +21,66 @@ const EmployeeJobDetailScreen = () => {
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inTime, setInTime] = useState(null);
-  const [outTime, setOutTime] = useState(null);
+  const [inTime, setInTime] = useState(job?.inTime || null);
+  const [outTime, setOutTime] = useState(job?.outTime || null);
 
-  const handleClockIn = () => {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    setInTime(timeString);
-    setCurrentJob({ ...currentJob, status: JOB_STATUS.IN_PROGRESS, inTime: timeString });
-    Alert.alert('Clocked In', `You clocked in at ${timeString}`);
+  const handleSaveDetails = async () => {
+    if (!currentJob || currentJob.status === JOB_STATUS.COMPLETED) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const afterImages = images.map(img => ({
+        uri: img.uri,
+        fileName: img.fileName,
+        type: img.type,
+      }));
+
+      const response = await api.updateJob(currentJob.id, {
+        employeeNotes: notes,
+        afterImages,
+      });
+
+      const updated = response.data?.data || response.data || {};
+      setCurrentJob(prev => ({ ...prev, ...updated }));
+      Alert.alert('Saved', 'Job details have been updated.');
+    } catch (error) {
+      console.log('Save job details error:', error.response || error);
+      Alert.alert('Error', 'Failed to save job details. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClockIn = async () => {
+    if (currentJob.status === JOB_STATUS.IN_PROGRESS || currentJob.status === JOB_STATUS.COMPLETED) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.startJob(currentJob.id);
+      const updatedJob = response.data?.data || response.data || {};
+      const start = updatedJob.startTime || new Date().toISOString();
+      const timeString = new Date(start).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      setInTime(timeString);
+      setCurrentJob(prev => ({
+        ...prev,
+        status: JOB_STATUS.IN_PROGRESS,
+        inTime: timeString,
+      }));
+      Alert.alert('Clocked In', `You clocked in at ${timeString}`);
+    } catch (error) {
+      console.log('Clock in error:', error.response || error);
+      Alert.alert('Error', 'Failed to clock in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClockOut = () => {
@@ -61,14 +110,24 @@ const EmployeeJobDetailScreen = () => {
 
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.updateJobStatus(currentJob.id, {
-      //   status: JOB_STATUS.COMPLETED,
-      //   inTime,
-      //   outTime,
-      //   notes,
-      //   images,
-      // });
+      const afterImages = images.map(img => ({
+        uri: img.uri,
+        fileName: img.fileName,
+        type: img.type,
+      }));
+
+      const response = await api.completeJob(currentJob.id, {
+        completionNotes: notes,
+        afterImages,
+      });
+
+      console.log('Complete job response:', response.data);
+
+      setCurrentJob(prev => ({
+        ...prev,
+        status: JOB_STATUS.COMPLETED,
+        outTime,
+      }));
 
       Alert.alert(
         'Job Completed',
@@ -94,6 +153,7 @@ const EmployeeJobDetailScreen = () => {
       </View>
     );
   }
+  console.log(currentJob,'job',JOB_STATUS);
 
   const isAssigned = currentJob.status === JOB_STATUS.ASSIGNED;
   const isInProgress = currentJob.status === JOB_STATUS.IN_PROGRESS;
@@ -172,6 +232,13 @@ const EmployeeJobDetailScreen = () => {
                   numberOfLines={4}
                 />
               </View>
+
+              <Button
+                title="Save Work Details"
+                onPress={handleSaveDetails}
+                loading={loading}
+                style={styles.saveButton}
+              />
 
               <Button
                 title="Complete Job"
@@ -290,6 +357,10 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  saveButton: {
+    width: '100%',
+    marginTop: 16,
   },
   completeButton: {
     width: '100%',

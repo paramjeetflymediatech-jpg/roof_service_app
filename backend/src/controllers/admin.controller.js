@@ -436,7 +436,7 @@ const postUpdateUser = async (req, res) => {
             req.flash('error', 'User not found');
             return res.redirect('/admin/users');
         }
-
+ 
         const updateData = {
             name,
             email,

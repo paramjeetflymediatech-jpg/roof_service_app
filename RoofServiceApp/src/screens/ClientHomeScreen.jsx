@@ -5,41 +5,17 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Alert,
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
-
-// Mock data for demo
-const mockQuotes = [
-  {
-    id: '1',
-    service: 'Roof Repair',
-    address: '123 Main St, City',
-    status: 'pending',
-    date: '2024-01-15',
-    description: 'Leak in the roof after storm',
-  },
-  {
-    id: '2',
-    service: 'New Roof Installation',
-    address: '456 Oak Ave, Town',
-    status: 'approved',
-    date: '2024-01-10',
-    description: 'Complete roof replacement',
-  },
-  {
-    id: '3',
-    service: 'Gutter Cleaning',
-    address: '789 Pine Rd, Village',
-    status: 'completed',
-    date: '2024-01-05',
-    description: 'Annual gutter maintenance',
-  },
-];
 
 const ClientHomeScreen = () => {
   const { user, logout } = useAuth();
@@ -55,10 +31,30 @@ const ClientHomeScreen = () => {
   const loadQuotes = async () => {
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.getLeads();
-      setQuotes(mockQuotes);
+      const response = await api.getLeads();
+      // Backend returns { items, total, ... }
+      const allLeads = response.data?.items || [];
+      // Filter to this client's leads if email available
+      const clientLeads = user?.email
+        ? allLeads.filter(lead => lead.email?.toLowerCase() === user.email.toLowerCase())
+        : allLeads;
+
+      const mapped = clientLeads.map(lead => ({
+        id: String(lead.id),
+        service: lead.serviceType || 'Roof Service',
+        address: lead.address || lead.city || 'N/A',
+        status: lead.status,
+        date: (lead.createdAt || '').slice(0, 10),
+        description: lead.message || lead.description || '',
+        assignedEmployeeName:
+          lead.assignedEmployee?.name || lead.assignedTo?.name || null,
+        assignedEmployeePhone:
+          lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
+      }));
+
+      setQuotes(mapped);
     } catch (error) {
+      console.log('Load quotes error:', error.response || error);
       Alert.alert('Error', 'Failed to load quotes');
     } finally {
       setLoading(false);
@@ -71,7 +67,7 @@ const ClientHomeScreen = () => {
     setRefreshing(false);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
       case LEAD_STATUS.PENDING:
         return COLORS.warning;
@@ -89,6 +85,7 @@ const ClientHomeScreen = () => {
 
   const handleLogout = async () => {
     await logout();
+    navigation.navigate('Login');
   };
 
   const renderQuoteItem = ({ item }) => (
@@ -99,6 +96,12 @@ const ClientHomeScreen = () => {
       statusColor={getStatusColor(item.status)}
     >
       <Text style={styles.description}>{item.description}</Text>
+      {item.assignedEmployeeName && (
+        <Text style={styles.assignedText}>
+          Assigned Employee: {item.assignedEmployeeName}
+          {item.assignedEmployeePhone ? ` (${item.assignedEmployeePhone})` : ''}
+        </Text>
+      )}
     </Card>
   );
 
@@ -109,7 +112,12 @@ const ClientHomeScreen = () => {
           <Text style={styles.welcomeText}>Welcome,</Text>
           <Text style={styles.userName}>{user?.name || 'Client'}</Text>
         </View>
-        <Button title="Logout" onPress={handleLogout} variant="outline" size="small" />
+        <Button
+          title="Logout"
+          onPress={handleLogout}
+          variant="outline"
+          size="small"
+        />
       </View>
 
       <View style={styles.actionsContainer}>
@@ -124,7 +132,7 @@ const ClientHomeScreen = () => {
 
       <FlatList
         data={quotes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderQuoteItem}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -133,7 +141,9 @@ const ClientHomeScreen = () => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No quotes yet</Text>
-            <Text style={styles.emptySubtext}>Request a quote to get started</Text>
+            <Text style={styles.emptySubtext}>
+              Request a quote to get started
+            </Text>
           </View>
         }
       />
@@ -145,7 +155,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    marginTop: 30,
   },
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: '#ffffff',
+    paddingBottom: 20,
+  },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -182,6 +199,12 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: COLORS.textLight,
+  },
+  assignedText: {
+    marginTop: 8,
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
   },
   emptyContainer: {
     alignItems: 'center',

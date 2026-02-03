@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,50 +7,17 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { useAuth } from '../../App';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../App';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
-
-// Mock data for admin
-const mockQuotes = [
-  {
-    id: '1',
-    clientName: 'John Doe',
-    service: 'Roof Repair',
-    address: '123 Main St, City',
-    status: 'pending',
-    date: '2024-01-15',
-    phone: '555-0101',
-    email: 'john@email.com',
-  },
-  {
-    id: '2',
-    clientName: 'Jane Smith',
-    service: 'New Roof Installation',
-    address: '456 Oak Ave, Town',
-    status: 'reviewed',
-    date: '2024-01-14',
-    phone: '555-0102',
-    email: 'jane@email.com',
-  },
-  {
-    id: '3',
-    clientName: 'Bob Wilson',
-    service: 'Storm Damage',
-    address: '789 Pine Rd, Village',
-    status: 'approved',
-    date: '2024-01-13',
-    phone: '555-0103',
-    email: 'bob@email.com',
-    assignedTo: 'Mike Worker',
-  },
-];
 
 const AdminDashboardScreen = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -69,34 +36,65 @@ const AdminDashboardScreen = () => {
   const loadQuotes = async () => {
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.getLeads();
-      setQuotes(mockQuotes);
-      calculateStats(mockQuotes);
+      const response = await api.getLeads();
+
+      console.log('Leads API response:', response.data);
+
+      const rawItems =
+        response.data?.items ||
+        response.data?.data ||
+        (Array.isArray(response.data) ? response.data : []);
+
+      const normalizedItems = rawItems.map(item => ({
+        id: item.id || item._id || item.lead_id,
+        clientName: item.clientName || item.client_name || item.name || 'N/A',
+        service: item.serviceType || item.service_name || 'N/A',
+        address: item.address || 'N/A',
+        phone: item.phone || item.phone_number || 'N/A',
+        status: item.status || LEAD_STATUS.PENDING,
+        date:
+          item.date ||
+          item.created_at?.split('T')[0] ||
+          new Date().toISOString().split('T')[0],
+        assignedTo:
+          item.assignedEmployee?.name ||
+          item.assignedTo?.name ||
+          item.assigned_to ||
+          null,
+        // Completion info for admin review
+        inTime: item.inTime || null,
+        outTime: item.outTime || null,
+        employeeNotes: item.employeeNotes || null,
+        completionImages: item.completionImages || null,
+      }));
+
+      setQuotes(normalizedItems);
+      calculateStats(normalizedItems);
     } catch (error) {
+      console.log('Admin load quotes error:', error);
       Alert.alert('Error', 'Failed to load quotes');
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (data) => {
+  const calculateStats = data => {
     setStats({
-      pending: data.filter((q) => q.status === 'pending').length,
-      reviewed: data.filter((q) => q.status === 'reviewed').length,
-      approved: data.filter((q) => q.status === 'approved').length,
-      assigned: data.filter((q) => q.status === 'assigned').length,
-      completed: data.filter((q) => q.status === 'completed').length,
+      pending: data.filter(q => q.status === LEAD_STATUS.PENDING).length,
+      reviewed: data.filter(q => q.status === LEAD_STATUS.REVIEWED).length,
+      approved: data.filter(q => q.status === LEAD_STATUS.APPROVED).length,
+      assigned: data.filter(q => q.status === LEAD_STATUS.ASSIGNED).length,
+      completed: data.filter(q => q.status === LEAD_STATUS.COMPLETED).length,
     });
   };
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadQuotes();
     setRefreshing(false);
-  };
+  }, []);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
       case LEAD_STATUS.PENDING:
         return COLORS.warning;
@@ -116,6 +114,7 @@ const AdminDashboardScreen = () => {
 
   const handleLogout = async () => {
     await logout();
+    navigation.replace('Login');
   };
 
   const renderQuoteItem = ({ item }) => (
@@ -130,7 +129,9 @@ const AdminDashboardScreen = () => {
         <Text style={styles.detailText}>📅 {item.date}</Text>
         <Text style={styles.detailText}>📞 {item.phone}</Text>
         {item.assignedTo && (
-          <Text style={styles.detailText}>👷 Assigned: {item.assignedTo}</Text>
+          <Text style={styles.detailText}>
+            👷 Assigned: {item.assignedTo}
+          </Text>
         )}
       </View>
     </Card>
@@ -138,57 +139,69 @@ const AdminDashboardScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Admin Dashboard</Text>
           <Text style={styles.userName}>{user?.name || 'Admin'}</Text>
         </View>
-        <Button title="Logout" onPress={handleLogout} variant="outline" size="small" />
+        <Button
+          title="Logout"
+          onPress={handleLogout}
+          variant="outline"
+          size="small"
+        />
       </View>
 
+      {/* Stats */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.pending}</Text>
-          <Text style={styles.statLabel}>Pending</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.reviewed}</Text>
-          <Text style={styles.statLabel}>Reviewed</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.assigned}</Text>
-          <Text style={styles.statLabel}>Assigned</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.completed}</Text>
-          <Text style={styles.statLabel}>Done</Text>
-        </View>
+        <StatCard label="Pending" value={stats.pending} />
+        <StatCard label="Reviewed" value={stats.reviewed} />
+        <StatCard label="Assigned" value={stats.assigned} />
+        <StatCard label="Done" value={stats.completed} />
       </View>
 
+      {/* List */}
       <Text style={styles.sectionTitle}>Quote Requests</Text>
 
       <FlatList
         data={quotes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) =>
+          item.id?.toString() || index.toString()
+        }
         renderItem={renderQuoteItem}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No quotes yet</Text>
-          </View>
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No quotes found</Text>
+            </View>
+          )
         }
       />
     </View>
   );
 };
 
+/* ---------- Small Components ---------- */
+
+const StatCard = ({ label, value }) => (
+  <View style={styles.statCard}>
+    <Text style={styles.statNumber}>{value}</Text>
+    <Text style={styles.statLabel}>{label}</Text>
+  </View>
+);
+
+/* ---------- Styles ---------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    marginTop: 40,
   },
   header: {
     flexDirection: 'row',
@@ -217,14 +230,10 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     width: '22%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: COLORS.primary,
   },
@@ -245,7 +254,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   cardDetails: {
-    flexDirection: 'column',
     gap: 4,
   },
   detailText: {
@@ -254,7 +262,6 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 40,
   },
   emptyText: {

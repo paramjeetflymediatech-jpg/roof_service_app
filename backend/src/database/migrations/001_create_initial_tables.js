@@ -25,9 +25,12 @@ async function runMigration() {
   try {
     // Drop existing tables in reverse order due to foreign key constraints
     console.log("Dropping existing tables (if any)...");
+    await connection.query("DROP TABLE IF EXISTS job_logs");
+    await connection.query("DROP TABLE IF EXISTS jobs");
+    await connection.query("DROP TABLE IF EXISTS lead_images");
+    await connection.query("DROP TABLE IF EXISTS leads");
     await connection.query("DROP TABLE IF EXISTS seo_metas");
     await connection.query("DROP TABLE IF EXISTS sessions");
-    await connection.query("DROP TABLE IF EXISTS leads");
     await connection.query("DROP TABLE IF EXISTS services");
     await connection.query("DROP TABLE IF EXISTS users");
 
@@ -40,7 +43,7 @@ async function runMigration() {
         email VARCHAR(255) NOT NULL UNIQUE,
         phone VARCHAR(255) UNIQUE,
         password VARCHAR(255) NOT NULL,
-        role ENUM('admin', 'user') DEFAULT 'user',
+        role ENUM('admin', 'user','employee') DEFAULT 'user',
         is_active BOOLEAN DEFAULT TRUE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -132,6 +135,71 @@ async function runMigration() {
         data TEXT
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+    // Create lead_images table for images associated with leads
+    console.log("Creating sessions lead_images...");
+    await connection.query(`
+      CREATE TABLE lead_images (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        lead_id INT NOT NULL,
+        filename VARCHAR(255),
+        path VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+        // Create jobs table
+    console.log("Creating jobs table...");
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS jobs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        lead_id INT NOT NULL,
+        employee_id INT NOT NULL,
+        assigned_by_id INT NULL,
+        status ENUM('pending', 'accepted', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+        priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+        scheduled_date DATETIME NULL,
+        start_time DATETIME NULL,
+        end_time DATETIME NULL,
+        estimated_hours DECIMAL(5, 2) NULL,
+        actual_hours DECIMAL(5, 2) NULL,
+        notes TEXT NULL,
+        employee_notes TEXT NULL,
+        completion_notes TEXT NULL,
+        before_images JSON NULL,
+        after_images JSON NULL,
+        materials_used JSON NULL,
+        labor_cost DECIMAL(10, 2) NULL,
+        material_cost DECIMAL(10, 2) NULL,
+        total_cost DECIMAL(10, 2) NULL,
+        client_signature VARCHAR(255) NULL,
+        client_rating INT NULL,
+        client_feedback TEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE,
+        FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (assigned_by_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    // Create job_logs table for tracking job status changes
+    console.log("Creating job_logs table...");
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS job_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        job_id INT NOT NULL,
+        user_id INT NOT NULL,
+        action VARCHAR(100) NOT NULL,
+        old_status VARCHAR(50) NULL,
+        new_status VARCHAR(50) NULL,
+        notes TEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
 
     console.log("✅ Migration completed successfully!");
     console.log("Created tables: users, services, leads, seo_metas, sessions");

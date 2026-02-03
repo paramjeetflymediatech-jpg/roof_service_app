@@ -6,13 +6,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
+import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { COLORS } from '../utils/constants';
 
 const LoginScreen = () => {
+  const navigation = useNavigation();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,9 +26,11 @@ const LoginScreen = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email format';
+    else if (!/\S+@\S+\.\S+/.test(email))
+      newErrors.email = 'Invalid email format';
     if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (password.length < 6)
+      newErrors.password = 'Password must be at least 6 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -34,26 +40,35 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      // Simulated login - replace with actual API call
-      // const response = await api.login({ email, password });
-      
-      // For demo, determine role based on email
-      let role = 'client';
-      if (email.includes('admin')) role = 'admin';
-      else if (email.includes('employee')) role = 'employee';
+      const response = await api.login({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      console.log(response, 'resp');
+      if (response.data.success) {
+        const userData = {
+          ...response.data.data.user,
+          token: response.data.data.token,
+        };
 
-      const userData = {
-        id: Date.now().toString(),
-        email,
-        role,
-        name: email.split('@')[0],
-        token: 'demo-token',
-      };
-
-      await login(userData);
-      Alert.alert('Success', `Welcome, ${userData.role}!`);
+        Alert.alert('Success', `Welcome, ${userData.name}!`);
+        await login(userData);
+        navigation.navigate(
+          userData.role === 'admin'
+            ? 'AdminDashboard'
+            : userData.role === 'employee'
+            ? 'EmployeeDashboard'
+            : 'ClientHome',
+        );
+      } else {
+        Alert.alert('Error', response.data.message || 'Login failed');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Invalid credentials. Please try again.');
+      console.log('Login error:', error.response);
+      const message =
+        error.response?.data?.message ||
+        'Invalid credentials. Please try again.';
+      Alert.alert('Error', message);
     } finally {
       setLoading(false);
     }
@@ -72,7 +87,9 @@ const LoginScreen = () => {
 
         <View style={styles.formContainer}>
           <Text style={styles.title}>Sign In</Text>
-          <Text style={styles.subtitleText}>Enter your credentials to continue</Text>
+          <Text style={styles.subtitleText}>
+            Enter your credentials to continue
+          </Text>
 
           <Input
             label="Email"
@@ -100,9 +117,14 @@ const LoginScreen = () => {
             style={styles.loginButton}
           />
 
-          <Text style={styles.demoHint}>
-            Demo: Use "admin@demo.com", "employee@demo.com", or "client@demo.com"
-          </Text>
+          <View style={styles.registerLinkContainer}>
+            <Text style={styles.registerText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.registerLink}>Register</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.demoHint}></Text>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -156,6 +178,21 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: 8,
+  },
+  registerLinkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  registerText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+  },
+  registerLink: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   demoHint: {
     fontSize: 12,

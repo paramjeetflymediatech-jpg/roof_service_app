@@ -11,44 +11,42 @@ import { useAuth } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { api } from '../config/api';
 import { COLORS, JOB_STATUS } from '../utils/constants';
-
-// Mock data for employee jobs
-const mockJobs = [
-  {
-    id: '1',
-    service: 'Roof Repair',
-    address: '123 Main St, City',
-    clientName: 'John Doe',
-    phone: '555-0101',
-    status: JOB_STATUS.ASSIGNED,
-    date: '2024-01-15',
-    notes: 'Leak in the roof, check gutters first',
-  },
-  {
-    id: '2',
-    service: 'New Roof Installation',
-    address: '456 Oak Ave, Town',
-    clientName: 'Jane Smith',
-    phone: '555-0102',
-    status: JOB_STATUS.IN_PROGRESS,
-    date: '2024-01-14',
-    notes: 'Complete installation, bring extra materials',
-    inTime: '09:00 AM',
-  },
-  {
-    id: '3',
-    service: 'Gutter Cleaning',
-    address: '789 Pine Rd, Village',
-    clientName: 'Bob Wilson',
-    phone: '555-0103',
-    status: JOB_STATUS.COMPLETED,
-    date: '2024-01-13',
-    notes: 'Annual cleaning done',
-    inTime: '08:30 AM',
-    outTime: '11:45 AM',
-  },
-];
+//   {
+//     id: '1',
+//     service: 'Roof Repair',
+//     address: '123 Main St, City',
+//     clientName: 'John Doe',
+//     phone: '555-0101',
+//     status: JOB_STATUS.ASSIGNED,
+//     date: '2024-01-15',
+//     notes: 'Leak in the roof, check gutters first',
+//   },
+//   {
+//     id: '2',
+//     service: 'New Roof Installation',
+//     address: '456 Oak Ave, Town',
+//     clientName: 'Jane Smith',
+//     phone: '555-0102',
+//     status: JOB_STATUS.IN_PROGRESS,
+//     date: '2024-01-14',
+//     notes: 'Complete installation, bring extra materials',
+//     inTime: '09:00 AM',
+//   },
+//   {
+//     id: '3',
+//     service: 'Gutter Cleaning',
+//     address: '789 Pine Rd, Village',
+//     clientName: 'Bob Wilson',
+//     phone: '555-0103',
+//     status: JOB_STATUS.COMPLETED,
+//     date: '2024-01-13',
+//     notes: 'Annual cleaning done',
+//     inTime: '08:30 AM',
+//     outTime: '11:45 AM',
+//   },
+// ];
 
 const EmployeeDashboardScreen = () => {
   const { user, logout } = useAuth();
@@ -64,10 +62,35 @@ const EmployeeDashboardScreen = () => {
   const loadJobs = async () => {
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.getEmployeeJobs(user.id);
-      setJobs(mockJobs);
+      const response = await api.getEmployeeJobs(user.id);
+      console.log('Employee jobs API response:', response.data);
+
+      const raw =
+        response.data?.items ||
+        response.data?.data ||
+        (Array.isArray(response.data) ? response.data : []);
+
+      const mappedJobs = raw.map(job => {
+        const lead = job.lead || {};
+        const createdAt = lead.createdAt || job.createdAt || '';
+
+        return {
+          id: String(job.id ?? lead.id ?? Math.random()),
+          service: lead.serviceType || 'Roof Service',
+          address: lead.address || 'N/A',
+          clientName: lead.name || 'Client',
+          phone: lead.phone || 'N/A',
+          status: job.status,
+          date: createdAt ? String(createdAt).slice(0, 10) : '',
+          inTime: lead.inTime || null,
+          outTime: lead.outTime || null,
+          notes: lead.message || job.notes || '',
+        };
+      });
+
+      setJobs(mappedJobs);
     } catch (error) {
+      console.log('Load jobs error:', error.response || error);
       Alert.alert('Error', 'Failed to load jobs');
     } finally {
       setLoading(false);
@@ -80,26 +103,34 @@ const EmployeeDashboardScreen = () => {
     setRefreshing(false);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
       case JOB_STATUS.ASSIGNED:
+      case 'pending':
+      case 'accepted':
         return COLORS.info;
       case JOB_STATUS.IN_PROGRESS:
+      case 'in_progress':
         return COLORS.warning;
       case JOB_STATUS.COMPLETED:
+      case 'completed':
         return COLORS.success;
       default:
         return COLORS.textLight;
     }
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = status => {
     switch (status) {
       case JOB_STATUS.ASSIGNED:
+      case 'pending':
+      case 'accepted':
         return 'Not Started';
       case JOB_STATUS.IN_PROGRESS:
+      case 'in_progress':
         return 'In Progress';
       case JOB_STATUS.COMPLETED:
+      case 'completed':
         return 'Completed';
       default:
         return status;
@@ -108,6 +139,7 @@ const EmployeeDashboardScreen = () => {
 
   const handleLogout = async () => {
     await logout();
+    navigation.replace('Login');
   };
 
   const renderJobItem = ({ item }) => (
@@ -195,6 +227,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    marginTop:40
   },
   header: {
     flexDirection: 'row',

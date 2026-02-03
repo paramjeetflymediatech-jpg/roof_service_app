@@ -1,28 +1,92 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   Alert,
+  TouchableOpacity,
+  Image,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../App';
 import Button from '../components/Button';
-import Card from '../components/Card';
+import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
 
 const AdminAssignScreen = ({ route }) => {
   const navigation = useNavigation();
   const { quote } = route?.params || {};
+  const { user } = useAuth();
   const [selectedQuote, setSelectedQuote] = useState(quote);
-  const [employees] = useState([
-    { id: '1', name: 'Mike Johnson', specialty: 'Roof Repair', available: true },
-    { id: '2', name: 'Sarah Williams', specialty: 'Installation', available: true },
-    { id: '3', name: 'Tom Brown', specialty: 'Gutters', available: false },
-    { id: '4', name: 'David Lee', specialty: 'General', available: true },
-  ]);
+  const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  console.log(user, 'user');
+
+  /* ---------------- Load Employees ---------------- */
+  const loadEmployees = async () => {
+    try {
+      const response = await api.getUsers('employee');
+
+      // ✅ Safe normalization for backend variations
+      const list =
+        response?.data?.items ||
+        response?.data?.data ||
+        response?.data?.users ||
+        response?.data ||
+        [];
+
+      setEmployees(list);
+    } catch (error) {
+      console.log('Load employees error:', error?.response || error);
+      Alert.alert('Error', 'Failed to load employees');
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      await api.updateLead(selectedQuote.id, {
+        status: LEAD_STATUS.APPROVED,
+      });
+
+      setSelectedQuote({
+        ...selectedQuote,
+        status: LEAD_STATUS.APPROVED,
+      });
+
+      Alert.alert('Success', 'Quote approved. Please assign an employee.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to approve quote');
+    }
+  };
+
+  const handleReject = async () => {
+    Alert.alert('Reject Quote', 'Are you sure you want to reject this quote?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reject',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.updateLead(selectedQuote.id, {
+              status: LEAD_STATUS.REJECTED,
+            });
+            Alert.alert('Success', 'Quote rejected');
+            navigation.goBack();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to reject quote');
+          }
+        },
+      },
+    ]);
+  };
 
   const handleAssign = async () => {
     if (!selectedEmployee) {
@@ -32,58 +96,21 @@ const AdminAssignScreen = ({ route }) => {
 
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.assignLead(selectedQuote.id, {
-      //   employeeId: selectedEmployee.id,
-      // });
+      await api.assignLead(selectedQuote.id, {
+        employeeId: selectedEmployee.id,
+        status: LEAD_STATUS.ASSIGNED,
+        adminid: user.id,
+      });
 
       Alert.alert(
         'Success',
-        `${selectedEmployee.name} has been assigned to this job. They will receive an email notification.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
+        `${selectedEmployee.name} has been assigned successfully.`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to assign employee');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleReject = async () => {
-    Alert.alert(
-      'Reject Quote',
-      'Are you sure you want to reject this quote?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reject',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // const response = await api.updateLead(selectedQuote.id, { status: 'rejected' });
-              Alert.alert('Success', 'Quote has been rejected');
-              navigation.goBack();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to reject quote');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleApprove = async () => {
-    try {
-      // const response = await api.updateLead(selectedQuote.id, { status: 'approved' });
-      Alert.alert('Success', 'Quote has been approved. Please assign an employee.');
-      setSelectedQuote({ ...selectedQuote, status: 'approved' });
-    } catch (error) {
-      Alert.alert('Error', 'Failed to approve quote');
     }
   };
 
@@ -95,103 +122,171 @@ const AdminAssignScreen = ({ route }) => {
     );
   }
 
+  const hasCompletionDetails =
+    selectedQuote.status === LEAD_STATUS.COMPLETED &&
+    (selectedQuote.employeeNotes ||
+      (Array.isArray(selectedQuote.completionImages) &&
+        selectedQuote.completionImages.length > 0));
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+    >
+      {/* Quote Details */}
       <View style={styles.quoteDetails}>
         <Text style={styles.title}>{selectedQuote.service}</Text>
         <Text style={styles.subtitle}>{selectedQuote.address}</Text>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Client:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.clientName}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Phone:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.phone}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Email:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.email}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.date}</Text>
-        </View>
+        <InfoRow label="Client" value={selectedQuote.clientName} />
+        <InfoRow label="Phone" value={selectedQuote.phone} />
+        <InfoRow label="Email" value={selectedQuote.email} />
+        <InfoRow label="Date" value={selectedQuote.date} />
 
-        {selectedQuote.status === 'approved' && (
+        {selectedQuote.inTime && (
+          <InfoRow label="In Time" value={selectedQuote.inTime} />
+        )}
+        {selectedQuote.outTime && (
+          <InfoRow label="Out Time" value={selectedQuote.outTime} />
+        )}
+
+        {/* Employee List */}
+        {selectedQuote.status === LEAD_STATUS.APPROVED && (
           <>
             <Text style={styles.sectionHeader}>Select Employee</Text>
+
             <FlatList
               data={employees}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.employeeCard,
-                    !item.available && styles.employeeCardUnavailable,
-                    selectedEmployee?.id === item.id && styles.employeeCardSelected,
-                  ]}
-                  onPress={() => item.available && setSelectedEmployee(item)}
-                  disabled={!item.available}
-                >
-                  <View>
-                    <Text style={styles.employeeName}>{item.name}</Text>
-                    <Text style={styles.employeeSpecialty}>{item.specialty}</Text>
-                  </View>
-                  {item.available ? (
-                    <View style={[styles.statusBadge, { backgroundColor: COLORS.success }]}>
-                      <Text style={styles.statusText}>Available</Text>
-                    </View>
-                  ) : (
-                    <View style={[styles.statusBadge, { backgroundColor: COLORS.textLight }]}>
-                      <Text style={styles.statusText}>Busy</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              )}
+              keyExtractor={(item, index) => String(item?.id ?? index)}
               contentContainerStyle={styles.employeeList}
+              renderItem={({ item }) => {
+                const isSelected = selectedEmployee?.id === item.id;
+                const isAvailable = item.available !== false;
+
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.employeeCard,
+                      !isAvailable && styles.employeeCardUnavailable,
+                      isSelected && styles.employeeCardSelected,
+                    ]}
+                    onPress={() => isAvailable && setSelectedEmployee(item)}
+                    disabled={!isAvailable}
+                  >
+                    <View>
+                      <Text style={styles.employeeName}>{item.name}</Text>
+                      <Text style={styles.employeeSpecialty}>
+                        {item.specialty || 'General'}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        {
+                          backgroundColor: isAvailable
+                            ? COLORS.success
+                            : COLORS.textLight,
+                        },
+                      ]}
+                    >
+                      <Text style={styles.statusText}>
+                        {isAvailable ? 'Available' : 'Busy'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
             />
           </>
         )}
       </View>
 
+      {/* Actions */}
       <View style={styles.actionsContainer}>
-        {selectedQuote.status === 'pending' && (
+        {selectedQuote.status === LEAD_STATUS.PENDING && (
           <>
             <Button
               title="Approve Quote"
-              onPress={handleApprove}
               variant="success"
-              style={styles.actionButton}
+              onPress={handleApprove}
             />
             <Button
               title="Reject Quote"
-              onPress={handleReject}
               variant="danger"
-              style={styles.actionButton}
+              onPress={handleReject}
             />
           </>
         )}
-        {selectedQuote.status === 'approved' && (
+
+        {selectedQuote.status === LEAD_STATUS.APPROVED && (
           <Button
             title={`Assign ${selectedEmployee?.name || 'Employee'}`}
             onPress={handleAssign}
             loading={loading}
-            style={styles.actionButton}
+            disabled={!selectedEmployee}
           />
         )}
       </View>
-    </View>
+
+      {/* Completion details for admin when job is done */}
+      {hasCompletionDetails && (
+        <View style={styles.completionContainer}>
+          <Text style={styles.sectionHeader}>Job Completion Details</Text>
+          {selectedQuote.employeeNotes && (
+            <View style={styles.completionNotesBox}>
+              <Text style={styles.completionLabel}>Employee Notes</Text>
+              <Text style={styles.completionText}>
+                {selectedQuote.employeeNotes}
+              </Text>
+            </View>
+          )}
+
+          {Array.isArray(selectedQuote.completionImages) &&
+            selectedQuote.completionImages.length > 0 && (
+              <View style={styles.completionImagesSection}>
+                <Text style={styles.completionLabel}>Work Photos</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.completionImagesRow}
+                >
+                  {selectedQuote.completionImages.map((img, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: img.url || img.uri }}
+                      style={styles.completionImage}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
-import { TouchableOpacity } from 'react-native';
+/* ---------- Small helper component ---------- */
+const InfoRow = ({ label, value }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}:</Text>
+    <Text style={styles.detailValue}>{value || '-'}</Text>
+  </View>
+);
 
+/* ---------- Styles ---------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 40,
+  },
+  quoteDetails: {
+    flex: 1,
   },
   title: {
     fontSize: 24,
@@ -203,38 +298,33 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginBottom: 20,
   },
-  quoteDetails: {
-    flex: 1,
-  },
   detailRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   detailLabel: {
     width: 80,
-    fontSize: 14,
     fontWeight: '600',
     color: COLORS.textLight,
   },
   detailValue: {
     flex: 1,
-    fontSize: 14,
     color: COLORS.text,
   },
   sectionHeader: {
     fontSize: 18,
     fontWeight: '600',
-    color: COLORS.text,
     marginTop: 20,
     marginBottom: 12,
+    color: COLORS.text,
   },
   employeeList: {
     gap: 10,
   },
   employeeCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
     padding: 16,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -250,7 +340,6 @@ const styles = StyleSheet.create({
   employeeName: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.text,
   },
   employeeSpecialty: {
     fontSize: 14,
@@ -271,14 +360,43 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 20,
   },
-  actionButton: {
-    width: '100%',
+  completionContainer: {
+    marginTop: 24,
+  },
+  completionNotesBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  completionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  completionText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+  },
+  completionImagesSection: {
+    marginTop: 16,
+  },
+  completionImagesRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  completionImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#eee',
   },
   errorText: {
-    fontSize: 16,
-    color: COLORS.textLight,
     textAlign: 'center',
     marginTop: 40,
+    color: COLORS.textLight,
   },
 });
 

@@ -1,28 +1,102 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
-import Card from '../components/Card';
+import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
-
+import { useAuth } from '../../App';
 const AdminQuotesScreen = ({ route }) => {
   const navigation = useNavigation();
   const { quote } = route?.params || {};
-  const [selectedQuote, setSelectedQuote] = useState(quote);
-  const [employees] = useState([
-    { id: '1', name: 'Mike Johnson', specialty: 'Roof Repair', available: true },
-    { id: '2', name: 'Sarah Williams', specialty: 'Installation', available: true },
-    { id: '3', name: 'Tom Brown', specialty: 'Gutters', available: false },
-    { id: '4', name: 'David Lee', specialty: 'General', available: true },
-  ]);
+  const { user } = useAuth();
+  const [selectedQuote, setSelectedQuote] = useState(quote || null);
+  const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+
+ console.log(user,'user');
+  /* ---------------- Load Employees ---------------- */
+
+  const loadEmployees = async () => {
+     
+    try {
+      const response = await api.getUsers('employee');
+      console.log('Employees API response:', response.data);
+
+      const rawEmployees =
+        response.data?.items ||
+        response.data?.data ||
+        response.data?.users ||
+        (Array.isArray(response.data) ? response.data : []);
+
+      const normalizedEmployees = rawEmployees.map(emp => ({
+        id: emp.id || emp._id || emp.user_id,
+        name: emp.name || emp.full_name || 'Unknown',
+        specialty: emp.specialty || emp.role || 'General',
+        available: emp.available ?? true,
+      }));
+
+      setEmployees(normalizedEmployees);
+    } catch (error) {
+      console.log('Load employees error:', error);
+      Alert.alert('Error', 'Failed to load employees');
+    }
+  };
+
+  /* ---------------- Helpers ---------------- */
+
+  const normalizeStatus = status => status?.toLowerCase();
+
+  /* ---------------- Quote Actions ---------------- */
+
+  const handleApprove = async () => {
+    try {
+      await api.updateLead(selectedQuote.id, {
+        status: LEAD_STATUS.APPROVED,
+      });
+
+      Alert.alert('Success', 'Quote approved. Assign an employee.');
+      setSelectedQuote({
+        ...selectedQuote,
+        status: LEAD_STATUS.APPROVED,
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to approve quote');
+    }
+  };
+
+  const handleReject = () => {
+    Alert.alert('Reject Quote', 'Are you sure you want to reject this quote?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reject',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.updateLead(selectedQuote.id, {
+              status: LEAD_STATUS.REJECTED,
+            });
+            Alert.alert('Success', 'Quote rejected');
+            navigation.goBack();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to reject quote');
+          }
+        },
+      },
+    ]);
+  };
 
   const handleAssign = async () => {
     if (!selectedEmployee) {
@@ -32,21 +106,15 @@ const AdminQuotesScreen = ({ route }) => {
 
     setLoading(true);
     try {
-      // Replace with actual API call
-      // const response = await api.assignLead(selectedQuote.id, {
-      //   employeeId: selectedEmployee.id,
-      // });
+      await api.assignLead(selectedQuote.id, {
+        employeeId: selectedEmployee.id,
+        status: LEAD_STATUS.ASSIGNED,
+        adminid: user.id,
+      });
 
-      Alert.alert(
-        'Success',
-        `${selectedEmployee.name} has been assigned to this job. They will receive an email notification.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      Alert.alert('Success', `${selectedEmployee.name} assigned successfully`, [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to assign employee');
     } finally {
@@ -54,38 +122,7 @@ const AdminQuotesScreen = ({ route }) => {
     }
   };
 
-  const handleReject = async () => {
-    Alert.alert(
-      'Reject Quote',
-      'Are you sure you want to reject this quote?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reject',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // const response = await api.updateLead(selectedQuote.id, { status: 'rejected' });
-              Alert.alert('Success', 'Quote has been rejected');
-              navigation.goBack();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to reject quote');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleApprove = async () => {
-    try {
-      // const response = await api.updateLead(selectedQuote.id, { status: 'approved' });
-      Alert.alert('Success', 'Quote has been approved. Please assign an employee.');
-      setSelectedQuote({ ...selectedQuote, status: 'approved' });
-    } catch (error) {
-      Alert.alert('Error', 'Failed to approve quote');
-    }
-  };
+  /* ---------------- Guards ---------------- */
 
   if (!selectedQuote) {
     return (
@@ -95,89 +132,91 @@ const AdminQuotesScreen = ({ route }) => {
     );
   }
 
+  const status = normalizeStatus(selectedQuote.status);
+
+  /* ---------------- UI ---------------- */
+
   return (
     <View style={styles.container}>
       <View style={styles.quoteDetails}>
         <Text style={styles.title}>{selectedQuote.service}</Text>
         <Text style={styles.subtitle}>{selectedQuote.address}</Text>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Client:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.clientName}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Phone:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.phone}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Email:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.email}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date:</Text>
-          <Text style={styles.detailValue}>{selectedQuote.date}</Text>
-        </View>
+        <DetailRow label="Client" value={selectedQuote.clientName} />
+        <DetailRow label="Phone" value={selectedQuote.phone} />
+        <DetailRow label="Email" value={selectedQuote.email || 'N/A'} />
+        <DetailRow label="Date" value={selectedQuote.date} />
+        <DetailRow label="Status" value={selectedQuote.status} />
 
-        {selectedQuote.status === 'approved' && (
+        {status === 'approved' && (
           <>
             <Text style={styles.sectionHeader}>Select Employee</Text>
+
             <FlatList
               data={employees}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item, index) => String(item.id ?? index)}
+              contentContainerStyle={styles.employeeList}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
                     styles.employeeCard,
                     !item.available && styles.employeeCardUnavailable,
-                    selectedEmployee?.id === item.id && styles.employeeCardSelected,
+                    selectedEmployee?.id === item.id &&
+                      styles.employeeCardSelected,
                   ]}
-                  onPress={() => item.available && setSelectedEmployee(item)}
                   disabled={!item.available}
+                  onPress={() => setSelectedEmployee(item)}
                 >
                   <View>
                     <Text style={styles.employeeName}>{item.name}</Text>
-                    <Text style={styles.employeeSpecialty}>{item.specialty}</Text>
+                    <Text style={styles.employeeSpecialty}>
+                      {item.specialty}
+                    </Text>
                   </View>
-                  {item.available ? (
-                    <View style={[styles.statusBadge, { backgroundColor: COLORS.success }]}>
-                      <Text style={styles.statusText}>Available</Text>
-                    </View>
-                  ) : (
-                    <View style={[styles.statusBadge, { backgroundColor: COLORS.textLight }]}>
-                      <Text style={styles.statusText}>Busy</Text>
-                    </View>
-                  )}
+
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      {
+                        backgroundColor: item.available
+                          ? COLORS.success
+                          : COLORS.textLight,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.statusText}>
+                      {item.available ? 'Available' : 'Busy'}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               )}
-              contentContainerStyle={styles.employeeList}
             />
           </>
         )}
       </View>
 
       <View style={styles.actionsContainer}>
-        {selectedQuote.status === 'pending' && (
+        {status === 'pending' && (
           <>
             <Button
               title="Approve Quote"
-              onPress={handleApprove}
               variant="success"
-              style={styles.actionButton}
+              onPress={handleApprove}
             />
             <Button
               title="Reject Quote"
-              onPress={handleReject}
               variant="danger"
-              style={styles.actionButton}
+              onPress={handleReject}
             />
           </>
         )}
-        {selectedQuote.status === 'approved' && (
+
+        {status === 'approved' && (
           <Button
             title={`Assign ${selectedEmployee?.name || 'Employee'}`}
-            onPress={handleAssign}
             loading={loading}
-            style={styles.actionButton}
+            disabled={!selectedEmployee}
+            onPress={handleAssign}
           />
         )}
       </View>
@@ -185,13 +224,25 @@ const AdminQuotesScreen = ({ route }) => {
   );
 };
 
-import { TouchableOpacity } from 'react-native';
+/* ---------------- Small Components ---------------- */
+
+const DetailRow = ({ label, value }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}:</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
+
+/* ---------------- Styles ---------------- */
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
     padding: 20,
+  },
+  quoteDetails: {
+    flex: 1,
   },
   title: {
     fontSize: 24,
@@ -203,15 +254,12 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginBottom: 20,
   },
-  quoteDetails: {
-    flex: 1,
-  },
   detailRow: {
     flexDirection: 'row',
     marginBottom: 12,
   },
   detailLabel: {
-    width: 80,
+    width: 90,
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textLight,
@@ -224,9 +272,9 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 18,
     fontWeight: '600',
-    color: COLORS.text,
-    marginTop: 20,
+    marginTop: 24,
     marginBottom: 12,
+    color: COLORS.text,
   },
   employeeList: {
     gap: 10,
@@ -268,16 +316,13 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   actionsContainer: {
-    gap: 10,
+    gap: 12,
     marginTop: 20,
   },
-  actionButton: {
-    width: '100%',
-  },
   errorText: {
+    textAlign: 'center',
     fontSize: 16,
     color: COLORS.textLight,
-    textAlign: 'center',
     marginTop: 40,
   },
 });

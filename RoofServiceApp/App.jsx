@@ -44,8 +44,6 @@
 
 // export default App;
 
-
-
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -53,7 +51,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Auth Context
 const AuthContext = createContext(null);
-
 // Auth Provider Component
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -76,7 +73,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (userData) => {
+  const login = async userData => {
     await AsyncStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -105,6 +102,7 @@ export const useAuth = () => {
 // Screens
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import ClientHomeScreen from './src/screens/ClientHomeScreen';
 import ClientQuoteScreen from './src/screens/ClientQuoteScreen';
 import AdminDashboardScreen from './src/screens/AdminDashboardScreen';
@@ -127,13 +125,24 @@ const App = () => {
         >
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+
           <Stack.Screen name="ClientHome" component={ClientHomeScreen} />
           <Stack.Screen name="ClientQuote" component={ClientQuoteScreen} />
-          <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+          <Stack.Screen
+            name="AdminDashboard"
+            component={AdminDashboardScreen}
+          />
           <Stack.Screen name="AdminQuotes" component={AdminQuotesScreen} />
           <Stack.Screen name="AdminAssign" component={AdminAssignScreen} />
-          <Stack.Screen name="EmployeeDashboard" component={EmployeeDashboardScreen} />
-          <Stack.Screen name="EmployeeJobDetail" component={EmployeeJobDetailScreen} />
+          <Stack.Screen
+            name="EmployeeDashboard"
+            component={EmployeeDashboardScreen}
+          />
+          <Stack.Screen
+            name="EmployeeJobDetail"
+            component={EmployeeJobDetailScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
@@ -141,4 +150,3 @@ const App = () => {
 };
 
 export default App;
-
