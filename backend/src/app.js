@@ -19,6 +19,7 @@ app.set("view cache", false); // Disable view caching for development
 app.use(express.static(path.join(__dirname, "../public")));
 
 const allowedOrigins = [
+  process.env.HOST_URL || "http://localhost:3000",
   process.env.FRONTEND_URL || "http://localhost:3001",
   "http://localhost:3000", // Add frontend local port
   "exp://localhost:8081", // React Native Expo
