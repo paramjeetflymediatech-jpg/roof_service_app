@@ -1,80 +1,87 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/mysql');
 
-const blogSchema = new mongoose.Schema({
+const Blog = sequelize.define('Blog', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     title: {
-        type: String,
-        required: true,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
     },
     slug: {
-        type: String,
-        required: true,
+        type: DataTypes.STRING,
+        allowNull: false,
         unique: true,
-        trim: true,
-        lowercase: true
+        validate: {
+            notEmpty: true
+        }
     },
     content: {
-        type: String, // Can store HTML or Markdown
-        required: true
+        type: DataTypes.TEXT('long'), // Can store HTML or Markdown
+        allowNull: false
     },
     excerpt: {
-        type: String,
-        trim: true
+        type: DataTypes.TEXT
     },
     image: {
-        type: String, // URL to the image
-        default: ''
+        type: DataTypes.STRING, // URL to the image
+        defaultValue: ''
     },
     author: {
-        type: String,
-        default: 'Admin'
+        type: DataTypes.STRING,
+        defaultValue: 'Admin'
     },
-    tags: [{
-        type: String,
-        trim: true
-    }],
+    tags: {
+        type: DataTypes.JSON, // Store as JSON array if supported, or handle serialization
+        defaultValue: [],
+        get() {
+            const rawValue = this.getDataValue('tags');
+            return rawValue ? (typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue) : [];
+        },
+        set(value) {
+            // Ensure value is an array or valid JSON string
+            if (typeof value === 'string') {
+                try {
+                    // Check if it's already a JSON string
+                    JSON.parse(value);
+                    this.setDataValue('tags', value);
+                } catch (e) {
+                    // If it's a comma-separated string, split it
+                    this.setDataValue('tags', JSON.stringify(value.split(',').map(tag => tag.trim())));
+                }
+            } else {
+                this.setDataValue('tags', JSON.stringify(value));
+            }
+        }
+    },
     status: {
-        type: String,
-        enum: ['draft', 'published'],
-        default: 'published'
+        type: DataTypes.ENUM('draft', 'published'),
+        defaultValue: 'published'
     },
-    metaTitle: String,
-    metaDescription: String,
+    metaTitle: DataTypes.STRING,
+    metaDescription: DataTypes.TEXT,
     metaRobots: {
-        type: String,
-        default: 'index, follow',
-        trim: true
+        type: DataTypes.STRING,
+        defaultValue: 'index, follow'
     },
-    ogTitle: {
-        type: String,
-        trim: true
-    },
-    ogDescription: {
-        type: String,
-        trim: true
-    },
-    ogImage: {
-        type: String,
-        trim: true
-    },
-    canonicalUrl: {
-        type: String,
-        trim: true
-    },
+    ogTitle: DataTypes.STRING,
+    ogDescription: DataTypes.TEXT,
+    ogImage: DataTypes.STRING,
+    canonicalUrl: DataTypes.STRING,
     schemaMarkup: {
-        type: String, // Stored as stringified JSON
-        trim: true
+        type: DataTypes.TEXT // Stored as stringified JSON
     },
-    googleAnalyticsId: {
-        type: String,
-        trim: true
-    },
-    googleTagManagerId: {
-        type: String,
-        trim: true
-    }
+    googleAnalyticsId: DataTypes.STRING,
+    googleTagManagerId: DataTypes.STRING
 }, {
+    tableName: 'blogs',
     timestamps: true
 });
 
-module.exports = mongoose.model('Blog', blogSchema);
+module.exports = Blog;

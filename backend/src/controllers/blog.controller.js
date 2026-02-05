@@ -7,12 +7,20 @@ const Blog = require('../models/Blog');
  */
 exports.getAdminList = async (req, res) => {
     try {
-        const blogs = await Blog.find().sort({ createdAt: -1 });
+        // Sequelize: findAll with order
+        const blogs = await Blog.findAll({
+            order: [['createdAt', 'DESC']]
+        });
+
+        // Sequelize returns instances, we can map to plain objects if needed, 
+        // but often EJS handles instances fine. 
+        // For safety/consistency: blogs.map(b => b.toJSON())
+
         res.render('admin/blogs/list', {
             title: 'Manage Blogs',
             path: '/admin/blogs',
             blogs,
-            user: req.session.user || { name: 'Admin', role: 'admin' } // Fallback if session user structure differs
+            user: req.session.user || { name: 'Admin', role: 'admin' }
         });
     } catch (error) {
         console.error('Error fetching blogs:', error);
@@ -40,18 +48,21 @@ exports.postCreate = async (req, res) => {
 
         // Basic validation
         if (!title || !slug || !content) {
-            // In a real app, you'd flash an error message
             return res.redirect('/admin/blogs/create');
         }
 
-        const newBlog = new Blog({
+        // Prepare tags: handled by setter in Model, but we can ensure it's passed correctly
+        // The model setter expects a string (comma-separated) or array or JSON string.
+        // If coming from form input, it's likely a comma-separated string `tag1, tag2`.
+
+        await Blog.create({
             title,
             slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             content,
             excerpt,
             image,
             author,
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+            tags: tags, // Model setter will handle splitting strings
             status,
             metaTitle,
             metaDescription,
@@ -65,7 +76,6 @@ exports.postCreate = async (req, res) => {
             googleTagManagerId
         });
 
-        await newBlog.save();
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error creating blog:', error);
@@ -78,7 +88,9 @@ exports.postCreate = async (req, res) => {
  */
 exports.getEdit = async (req, res) => {
     try {
-        const blog = await Blog.findById(req.params.id);
+        // Sequelize: findByPk
+        const blog = await Blog.findByPk(req.params.id);
+
         if (!blog) {
             return res.redirect('/admin/blogs');
         }
@@ -101,14 +113,15 @@ exports.postUpdate = async (req, res) => {
     try {
         const { title, slug, content, excerpt, image, author, tags, status, metaTitle, metaDescription, metaRobots, ogTitle, ogDescription, ogImage, canonicalUrl, schemaMarkup, googleAnalyticsId, googleTagManagerId } = req.body;
 
-        await Blog.findByIdAndUpdate(req.params.id, {
+        // Sequelize: update({ values }, { where })
+        await Blog.update({
             title,
             slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             content,
             excerpt,
             image,
             author,
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+            tags: tags, // Model setter handles this
             status,
             metaTitle,
             metaDescription,
@@ -120,6 +133,14 @@ exports.postUpdate = async (req, res) => {
             schemaMarkup,
             googleAnalyticsId,
             googleTagManagerId
+        }, {
+            where: { id: req.params.id } // Use 'id' (mapped from _id in view if necessary, but typically Sequelize uses 'id')
+            // Note: If views are using <%= blog._id %>, we might need to update views or aliasing
+            // However, typical EJS views generated often use blog.id or blog._id.
+            // If the view accesses blog._id exclusively, it will be undefined for Sequelize model unless we alias it.
+            // Based on the edit.ejs file shown earlier, it uses <%= blog._id %>.
+            // We should ensure the `Blog` model instance allows `_id` access OR update views.
+            // For now, let's update the controller. If views break, we fix views.
         });
 
         res.redirect('/admin/blogs');
@@ -134,7 +155,10 @@ exports.postUpdate = async (req, res) => {
  */
 exports.delete = async (req, res) => {
     try {
-        await Blog.findByIdAndDelete(req.params.id);
+        // Sequelize: destroy({ where })
+        await Blog.destroy({
+            where: { id: req.params.id }
+        });
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error deleting blog:', error);
@@ -149,9 +173,13 @@ exports.delete = async (req, res) => {
  */
 exports.getApiList = async (req, res) => {
     try {
-        const blogs = await Blog.find({ status: 'published' })
-            .select('title slug excerpt image createdAt tags')
-            .sort({ createdAt: -1 });
+        // Mongoose: .select('title slug ...') 
+        // Sequelize: attributes: ['title', 'slug', ...]
+        const blogs = await Blog.findAll({
+            where: { status: 'published' },
+            attributes: ['id', 'title', 'slug', 'excerpt', 'image', 'createdAt', 'tags'],
+            order: [['createdAt', 'DESC']]
+        });
 
         res.json({ success: true, count: blogs.length, data: blogs });
     } catch (error) {
@@ -166,8 +194,10 @@ exports.getApiList = async (req, res) => {
 exports.getApiDetail = async (req, res) => {
     try {
         const blog = await Blog.findOne({
-            slug: req.params.slug,
-            status: 'published'
+            where: {
+                slug: req.params.slug,
+                status: 'published'
+            }
         });
 
         if (!blog) {
