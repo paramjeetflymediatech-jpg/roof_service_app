@@ -245,6 +245,7 @@ export const NAV_LINKS = [
     { label: 'Services', href: '/services' },
     { label: 'Gallery', href: '/gallery' },
     { label: 'Contact Us', href: '/contact' },
+    { label: 'Blogs', href: '/blogs' },
 ];
 
 // Services Dropdown Links

@@ -4,11 +4,17 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
 
+import Head from 'next/head';
+
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
 
   return (
     <>
+      <Head>
+        <link rel="icon" href="/assets/roofing-logo.png" type="image/png" />
+        <title>Mainstreet Roofing Ltd</title>
+      </Head>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={router.pathname}

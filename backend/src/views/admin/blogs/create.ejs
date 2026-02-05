@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> - Admin Panel
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="admin-wrapper">
+        <%- include('../../partials/sidebar') %>
+
+            <main class="main-content">
+                <header class="top-header">
+                    <h1>
+                        <%= title %>
+                    </h1>
+                    <div class="user-info">
+                        <span>Welcome, <%= user.name %></span>
+                    </div>
+                </header>
+
+                <div class="content">
+                    <div class="mb-4">
+                        <a href="/admin/blogs"
+                            class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            ← Back to Blog List
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8 w-full">
+                        <div class="mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Create New Blog Post</h2>
+                            <p class="text-sm text-gray-500">Add a new article to your blog</p>
+                        </div>
+
+                        <form action="/admin/blogs" method="POST" class="space-y-6">
+                            <!-- Basic Info -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="title" name="title" required
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        oninput="generateSlug()">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Slug <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="slug" name="slug" required
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="w-full">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Content <span
+                                        class="text-red-500">*</span></label>
+                                <textarea name="content" rows="10" required
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+                                    placeholder="Write your blog content here (Supports HTML/Markdown)"></textarea>
+                            </div>
+
+                            <!-- Excerpt -->
+                            <div class="w-full">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                                <textarea name="excerpt" rows="3"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    placeholder="Short summary of the blog post"></textarea>
+                            </div>
+
+                            <!-- Image & Status -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image
+                                        URL</label>
+                                    <input type="url" id="imageInput" name="image"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        oninput="previewImage()">
+                                    <img id="imagePreview" src="" alt="Preview" class="preview-image">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select name="status"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Author & Tags -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                                    <input type="text" name="author" value="<%= user.name || 'Admin' %>"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                                    <input type="text" name="tags"
+                                        placeholder="roofing, maintenance, tips (comma separated)"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <!-- Advanced SEO Settings -->
+                            <div class="border-t pt-6 mt-6">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Search Engine Optimization (SEO)</h3>
+
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div class="space-y-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Page
+                                                Title</label>
+                                            <input type="text" id="metaTitle" name="metaTitle"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                oninput="updatePreview()">
+                                            <p class="text-xs text-gray-500 mt-1">Recommended length: 50-60 characters
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Meta
+                                                Description</label>
+                                            <textarea id="metaDescription" name="metaDescription" rows="3"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                oninput="updatePreview()"></textarea>
+                                            <p class="text-xs text-gray-500 mt-1">Recommended length: 150-160 characters
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Meta
+                                                Robots</label>
+                                            <select name="metaRobots"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                <option value="index, follow">index, follow (Default)</option>
+                                                <option value="noindex, follow">noindex, follow</option>
+                                                <option value="index, nofollow">index, nofollow</option>
+                                                <option value="noindex, nofollow">noindex, nofollow</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Canonical
+                                                URL</label>
+                                            <input type="url" name="canonicalUrl"
+                                                placeholder="https://example.com/blog/my-post"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+
+                                    <!-- Google Search Preview -->
+                                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                                            Google Search Preview</h4>
+                                        <div class="bg-white p-4 rounded shadow-sm">
+                                            <div class="mb-1 flex items-center gap-2">
+                                                <div
+                                                    class="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-500 overflow-hidden">
+                                                    <img src="/favicon.ico" onerror="this.style.display='none'"
+                                                        class="w-4 h-4">
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm text-gray-800">Your Site Name</span>
+                                                    <span class="text-xs text-green-700"
+                                                        id="previewUrl">https://yoursite.com/blog/...</span>
+                                                </div>
+                                            </div>
+                                            <h3 class="text-xl text-[#1a0dab] hover:underline cursor-pointer truncate"
+                                                id="previewTitle">
+                                                Your Page Title
+                                            </h3>
+                                            <p class="text-sm text-gray-600 mt-1 line-clamp-2" id="previewDesc">
+                                                Your meta description will appear here. It should be descriptive and
+                                                entice users to click.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Open Graph & Schema -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 border-t pt-6">
+                                    <div class="w-full">
+                                        <h4 class="font-medium text-gray-800 mb-3">Open Graph (Social Media)</h4>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG
+                                                    Title</label>
+                                                <input type="text" name="ogTitle" placeholder="Defaults to Page Title"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG
+                                                    Description</label>
+                                                <textarea name="ogDescription" rows="2"
+                                                    placeholder="Defaults to Meta Description"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG Image
+                                                    URL</label>
+                                                <input type="url" name="ogImage" placeholder="https://..."
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full">
+                                        <h4 class="font-medium text-gray-800 mb-3">Advanced / Technical</h4>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Schema
+                                                    Markup (JSON-LD)</label>
+                                                <textarea name="schemaMarkup" rows="4"
+                                                    placeholder="{ '@context': 'https://schema.org', ... }"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs"></textarea>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">GA
+                                                        ID</label>
+                                                    <input type="text" name="googleAnalyticsId" placeholder="G-XXXXXXXX"
+                                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">GTM
+                                                        ID</label>
+                                                    <input type="text" name="googleTagManagerId"
+                                                        placeholder="GTM-XXXXXX"
+                                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 pt-4">
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Create
+                                    Blog</button>
+                                <a href="/admin/blogs"
+                                    class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+    </div>
+
+    <script>
+        function generateSlug() {
+            const title = document.getElementById('title').value;
+            const slug = title.toLowerCase()
+                .replace(/[^\w ]+/g, '')
+                .replace(/ +/g, '-');
+            document.getElementById('slug').value = slug;
+        }
+
+        function previewImage() {
+            const url = document.getElementById('imageInput').value;
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

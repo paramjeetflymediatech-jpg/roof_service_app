@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SeoMeta = require('../models/SeoMeta');
+const blogController = require('../controllers/blog.controller');
 
 // GET /api/seo/:pageName - Get SEO meta tags for a specific page
 router.get('/seo/:pageName', async (req, res) => {
@@ -39,5 +40,9 @@ router.get('/seo/:pageName', async (req, res) => {
         });
     }
 });
+
+// Blog API routes
+router.get('/blogs', blogController.getApiList);
+router.get('/blogs/:slug', blogController.getApiDetail);
 
 module.exports = router;

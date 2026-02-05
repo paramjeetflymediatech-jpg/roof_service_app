@@ -6,6 +6,6 @@ export const getSeoData = async (pageName) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching SEO data:', error);
-        throw error;
+        return { success: false, data: null };
     }
 };

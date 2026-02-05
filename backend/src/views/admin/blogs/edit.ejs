@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> - Admin Panel
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="admin-wrapper">
+        <%- include('../../partials/sidebar') %>
+
+            <main class="main-content">
+                <header class="top-header">
+                    <h1>
+                        <%= title %>
+                    </h1>
+                    <div class="user-info">
+                        <span>Welcome, <%= user.name %></span>
+                    </div>
+                </header>
+
+                <div class="content">
+                    <div class="mb-4">
+                        <a href="/admin/blogs"
+                            class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            ← Back to Blog List
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8 w-full">
+                        <div class="mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Edit Blog Post</h2>
+                            <p class="text-sm text-gray-500">Update your blog article</p>
+                        </div>
+
+                        <form action="/admin/blogs/<%= blog._id %>" method="POST" class="space-y-6">
+                            <!-- Basic Info -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="title" name="title" value="<%= blog.title %>" required
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        oninput="generateSlug()">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Slug <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="slug" name="slug" value="<%= blog.slug %>" required
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="w-full">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Content <span
+                                        class="text-red-500">*</span></label>
+                                <textarea name="content" rows="10" required
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"><%= blog.content %></textarea>
+                            </div>
+
+                            <!-- Excerpt -->
+                            <div class="w-full">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                                <textarea name="excerpt" rows="3"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"><%= blog.excerpt %></textarea>
+                            </div>
+
+                            <!-- Image & Status -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image
+                                        URL</label>
+                                    <input type="url" id="imageInput" name="image" value="<%= blog.image %>"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        oninput="previewImage()">
+                                    <img id="imagePreview" src="<%= blog.image %>" alt="Preview"
+                                        class="preview-image <%= blog.image ? 'block' : 'hidden' %>">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select name="status"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <option value="published" <%=blog.status==='published' ? 'selected' : '' %>
+                                            >Published</option>
+                                        <option value="draft" <%=blog.status==='draft' ? 'selected' : '' %>>Draft
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Author & Tags -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                                    <input type="text" name="author" value="<%= blog.author %>"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                                    <input type="text" name="tags" value="<%= blog.tags.join(', ') %>"
+                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <!-- Advanced SEO Settings -->
+                            <div class="border-t pt-6 mt-6">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Search Engine Optimization (SEO)</h3>
+
+                                <div class="grid grid-cols-1 gap-8">
+                                    <div class="space-y-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Page
+                                                Title</label>
+                                            <input type="text" id="metaTitle" name="metaTitle"
+                                                value="<%= blog.metaTitle %>"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                            <p class="text-xs text-gray-500 mt-1">Recommended length: 50-60 characters
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Meta
+                                                Description</label>
+                                            <textarea id="metaDescription" name="metaDescription" rows="3"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"><%= blog.metaDescription %></textarea>
+                                            <p class="text-xs text-gray-500 mt-1">Recommended length: 150-160 characters
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Meta
+                                                Robots</label>
+                                            <select name="metaRobots"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                <option value="index, follow" <%=blog.metaRobots==='index, follow'
+                                                    ? 'selected' : '' %>>index, follow (Default)</option>
+                                                <option value="noindex, follow" <%=blog.metaRobots==='noindex, follow'
+                                                    ? 'selected' : '' %>>noindex, follow</option>
+                                                <option value="index, nofollow" <%=blog.metaRobots==='index, nofollow'
+                                                    ? 'selected' : '' %>>index, nofollow</option>
+                                                <option value="noindex, nofollow"
+                                                    <%=blog.metaRobots==='noindex, nofollow' ? 'selected' : '' %>
+                                                    >noindex, nofollow</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Canonical
+                                                URL</label>
+                                            <input type="url" name="canonicalUrl" value="<%= blog.canonicalUrl %>"
+                                                placeholder="https://example.com/blog/my-post"
+                                                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Open Graph & Schema -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 border-t pt-6">
+                                    <div class="w-full">
+                                        <h4 class="font-medium text-gray-800 mb-3">Open Graph (Social Media)</h4>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG
+                                                    Title</label>
+                                                <input type="text" name="ogTitle" value="<%= blog.ogTitle %>"
+                                                    placeholder="Defaults to Page Title"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG
+                                                    Description</label>
+                                                <textarea name="ogDescription" rows="2"
+                                                    placeholder="Defaults to Meta Description"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"><%= blog.ogDescription %></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">OG Image
+                                                    URL</label>
+                                                <input type="url" name="ogImage" value="<%= blog.ogImage %>"
+                                                    placeholder="https://..."
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full">
+                                        <h4 class="font-medium text-gray-800 mb-3">Advanced / Technical</h4>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Schema
+                                                    Markup (JSON-LD)</label>
+                                                <textarea name="schemaMarkup" rows="4"
+                                                    placeholder="{ '@context': 'https://schema.org', ... }"
+                                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs"><%= blog.schemaMarkup %></textarea>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">GA
+                                                        ID</label>
+                                                    <input type="text" name="googleAnalyticsId"
+                                                        value="<%= blog.googleAnalyticsId %>" placeholder="G-XXXXXXXX"
+                                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">GTM
+                                                        ID</label>
+                                                    <input type="text" name="googleTagManagerId"
+                                                        value="<%= blog.googleTagManagerId %>" placeholder="GTM-XXXXXX"
+                                                        class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 pt-4">
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Update
+                                    Blog</button>
+                                <a href="/admin/blogs"
+                                    class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+    </div>
+
+    <script>
+        // Slug generation only if the user hasn't manually edited the slug
+        // For editing, usually we only update slug if explicitly removed or user wants to regenerate.
+        // Or keep it simple: only generate if slug is empty (which isn't case for edit) or just let them edit manually.
+        function generateSlug() {
+            // Optional: could add logic to only auto-update if slug matches old title slugified
+        }
+
+        function previewImage() {
+            const url = document.getElementById('imageInput').value;
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.src = url;
+                preview.classList.remove('hidden');
+                preview.classList.add('block');
+            } else {
+                preview.classList.remove('block');
+                preview.classList.add('hidden');
+            }
+        }
+
+        }
+    </script>
+</body>
+
+</html>

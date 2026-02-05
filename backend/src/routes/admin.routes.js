@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
+const blogController = require('../controllers/blog.controller');
 const { isAuthenticated, isAdmin } = require('../middlewares/auth.middleware');
 
 // Public routes
@@ -38,5 +39,13 @@ router.post('/seo', isAuthenticated, isAdmin, adminController.postCreateSeo);
 router.get('/seo/:id/edit', isAuthenticated, isAdmin, adminController.getEditSeo);
 router.post('/seo/:id', isAuthenticated, isAdmin, adminController.postUpdateSeo);
 router.post('/seo/:id/delete', isAuthenticated, isAdmin, adminController.deleteSeo);
+
+// Blog management routes
+router.get('/blogs', isAuthenticated, isAdmin, blogController.getAdminList);
+router.get('/blogs/create', isAuthenticated, isAdmin, blogController.getCreate);
+router.post('/blogs', isAuthenticated, isAdmin, blogController.postCreate);
+router.get('/blogs/:id/edit', isAuthenticated, isAdmin, blogController.getEdit);
+router.post('/blogs/:id', isAuthenticated, isAdmin, blogController.postUpdate);
+router.post('/blogs/:id/delete', isAuthenticated, isAdmin, blogController.delete);
 
 module.exports = router;

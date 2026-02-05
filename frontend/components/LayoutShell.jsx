@@ -13,6 +13,7 @@ import Logo from '@/components/Logo';
 export default function LayoutShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [desktopServicesOpen, setDesktopServicesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
@@ -26,6 +27,7 @@ export default function LayoutShell({ children }) {
   /* Close menu on route change */
   useEffect(() => {
     setMobileMenuOpen(false);
+    setDesktopServicesOpen(false); // Close desktop menu too
   }, [pathname]);
 
   /* Lock body scroll */
@@ -76,14 +78,14 @@ export default function LayoutShell({ children }) {
               {NAV_LINKS.map(link => {
                 if (link.label === 'Services') {
                   return (
-                    <div key={link.href} className="relative group">
-                      <button className="text-gray-700 hover:text-primary-600 font-medium flex items-center gap-1">
+                    <div key={link.href} className="relative">
+                      <button
+                        onClick={() => setDesktopServicesOpen(!desktopServicesOpen)}
+                        className="text-gray-700 hover:text-primary-600 font-medium flex items-center gap-1"
+                      >
                         {link.label}
-                        <svg className="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                        </svg>
                       </button>
-                      <div className="absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4">
+                      <div className={`absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl transition-all duration-200 z-50 p-4 ${desktopServicesOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                         <div className="grid grid-cols-2 gap-2">
                           {SERVICES_DROPDOWN.map(service => (
                             <Link
@@ -161,9 +163,6 @@ export default function LayoutShell({ children }) {
                           className="w-full border-b py-2 text-gray-700 flex justify-between items-center"
                         >
                           {link.label}
-                          <svg className={`w-4 h-4 transition-transform ${servicesDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                          </svg>
                         </button>
                         {servicesDropdownOpen && (
                           <div className="bg-gray-50 py-2">
@@ -194,6 +193,20 @@ export default function LayoutShell({ children }) {
                 })}
 
               </nav>
+
+              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+                <p className="text-gray-500 text-sm text-center">
+                  Design and Developed by{' '}
+                  <a
+                    href="https://flymediatech.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+                  >
+                    Fly Media Technology
+                  </a>
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -205,7 +218,7 @@ export default function LayoutShell({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-dark-900 text-gray-300 pt-16 pb-8">
+      <footer className="bg-dark-900 text-gray-300 pt-16 pb-40 lg:pb-8">
         <div className="container-custom">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
