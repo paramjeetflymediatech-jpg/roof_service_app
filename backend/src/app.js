@@ -28,21 +28,12 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: ["https://mainstreet-roofing.ca", "https://www.mainstreet-roofing.ca.com"],
+    origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-
-app.options("*", cors());
-
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//     // allowedHeaders: ["Content-Type", "Authorization"],
-//   }),
-// );
 
 // Body parser middleware
 app.use(express.json());
