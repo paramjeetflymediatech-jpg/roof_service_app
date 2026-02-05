@@ -16,8 +16,8 @@ async function runMigration() {
     host: process.env.MYSQL_HOST || "localhost",
     port: process.env.MYSQL_PORT || 3306,
     database: process.env.MYSQL_DATABASE || "roof_service",
-    user: process.env.MYSQL_USER || "aman",
-    password: process.env.MYSQL_PASSWORD || "aman1234",
+    user: process.env.MYSQL_USER || "root",
+    password: process.env.MYSQL_PASSWORD || "root",
   });
 
   console.log("Connected to MySQL database");

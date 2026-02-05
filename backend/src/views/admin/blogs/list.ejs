@@ -133,7 +133,7 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div class="flex gap-2">
-                                                        <a href="/admin/blogs/<%= blog.id %>/edit"
+                                                        <a href="/admin/blogs/<%= blog._id %>/edit"
                                                             class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
                                                             title="Edit">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20"
@@ -148,7 +148,7 @@
                                                                 </path>
                                                             </svg>
                                                         </a>
-                                                        <form action="/admin/blogs/<%= blog.id %>/delete" method="POST"
+                                                        <form action="/admin/blogs/<%= blog._id %>/delete" method="POST"
                                                             onsubmit="return confirm('Are you sure you want to delete this blog?');"
                                                             class="inline">
                                                             <button type="submit"
