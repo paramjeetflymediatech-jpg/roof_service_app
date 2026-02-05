@@ -121,7 +121,7 @@ export default function AdminServicesPage() {
           <p>No services yet.</p>
         ) : (
           services.map((service) => (
-            <div key={service._id} className="card">
+            <div key={service.id} className="card">
               <h4>{service.name}</h4>
               <p>Slug: {service.slug}</p>
               {service.shortDescription && <p>{service.shortDescription}</p>}

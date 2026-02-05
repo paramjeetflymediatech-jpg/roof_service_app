@@ -1,61 +1,65 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
+const sequelize = require('../config/mysql');
 
-const UserSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: [true, 'Name is required'],
-            trim: true,
-        },
-        email: {
-            type: String,
-            required: [true, 'Email is required'],
-            unique: true,
-            lowercase: true,
-            trim: true,
-            match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
-        },
-        phone: {
-            type: String,
-            trim: true,
-            unique: true,
-            sparse: true, // Allows multiple null/empty values
-        },
-        password: {
-            type: String,
-            required: [true, 'Password is required'],
-            minlength: [6, 'Password must be at least 6 characters'],
-        },
-        role: {
-            type: String,
-            enum: ['admin', 'user'],
-            default: 'user',
-        },
-        isActive: {
-            type: Boolean,
-            default: true,
-        },
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: 'Name is required' },
     },
-    { timestamps: true }
-);
-
-// Hash password before saving
-UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-
-    try {
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    lowercase: true,
+    validate: {
+      isEmail: { msg: 'Please provide a valid email' },
+    },
+  },
+  phone: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: { args: [6], msg: 'Password must be at least 6 characters' },
+    },
+  },
+  role: {
+    type: DataTypes.ENUM('admin', 'employee', 'user'),
+    defaultValue: 'user',
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+}, {
+  tableName: 'users',
+  timestamps: true,
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+  },
 });
 
-// Method to compare password
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+// Instance method to compare password
+User.prototype.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = User;

@@ -1,38 +1,125 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/mysql');
+const Service = require('./Service');
+const User = require('./User');
 
-const LeadSchema = new mongoose.Schema(
-  {
-    leadType: {
-      type: String,
-      enum: ['contact', 'quote', 'callback', 'appointment'],
-      default: 'contact',
-    },
-    name: { type: String, required: true },
-    email: { type: String, required: false, lowercase: true, trim: true },
-    phone: { type: String, required: false },
-    subject: { type: String },
-    message: { type: String },
-    // Additional quote form fields
-    address: { type: String },
-    city: { type: String },
-    province: { type: String },
-    serviceType: { type: String },
-    roofType: { type: String },
-    hearAboutUs: { type: String },
-    serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
-    source: {
-      type: String,
-      enum: ['website', 'mobile_app', 'other'],
-      default: 'website',
-    },
-    status: {
-      type: String,
-      enum: ['new', 'in_progress', 'quoted', 'closed_won', 'closed_lost', 'spam'],
-      default: 'new',
-    },
-    assignedToId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const Lead = sequelize.define('Lead', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
   },
-  { timestamps: true }
-);
+  leadType: {
+    type: DataTypes.ENUM('contact', 'quote', 'callback', 'appointment'),
+    defaultValue: 'contact',
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    lowercase: true,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  subject: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  // Additional quote form fields
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  province: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  serviceType: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  roofType: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  hearAboutUs: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  serviceId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'services',
+      key: 'id',
+    },
+  },
+  source: {
+    type: DataTypes.ENUM('website', 'mobile_app', 'other'),
+    defaultValue: 'website',
+  },
+  // Mobile app status flow: new -> pending -> reviewed -> approved -> assigned -> in_progress -> completed
+  status: {
+    type: DataTypes.ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
+    defaultValue: 'new',
+  },
+  assignedToId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  // Employee time tracking
+  inTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  outTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  employeeNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  // Client images for quote request
+  clientImages: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
+  // Completion images from employee
+  completionImages: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
+  preferredDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+}, {
+  tableName: 'leads',
+  timestamps: true,
+});
 
-module.exports = mongoose.model('Lead', LeadSchema);
+// Define associations
+Lead.associate = (models) => {
+  Lead.belongsTo(models.Service, { foreignKey: 'serviceId', as: 'service' });
+  Lead.belongsTo(models.User, { foreignKey: 'assignedToId', as: 'assignedTo' });
+};
+
+module.exports = Lead;

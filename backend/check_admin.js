@@ -1,47 +1,54 @@
-const mongoose = require('mongoose');
-const User = require('./src/models/User');
-require('dotenv').config();
+require("dotenv").config();
+const { User } = require("./src/models");
+const mysql = require("mysql2/promise");
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect('mongodb://localhost:27017/roof_service');
-        console.log('MongoDB Connected');
+const checkAdmin = async () => {
+  try {
+    // Connect to MySQL
+    await mysql.createConnection({
+      host: process.env.MYSQL_HOST || "localhost",
+      port: process.env.MYSQL_PORT || 3306,
+      database: process.env.MYSQL_DATABASE || "roof_service",
+      user: process.env.MYSQL_USER || "root",
+      password: process.env.MYSQL_PASSWORD || "root",
+    });
 
-        const email = 'admin@roofservice.com';
-        const password = 'Admin@123';
+    console.log("MySQL Connected");
 
-        let user = await User.findOne({ email });
+    const email = "admin@roofservice.com";
+    const password = "Admin@123";
 
-        if (user) {
-            console.log('Admin user exists:', user.email);
-            // Verify password
-            const isMatch = await user.comparePassword(password);
-            console.log('Password match:', isMatch);
+    let user = await User.findOne({ where: { email } });
 
-            if (!isMatch) {
-                console.log('Updating password...');
-                user.password = password;
-                await user.save();
-                console.log('Password updated.');
-            }
-        } else {
-            console.log('Admin user not found. Creating...');
-            user = new User({
-                name: 'Admin User',
-                email,
-                password,
-                role: 'admin',
-                isActive: true
-            });
-            await user.save();
-            console.log('Admin user created.');
-        }
+    if (user) {
+      console.log(`Admin user exists: ${user.email}`);
+      // Verify password
+      const isMatch = await user.comparePassword(password);
+      console.log("Password match:", isMatch);
 
-        process.exit();
-    } catch (err) {
-        console.error(err);
-        process.exit(1);
+      if (!isMatch) {
+        console.log("Updating password...");
+        user.password = password;
+        await user.save();
+        console.log("Password updated.");
+      }
+    } else {
+      console.log("Admin user not found. Creating...");
+      user = await User.create({
+        name: "Admin User",
+        email: email,
+        password: password,
+        role: "admin",
+        isActive: true,
+      });
+      console.log("Admin user created.");
     }
+
+    process.exit();
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
 };
 
-connectDB();
+checkAdmin();

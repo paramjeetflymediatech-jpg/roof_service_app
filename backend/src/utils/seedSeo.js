@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const SeoMeta = require('../models/SeoMeta');
+const { SeoMeta } = require('../models');
+const connectDB = require('../config/db');
 require('dotenv').config();
 
 // Default SEO data for all pages
@@ -13,6 +13,9 @@ const defaultSeoData = [
         ogDescription: 'Mainstreet Roofing offers expert roofing solutions with top-quality materials and craftsmanship. From installations to repairs, we ensure durability and customer satisfaction.',
         ogImage: '/assets/roofing-logo.png',
         canonicalUrl: 'https://yourdomain.com/',
+        schemaMarkup: '',
+        googleAnalyticsId: '',
+        googleTagManagerId: '',
     },
     {
         pageName: 'about',
@@ -23,6 +26,9 @@ const defaultSeoData = [
         ogDescription: 'Learn about Mainstreet Roofing, our experienced team, and our commitment to providing exceptional roofing services with quality materials and expert craftsmanship.',
         ogImage: '/assets/roofing-logo.png',
         canonicalUrl: 'https://yourdomain.com/about',
+        schemaMarkup: '',
+        googleAnalyticsId: '',
+        googleTagManagerId: '',
     },
     {
         pageName: 'services',
@@ -33,6 +39,9 @@ const defaultSeoData = [
         ogDescription: 'Explore our comprehensive roofing services including new construction, reroofs, metal roofing, leak repair, and more. Professional solutions for residential and commercial projects.',
         ogImage: '/assets/roofing-logo.png',
         canonicalUrl: 'https://yourdomain.com/services',
+        schemaMarkup: '',
+        googleAnalyticsId: '',
+        googleTagManagerId: '',
     },
     {
         pageName: 'contact',
@@ -43,6 +52,9 @@ const defaultSeoData = [
         ogDescription: 'Contact Mainstreet Roofing for a free quote. Our expert team is ready to help with all your roofing needs. Call 604-720-4313 or fill out our contact form.',
         ogImage: '/assets/roofing-logo.png',
         canonicalUrl: 'https://yourdomain.com/contact',
+        schemaMarkup: '',
+        googleAnalyticsId: '',
+        googleTagManagerId: '',
     },
     {
         pageName: 'gallery',
@@ -53,26 +65,29 @@ const defaultSeoData = [
         ogDescription: 'View our portfolio of completed roofing projects. See the quality of our workmanship and the variety of roofing solutions we provide for residential and commercial clients.',
         ogImage: '/assets/roofing-logo.png',
         canonicalUrl: 'https://yourdomain.com/gallery',
+        schemaMarkup: '',
+        googleAnalyticsId: '',
+        googleTagManagerId: '',
     },
 ];
 
 async function seedSeoData() {
     try {
-        // Connect to MongoDB
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('Connected to MongoDB');
+        // Connect to MySQL
+        await connectDB();
+        console.log('Connected to MySQL');
 
         // Clear existing SEO data
-        await SeoMeta.deleteMany({});
+        await SeoMeta.destroy({ truncate: true });
         console.log('Cleared existing SEO data');
 
         // Insert default SEO data
-        await SeoMeta.insertMany(defaultSeoData);
+        await SeoMeta.bulkCreate(defaultSeoData);
         console.log('SEO data seeded successfully!');
         console.log(`Inserted ${defaultSeoData.length} SEO pages`);
 
         // Display inserted data
-        const seoPages = await SeoMeta.find();
+        const seoPages = await SeoMeta.findAll();
         console.log('\nSeeded SEO Pages:');
         seoPages.forEach(page => {
             console.log(`- ${page.pageName}: ${page.pageTitle}`);

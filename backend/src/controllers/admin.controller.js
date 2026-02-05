@@ -1,9 +1,8 @@
-const User = require('../models/User');
-const Lead = require('../models/Lead');
-const SeoMeta = require('../models/SeoMeta');
+const { User, Lead, Service, SeoMeta } = require('../models');
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
+    console.log(req.session,'session')
     if (req.session && req.session.userId) {
         return res.redirect('/admin/dashboard');
     }
@@ -22,7 +21,7 @@ const postLogin = async (req, res) => {
             return res.redirect('/admin/login');
         }
 
-        const user = await User.findOne({ email, isActive: true });
+        const user = await User.findOne({ where: { email, isActive: true } });
 
         if (!user) {
             req.flash('error', 'Invalid credentials');
@@ -42,12 +41,12 @@ const postLogin = async (req, res) => {
         }
 
         // Set session
-        req.session.userId = user._id;
+        req.session.userId = user.id;
         req.session.userRole = user.role;
         req.session.userName = user.name;
 
         console.log('Login - Setting Session:', req.sessionID);
-        console.log('Login - User ID set:', user._id);
+        console.log('Login - User ID set:', user.id);
 
         // Save session before redirect
         req.session.save((err) => {
@@ -70,10 +69,10 @@ const postLogin = async (req, res) => {
 // GET /admin/dashboard - Render dashboard
 const getDashboard = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments();
-        const totalLeads = await Lead.countDocuments();
-        const newLeads = await Lead.countDocuments({ status: 'new' });
-        const inProgressLeads = await Lead.countDocuments({ status: 'in_progress' });
+        const totalUsers = await User.count();
+        const totalLeads = await Lead.count();
+        const newLeads = await Lead.count({ where: { status: 'new' } });
+        const inProgressLeads = await Lead.count({ where: { status: 'in_progress' } });
 
         res.render('admin/dashboard', {
             title: 'Dashboard',
@@ -107,14 +106,16 @@ const getUserList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
-        const skip = (page - 1) * limit;
+        const offset = (page - 1) * limit;
 
-        const totalUsers = await User.countDocuments();
-        const users = await User.find()
-            .select('-password')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        const totalUsers = await User.count();
+        const users = await User.findAll({
+            attributes: { exclude: ['password'] },
+            order: [['createdAt', 'DESC']],
+            limit: limit,
+            offset: offset,
+            raw: true,
+        });
 
         const totalPages = Math.ceil(totalUsers / limit);
 
@@ -138,13 +139,15 @@ const getLeadList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
-        const skip = (page - 1) * limit;
+        const offset = (page - 1) * limit;
 
-        const totalLeads = await Lead.countDocuments();
-        const leads = await Lead.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        const totalLeads = await Lead.count();
+        const leads = await Lead.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: limit,
+            offset: offset,
+            raw: true,
+        });
 
         const totalPages = Math.ceil(totalLeads / limit);
 
@@ -181,7 +184,7 @@ const postCreateLead = async (req, res) => {
             return res.redirect('/admin/leads/create');
         }
 
-        const newLead = new Lead({
+        await Lead.create({
             name,
             email,
             phone,
@@ -193,8 +196,6 @@ const postCreateLead = async (req, res) => {
             message,
             source: 'other' // Manual entry
         });
-
-        await newLead.save();
 
         req.flash('success', 'Lead created successfully');
         res.redirect('/admin/leads');
@@ -208,7 +209,7 @@ const postCreateLead = async (req, res) => {
 // GET /admin/leads/:id/edit - Render edit lead form
 const getEditLead = async (req, res) => {
     try {
-        const lead = await Lead.findById(req.params.id);
+        const lead = await Lead.findByPk(req.params.id);
 
         if (!lead) {
             req.flash('error', 'Lead not found');
@@ -218,7 +219,7 @@ const getEditLead = async (req, res) => {
         res.render('admin/leads/edit', {
             title: 'Edit Lead',
             userName: req.session.userName,
-            lead,
+            lead: lead.dataValues || lead,
         });
     } catch (error) {
         console.error('Edit lead error:', error);
@@ -233,23 +234,23 @@ const postUpdateLead = async (req, res) => {
         const { name, email, phone, leadType, address, city, serviceType, status, message } = req.body;
         const leadId = req.params.id;
 
-        const lead = await Lead.findById(leadId);
+        const lead = await Lead.findByPk(leadId);
         if (!lead) {
             req.flash('error', 'Lead not found');
             return res.redirect('/admin/leads');
         }
 
-        lead.name = name;
-        lead.email = email;
-        lead.phone = phone;
-        lead.leadType = leadType;
-        lead.address = address;
-        lead.city = city;
-        lead.serviceType = serviceType;
-        lead.status = status;
-        lead.message = message;
-
-        await lead.save();
+        await Lead.update({
+            name,
+            email,
+            phone,
+            leadType,
+            address,
+            city,
+            serviceType,
+            status,
+            message,
+        }, { where: { id: leadId } });
 
         req.flash('success', 'Lead updated successfully');
         res.redirect('/admin/leads');
@@ -264,12 +265,14 @@ const postUpdateLead = async (req, res) => {
 const deleteLead = async (req, res) => {
     try {
         const leadId = req.params.id;
-        const lead = await Lead.findByIdAndDelete(leadId);
+        const lead = await Lead.findByPk(leadId);
 
         if (!lead) {
             req.flash('error', 'Lead not found');
             return res.redirect('/admin/leads');
         }
+
+        await Lead.destroy({ where: { id: leadId } });
 
         req.flash('success', 'Lead deleted successfully');
         res.redirect('/admin/leads');
@@ -283,7 +286,7 @@ const deleteLead = async (req, res) => {
 // POST /admin/leads/delete-all - Delete all leads
 const deleteAllLeads = async (req, res) => {
     try {
-        await Lead.deleteMany({});
+        await Lead.destroy({ where: {} });
         req.flash('success', 'All leads deleted successfully');
         res.redirect('/admin/leads');
     } catch (error) {
@@ -323,7 +326,7 @@ const postCreateUser = async (req, res) => {
         }
 
         // Check if email already exists
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             req.flash('error', 'Email already exists');
             return res.redirect('/admin/users/create');
@@ -335,7 +338,7 @@ const postCreateUser = async (req, res) => {
                 req.flash('error', 'Phone number must contain only numbers');
                 return res.redirect('/admin/users/create');
             }
-            const existingPhone = await User.findOne({ phone });
+            const existingPhone = await User.findOne({ where: { phone } });
             if (existingPhone) {
                 req.flash('error', 'Phone number already exists');
                 return res.redirect('/admin/users/create');
@@ -343,7 +346,7 @@ const postCreateUser = async (req, res) => {
         }
 
         // Create new user
-        const newUser = new User({
+        await User.create({
             name,
             email,
             password, // Will be hashed by pre-save hook
@@ -351,8 +354,6 @@ const postCreateUser = async (req, res) => {
             isActive: isActive === 'on' ? true : false,
             phone,
         });
-
-        await newUser.save();
 
         req.flash('success', 'User created successfully');
         res.redirect('/admin/users');
@@ -366,7 +367,9 @@ const postCreateUser = async (req, res) => {
 // GET /admin/users/:id/edit - Render edit user form
 const getEditUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findByPk(req.params.id, {
+            attributes: { exclude: ['password'] }
+        });
 
         if (!user) {
             req.flash('error', 'User not found');
@@ -376,7 +379,7 @@ const getEditUser = async (req, res) => {
         res.render('admin/users/edit', {
             title: 'Edit User',
             userName: req.session.userName,
-            user,
+            user: user.dataValues || user,
         });
     } catch (error) {
         console.error('Edit user error:', error);
@@ -408,7 +411,7 @@ const postUpdateUser = async (req, res) => {
         }
 
         // Check if email already exists (excluding current user)
-        const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+        const existingUser = await User.findOne({ where: { email, id: { [require('sequelize').Op.ne]: userId } } });
         if (existingUser) {
             req.flash('error', 'Email already exists');
             return res.redirect(`/admin/users/${userId}/edit`);
@@ -420,7 +423,7 @@ const postUpdateUser = async (req, res) => {
                 req.flash('error', 'Phone number must contain only numbers');
                 return res.redirect(`/admin/users/${userId}/edit`);
             }
-            const existingPhone = await User.findOne({ phone, _id: { $ne: userId } });
+            const existingPhone = await User.findOne({ where: { phone, id: { [require('sequelize').Op.ne]: userId } } });
             if (existingPhone) {
                 req.flash('error', 'Phone number already exists');
                 return res.redirect(`/admin/users/${userId}/edit`);
@@ -428,24 +431,26 @@ const postUpdateUser = async (req, res) => {
         }
 
         // Find and update user
-        const user = await User.findById(userId);
+        const user = await User.findByPk(userId);
         if (!user) {
             req.flash('error', 'User not found');
             return res.redirect('/admin/users');
         }
-
-        user.name = name;
-        user.email = email;
-        user.role = role || 'user';
-        user.isActive = isActive === 'on' ? true : false;
-        user.phone = phone;
+ 
+        const updateData = {
+            name,
+            email,
+            role: role || 'user',
+            isActive: isActive === 'on' ? true : false,
+            phone,
+        };
 
         // Only update password if provided
         if (password && password.trim() !== '') {
-            user.password = password; // Will be hashed by pre-save hook
+            updateData.password = password; // Will be hashed by pre-save hook
         }
 
-        await user.save();
+        await User.update(updateData, { where: { id: userId } });
 
         req.flash('success', 'User updated successfully');
         res.redirect('/admin/users');
@@ -462,17 +467,19 @@ const deleteUser = async (req, res) => {
         const userId = req.params.id;
 
         // Prevent deleting self
-        if (userId === req.session.userId.toString()) {
+        if (userId === req.session.userId) {
             req.flash('error', 'Cannot delete your own account');
             return res.redirect('/admin/users');
         }
 
-        const user = await User.findByIdAndDelete(userId);
+        const user = await User.findByPk(userId);
 
         if (!user) {
             req.flash('error', 'User not found');
             return res.redirect('/admin/users');
         }
+
+        await User.destroy({ where: { id: userId } });
 
         req.flash('success', 'User deleted successfully');
         res.redirect('/admin/users');
@@ -489,7 +496,7 @@ const deleteAllUsers = async (req, res) => {
         const currentUserId = req.session.userId;
 
         // Delete all users except the current admin
-        await User.deleteMany({ _id: { $ne: currentUserId } });
+        await User.destroy({ where: { id: { [require('sequelize').Op.ne]: currentUserId } } });
 
         req.flash('success', 'All users deleted successfully (except yourself)');
         res.redirect('/admin/users');
@@ -503,7 +510,10 @@ const deleteAllUsers = async (req, res) => {
 // GET /admin/seo - Render SEO list
 const getSeoList = async (req, res) => {
     try {
-        const seoPages = await SeoMeta.find().sort({ pageName: 1 });
+        const seoPages = await SeoMeta.findAll({
+            order: [['pageName', 'ASC']],
+            raw: true,
+        });
 
         res.render('admin/seo/list', {
             title: 'SEO Management',
@@ -516,8 +526,6 @@ const getSeoList = async (req, res) => {
         res.redirect('/admin/dashboard');
     }
 };
-
-
 
 // GET /admin/seo/create - Render create SEO form
 const getCreateSeo = (req, res) => {
@@ -551,14 +559,14 @@ const postCreateSeo = async (req, res) => {
         }
 
         // Check if page already exists
-        const existingPage = await SeoMeta.findOne({ pageName: pageName.toLowerCase() });
+        const existingPage = await SeoMeta.findOne({ where: { pageName: pageName.toLowerCase() } });
         if (existingPage) {
             req.flash('error', 'SEO for this page already exists');
             return res.redirect('/admin/seo/create');
         }
 
         // Create new SEO entry
-        const newSeoPage = new SeoMeta({
+        await SeoMeta.create({
             pageName: pageName.toLowerCase(),
             pageTitle,
             metaDescription,
@@ -572,8 +580,6 @@ const postCreateSeo = async (req, res) => {
             googleTagManagerId: googleTagManagerId || '',
         });
 
-        await newSeoPage.save();
-
         req.flash('success', 'SEO page created successfully');
         res.redirect('/admin/seo');
     } catch (error) {
@@ -586,7 +592,7 @@ const postCreateSeo = async (req, res) => {
 // GET /admin/seo/:id/edit - Render edit SEO form
 const getEditSeo = async (req, res) => {
     try {
-        const seoPage = await SeoMeta.findById(req.params.id);
+        const seoPage = await SeoMeta.findByPk(req.params.id);
 
         if (!seoPage) {
             req.flash('error', 'SEO page not found');
@@ -596,7 +602,7 @@ const getEditSeo = async (req, res) => {
         res.render('admin/seo/edit', {
             title: 'Edit SEO Meta Tags',
             userName: req.session.userName,
-            seoPage,
+            seoPage: seoPage.dataValues || seoPage,
         });
     } catch (error) {
         console.error('Edit SEO error:', error);
@@ -629,24 +635,24 @@ const postUpdateSeo = async (req, res) => {
         }
 
         // Find and update SEO page
-        const seoPage = await SeoMeta.findById(seoId);
+        const seoPage = await SeoMeta.findByPk(seoId);
         if (!seoPage) {
             req.flash('error', 'SEO page not found');
             return res.redirect('/admin/seo');
         }
 
-        seoPage.pageTitle = pageTitle;
-        seoPage.metaDescription = metaDescription;
-        seoPage.metaRobots = metaRobots || 'index, follow';
-        seoPage.ogTitle = ogTitle || pageTitle;
-        seoPage.ogDescription = ogDescription || metaDescription;
-        seoPage.ogImage = ogImage || '';
-        seoPage.canonicalUrl = canonicalUrl || '';
-        seoPage.schemaMarkup = schemaMarkup || '';
-        seoPage.googleAnalyticsId = googleAnalyticsId || '';
-        seoPage.googleTagManagerId = googleTagManagerId || '';
-
-        await seoPage.save();
+        await SeoMeta.update({
+            pageTitle,
+            metaDescription,
+            metaRobots: metaRobots || 'index, follow',
+            ogTitle: ogTitle || pageTitle,
+            ogDescription: ogDescription || metaDescription,
+            ogImage: ogImage || '',
+            canonicalUrl: canonicalUrl || '',
+            schemaMarkup: schemaMarkup || '',
+            googleAnalyticsId: googleAnalyticsId || '',
+            googleTagManagerId: googleTagManagerId || '',
+        }, { where: { id: seoId } });
 
         req.flash('success', 'SEO meta tags updated successfully');
         res.redirect('/admin/seo');
@@ -661,12 +667,14 @@ const postUpdateSeo = async (req, res) => {
 const deleteSeo = async (req, res) => {
     try {
         const seoId = req.params.id;
-        const seoPage = await SeoMeta.findByIdAndDelete(seoId);
+        const seoPage = await SeoMeta.findByPk(seoId);
 
         if (!seoPage) {
             req.flash('error', 'SEO page not found');
             return res.redirect('/admin/seo');
         }
+
+        await SeoMeta.destroy({ where: { id: seoId } });
 
         req.flash('success', 'SEO page deleted successfully');
         res.redirect('/admin/seo');
