@@ -27,8 +27,8 @@ const sendLeadNotification = async (leadData) => {
         to: process.env.EMAIL_USER, // Send to your email
         subject: `New Lead: ${leadData.name}`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #00000007;">New Lead Submission</h2>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; color:black;margin: 0 auto;">
+                <h2 style="color: black;">New Lead Submission</h2>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
                     <p><strong>Name:</strong> ${leadData.name}</p>
                     <p><strong>Email:</strong> ${leadData.email}</p>
