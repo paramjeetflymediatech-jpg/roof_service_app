@@ -5,7 +5,7 @@ const leadController = require("../controllers/lead.controller");
 const { jwtAuth, isAdmin } = require("../middlewares/auth.middleware");
 
 // /api/leads
-router.post("/", jwtAuth, upload.array("images", 5), leadController.createLead);
+router.post("/", upload.array("images", 5), leadController.createLead);
 router.get("/", jwtAuth, leadController.getLeads);
 router.get("/:id", jwtAuth, leadController.getLeadById);
 router.put("/:id", jwtAuth, isAdmin, leadController.updateLead);

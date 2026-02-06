@@ -115,7 +115,7 @@ const ClientHomeScreen = () => {
       title={item.service}
       subtitle={`
 Date• ${item.preferedDate}
-Addres:${item.address}
+Address:${item.address}
         `}
       status={item.status}
       statusColor={getStatusColor(item.status)}
