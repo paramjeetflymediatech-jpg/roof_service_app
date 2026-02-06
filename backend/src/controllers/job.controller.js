@@ -340,9 +340,14 @@ exports.startJob = async (req, res) => {
     }
 
     const oldStatus = job.status;
+    const now = new Date();
+    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes(),
+    ).padStart(2, "0")}`;
+
     await job.update({
       status: "in_progress",
-      startTime: new Date(),
+      startTime: now,
     });
 
     // Create job log
@@ -355,9 +360,13 @@ exports.startJob = async (req, res) => {
       notes: "Employee started the job",
     });
 
-    // Update lead status
+    // Update lead status and store human-readable start time as well
     await Lead.update(
-      { status: "in_progress", inTime: new Date() },
+      {
+        status: "in_progress",
+        inTime: now,
+        employeeStartTime: hhmm,
+      },
       { where: { id: job.leadId } },
     );
 
@@ -403,9 +412,14 @@ exports.completeJob = async (req, res) => {
       (parseFloat(laborCost) || 0) + (parseFloat(materialCost) || 0);
 
     const oldStatus = job.status;
+    const now = new Date();
+    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes(),
+    ).padStart(2, "0")}`;
+
     await job.update({
       status: "completed",
-      endTime: new Date(),
+      endTime: now,
       completionNotes,
       afterImages,
       actualHours,
@@ -425,13 +439,14 @@ exports.completeJob = async (req, res) => {
       notes: completionNotes || "Job completed",
     });
 
-    // Update lead status
+    // Update lead status and store human-readable end time as well
     await Lead.update(
       {
         status: "completed",
-        outTime: new Date(),
+        outTime: now,
         completionImages: afterImages,
         employeeNotes: completionNotes || null,
+        employeeEndTime: hhmm,
       },
       { where: { id: job.leadId } },
     );

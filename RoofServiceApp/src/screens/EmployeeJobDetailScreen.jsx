@@ -14,15 +14,69 @@ import ImagePickerComponent from '../components/ImagePicker';
 import { COLORS, JOB_STATUS } from '../utils/constants';
 import { api } from '../config/api';
 
+const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const isValidHHMM = value => TIME_REGEX.test(value.trim());
+
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
+  console.log(useRoute().params, ' useRoute().params');
   const { job } = useRoute().params || {};
   const [currentJob, setCurrentJob] = useState(job);
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inTime, setInTime] = useState(job?.inTime || null);
-  const [outTime, setOutTime] = useState(job?.outTime || null);
+  const [inTime, setInTime] = useState(
+    job?.inTime || job?.employeeStartTime || '',
+  );
+  const [outTime, setOutTime] = useState(
+    job?.outTime || job?.employeeEndTime || '',
+  );
+
+  const handleSaveLeadDetails = async () => {
+    if (!job?.leadId) {
+      Alert.alert('Error', 'Missing lead information for this job.');
+      return;
+    }
+
+    if (inTime && !isValidHHMM(inTime)) {
+      Alert.alert(
+        'Invalid time',
+        'Please enter start time in HH:MM format, e.g. 09:00.',
+      );
+      return;
+    }
+
+    if (outTime && !isValidHHMM(outTime)) {
+      Alert.alert(
+        'Invalid time',
+        'Please enter end time in HH:MM format, e.g. 17:30.',
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const completionImages = images.map(img => ({
+        uri: img.uri,
+        fileName: img.fileName,
+        type: img.type,
+      }));
+
+      await api.updateLead(job.leadId, {
+        employeeStartTime: inTime,
+        employeeEndTime: outTime,
+        employeeNotes: notes,
+        completionImages,
+      });
+
+      Alert.alert('Saved', 'Lead details have been updated.');
+    } catch (error) {
+      console.log('Save lead details error:', error.response || error);
+      Alert.alert('Error', 'Failed to update lead details. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSaveDetails = async () => {
     if (!currentJob || currentJob.status === JOB_STATUS.COMPLETED) {
@@ -54,7 +108,11 @@ const EmployeeJobDetailScreen = () => {
   };
 
   const handleClockIn = async () => {
-    if (currentJob.status === JOB_STATUS.IN_PROGRESS || currentJob.status === JOB_STATUS.COMPLETED) {
+    console.log(currentJob, 'currentJob');
+    if (
+      currentJob.status === 'in_progress' ||
+      currentJob.status === 'completed'
+    ) {
       return;
     }
 
@@ -62,11 +120,13 @@ const EmployeeJobDetailScreen = () => {
     try {
       const response = await api.startJob(currentJob.id);
       const updatedJob = response.data?.data || response.data || {};
-      const start = updatedJob.startTime || new Date().toISOString();
-      const timeString = new Date(start).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const start =
+        updatedJob.inTime || updatedJob.startTime || new Date().toISOString();
+      const startDate = new Date(start);
+      const timeString = `${String(startDate.getHours()).padStart(
+        2,
+        '0',
+      )}:${String(startDate.getMinutes()).padStart(2, '0')}`;
 
       setInTime(timeString);
       setCurrentJob(prev => ({
@@ -83,16 +143,39 @@ const EmployeeJobDetailScreen = () => {
     }
   };
 
+  const handleAcceptJob = async () => {
+    if (!currentJob) return;
+
+    setLoading(true);
+    try {
+      const response = await api.updateJobStatus(currentJob.id, {
+        status: 'accepted',
+        notes: 'Employee accepted job',
+      });
+      const updatedJob = response.data?.data || response.data || {};
+      setCurrentJob(prev => ({
+        ...prev,
+        status: updatedJob.status || 'accepted',
+      }));
+      Alert.alert('Job Accepted', 'You have accepted this job.');
+    } catch (error) {
+      console.log('Accept job error:', error.response || error);
+      Alert.alert('Error', 'Failed to accept job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClockOut = () => {
+    console.log(currentJob, 'currentJob');
     if (!inTime) {
       Alert.alert('Error', 'Please clock in first');
       return;
     }
     const now = new Date();
-    const timeString = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(
+      now.getMinutes(),
+    ).padStart(2, '0')}`;
     setOutTime(timeString);
     setCurrentJob({ ...currentJob, outTime: timeString });
     Alert.alert('Clocked Out', `You clocked out at ${timeString}`);
@@ -100,11 +183,18 @@ const EmployeeJobDetailScreen = () => {
 
   const handleCompleteJob = async () => {
     if (!inTime) {
-      Alert.alert('Error', 'Please clock in first');
+      Alert.alert('Error', 'Please enter start time first');
       return;
     }
     if (!outTime) {
       Alert.alert('Error', 'Please clock out first');
+      return;
+    }
+    if (!isValidHHMM(inTime) || !isValidHHMM(outTime)) {
+      Alert.alert(
+        'Invalid time',
+        'Please enter start and end times in HH:MM format, e.g. 09:00 and 17:30.',
+      );
       return;
     }
 
@@ -137,7 +227,7 @@ const EmployeeJobDetailScreen = () => {
             text: 'OK',
             onPress: () => navigation.goBack(),
           },
-        ]
+        ],
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to complete job');
@@ -153,14 +243,19 @@ const EmployeeJobDetailScreen = () => {
       </View>
     );
   }
-  console.log(currentJob,'job',JOB_STATUS);
+  console.log(currentJob, 'job', JOB_STATUS);
 
-  const isAssigned = currentJob.status === JOB_STATUS.ASSIGNED;
-  const isInProgress = currentJob.status === JOB_STATUS.IN_PROGRESS;
-  const isCompleted = currentJob.status === JOB_STATUS.COMPLETED;
+  const jobStatus = currentJob.status;
+  const isPending = jobStatus === 'assigned' || jobStatus === 'pending';
+  const isAccepted = jobStatus === 'accepted';
+  const isInProgress = jobStatus === 'in_progress';
+  const isCompleted = jobStatus === 'completed';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+    >
       <Text style={styles.title}>{currentJob.service}</Text>
       <Text style={styles.subtitle}>{currentJob.address}</Text>
 
@@ -183,12 +278,27 @@ const EmployeeJobDetailScreen = () => {
         </View>
       </Card>
 
-      {isAssigned && (
-        <Card title="Start Job">
+      {(isPending || isAccepted) && (
+        <Card title="Job Status">
           <Text style={styles.cardText}>
-            You have been assigned to this job. Please clock in when you arrive at the location.
+            You have been assigned to this job. Please accept and start the
+            work.
           </Text>
-          <Button title="Clock In" onPress={handleClockIn} style={styles.clockButton} />
+          {isPending && (
+            <Button
+              title="Accept Job"
+              onPress={handleAcceptJob}
+              loading={loading}
+              style={styles.clockButton}
+            />
+          )}
+          {isAccepted && (
+            <Button
+              title="Clock In"
+              onPress={handleClockIn}
+              style={styles.clockButton}
+            />
+          )}
         </Card>
       )}
 
@@ -213,8 +323,32 @@ const EmployeeJobDetailScreen = () => {
               style={styles.clockButton}
             />
           ) : (
-            <Card title="Work Photos" style={styles.photosCard}>
-              <Text style={styles.cardText}>Upload photos of completed work</Text>
+            <Card title="Work Details" style={styles.photosCard}>
+              <Text style={styles.cardText}>
+                Enter start/end time and upload photos of the completed work.
+              </Text>
+
+              <View style={styles.timeInputRow}>
+                <View style={styles.timeInputContainer}>
+                  <Text style={styles.label}>Start Time (HH:MM)</Text>
+                  <TextInput
+                    style={styles.timeInput}
+                    value={inTime}
+                    onChangeText={setInTime}
+                    placeholder="e.g. 09:00"
+                  />
+                </View>
+                <View style={styles.timeInputContainer}>
+                  <Text style={styles.label}>End Time (HH:MM)</Text>
+                  <TextInput
+                    style={styles.timeInput}
+                    value={outTime}
+                    onChangeText={setOutTime}
+                    placeholder="e.g. 17:30"
+                  />
+                </View>
+              </View>
+
               <ImagePickerComponent
                 images={images}
                 onImagesChange={setImages}
@@ -234,8 +368,8 @@ const EmployeeJobDetailScreen = () => {
               </View>
 
               <Button
-                title="Save Work Details"
-                onPress={handleSaveDetails}
+                title="Save Lead Details"
+                onPress={handleSaveLeadDetails}
                 loading={loading}
                 style={styles.saveButton}
               />
@@ -264,12 +398,14 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.timeValue}>{currentJob.outTime}</Text>
             </View>
           </View>
-          <Text style={styles.completedText}>✓ This job has been completed</Text>
+          <Text style={styles.completedText}>
+            ✓ This job has been completed
+          </Text>
         </Card>
       )}
     </ScrollView>
   );
-}; 
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -347,6 +483,24 @@ const styles = StyleSheet.create({
   notesContainer: {
     marginTop: 16,
     marginBottom: 16,
+  },
+  timeInputRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  timeInputContainer: {
+    flex: 1,
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: COLORS.text,
   },
   notesInput: {
     borderWidth: 1,

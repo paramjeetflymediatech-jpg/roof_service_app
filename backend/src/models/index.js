@@ -15,10 +15,12 @@ const Blog = require('./Blog');
 // Lead associations
 Lead.belongsTo(Service, { foreignKey: 'serviceId', as: 'service' });
 Lead.belongsTo(User, { foreignKey: 'assignedToId', as: 'assignedTo' });
+Lead.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-// Service associations
+// Service / User associations
 Service.hasMany(Lead, { foreignKey: 'serviceId', as: 'leads' });
 User.hasMany(Lead, { foreignKey: 'assignedToId', as: 'assignedLeads' });
+User.hasMany(Lead, { foreignKey: 'userId', as: 'userLeads' });
 
 // Job associations
 Job.belongsTo(Lead, { foreignKey: 'leadId', as: 'lead' });

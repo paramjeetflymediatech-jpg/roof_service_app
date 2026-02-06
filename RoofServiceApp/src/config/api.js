@@ -51,7 +51,7 @@ export const api = {
   logout: () => apiClient.post('/auth/logout'),
 
   // Leads/Quotes
-  getLeads: () => apiClient.get('/leads'),
+  getLeads: (params = {}) => apiClient.get('/leads', { params }),
   getLeadById: id => apiClient.get(`/leads/${id}`),
   createLead: (data, config = {}) => apiClient.post('/leads', data, config),
   updateLead: (id, data) => apiClient.put(`/leads/${id}`, data),
@@ -60,6 +60,10 @@ export const api = {
   // Users
   getUsers: role => apiClient.get(`/users${role ? `?role=${role}` : ''}`),
   getUserById: id => apiClient.get(`/users/${id}`),
+  createUser: data => apiClient.post('/users', data),
+  updateUser: (id, data) => apiClient.put(`/users/${id}`, data),
+  deleteUser: id => apiClient.delete(`/users/${id}`),
+  updateMe: data => apiClient.put('/users/me', data),
 
   // Jobs (for employees)
   getAllJobs: (filters = {}) => {

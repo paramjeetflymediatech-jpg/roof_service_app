@@ -1,4 +1,5 @@
 const { Lead, Job, User } = require("../models");
+const { Op } = require("sequelize");
 const {
   sendLeadNotification,
   sendCustomerConfirmation,
@@ -9,6 +10,11 @@ const {
 exports.createLead = async (req, res, next) => {
   try {
     const payload = { ...req.body };
+
+    // If authenticated user exists, attach userId so we can filter leads per client
+    if (req.user && req.user.id) {
+      payload.userId = req.user.id;
+    }
 
     if (!payload.name) {
       return res.status(400).json({ message: "Name is required" });
@@ -78,6 +84,7 @@ exports.getLeads = async (req, res, next) => {
     if (req.query.status) where.status = req.query.status;
     if (req.query.leadType) where.leadType = req.query.leadType;
     if (req.query.assignedToId) where.assignedToId = req.query.assignedToId;
+    if (req.query.userId) where.userId = req.query.userId;
 
     const [leads, total] = await Promise.all([
       Lead.findAll({
@@ -86,13 +93,22 @@ exports.getLeads = async (req, res, next) => {
         limit,
         offset,
         include: [
-          { model: User, as: "assignedTo", attributes: ["id", "name", "email", "phone"] },
+          {
+            model: User,
+            as: "assignedTo",
+            attributes: ["id", "name", "email", "phone"],
+          },
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "email"],
+          },
         ],
       }),
       Lead.count({ where }),
     ]);
 
-    const items = leads.map(lead => {
+    const items = leads.map((lead) => {
       const json = lead.toJSON();
       // Expose assigned employee basic info if available
       if (json.assignedTo) {
@@ -101,6 +117,13 @@ exports.getLeads = async (req, res, next) => {
           name: json.assignedTo.name,
           email: json.assignedTo.email,
           phone: json.assignedTo.phone,
+        };
+      }
+      if (json.user) {
+        json.clientUser = {
+          id: json.user.id,
+          name: json.user.name,
+          email: json.user.email,
         };
       }
       return json;
@@ -133,7 +156,7 @@ exports.updateLead = async (req, res, next) => {
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
-
+    console.log(req.body, "----req.body");
     await lead.update(req.body);
 
     res.json({
@@ -149,7 +172,7 @@ exports.updateLead = async (req, res, next) => {
 // Assign lead to employee
 exports.assignLead = async (req, res, next) => {
   try {
-    const { employeeId, status, adminid } = req.body;
+    const { employeeId, status, adminid, scheduledDate } = req.body;
 
     const lead = await Lead.findByPk(req.params.id);
 
@@ -160,9 +183,58 @@ exports.assignLead = async (req, res, next) => {
     if (!employee)
       return res.status(404).json({ message: "Employee not found" });
 
+    // Optional scheduled date/time for this job
+    let scheduled = null;
+    if (scheduledDate) {
+      const d = new Date(scheduledDate);
+      if (!Number.isNaN(d.getTime())) {
+        scheduled = d;
+      }
+    }
+
+    // If a scheduled time was provided, ensure no clash for this employee
+    if (scheduled) {
+      const dayStart = new Date(scheduled);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(scheduled);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const existing = await Job.findAll({
+        where: {
+          employeeId,
+          scheduledDate: { [Op.between]: [dayStart, dayEnd] },
+          status: { [Op.in]: ["pending", "accepted", "in_progress"] },
+        },
+        raw: true,
+      });
+
+      const getSlot = (date) => {
+        const h = date.getHours();
+        if (h < 12) return "morning";
+        if (h < 17) return "afternoon";
+        return "evening";
+      };
+
+      const newSlot = getSlot(scheduled);
+      const hasClash = existing.some((j) => {
+        if (!j.scheduledDate) return false;
+        const d = new Date(j.scheduledDate);
+        return getSlot(d) === newSlot;
+      });
+
+      if (hasClash) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "This employee already has a job in the selected time slot for that date.",
+        });
+      }
+    }
+
     await lead.update({
       assignedToId: employeeId,
       status: status,
+      preferredDate: scheduled || lead.preferredDate,
     });
 
     // 4️⃣ Create job record for this assignment
@@ -173,6 +245,7 @@ exports.assignLead = async (req, res, next) => {
       assignedById: adminid || null,
       status: "pending",
       priority: "medium",
+      scheduledDate: scheduled,
     });
 
     // Send email notification to employee

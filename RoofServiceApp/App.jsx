@@ -45,9 +45,12 @@
 // export default App;
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { COLORS } from './src/utils/constants';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -110,31 +113,62 @@ import AdminQuotesScreen from './src/screens/AdminQuotesScreen';
 import AdminAssignScreen from './src/screens/AdminAssignScreen';
 import EmployeeDashboardScreen from './src/screens/EmployeeDashboardScreen';
 import EmployeeJobDetailScreen from './src/screens/EmployeeJobDetailScreen';
+import ClientLeadDetailScreen from './src/screens/ClientLeadDetailScreen';
+import ClientProfileScreen from './src/screens/ClientProfileScreen';
+import AdminUsersScreen from './src/screens/AdminUsersScreen';
 
 // Stack Navigator
 const Stack = createNativeStackNavigator();
 
-// Main App Component
-const App = () => {
-  return (
-    <AuthProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName="Onboarding"
-        >
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+const RootNavigator = () => {
+  const { user, loading } = useAuth();
 
-          <Stack.Screen name="ClientHome" component={ClientHomeScreen} />
-          <Stack.Screen name="ClientQuote" component={ClientQuoteScreen} />
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: COLORS.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  const isAuthenticated = !!user;
+
+  // Unauthenticated stack: onboarding + auth screens
+  if (!isAuthenticated) {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+      </Stack.Navigator>
+    );
+  }
+
+  const role = user?.role;
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {role === 'admin' && (
+        <>
           <Stack.Screen
             name="AdminDashboard"
             component={AdminDashboardScreen}
           />
           <Stack.Screen name="AdminQuotes" component={AdminQuotesScreen} />
           <Stack.Screen name="AdminAssign" component={AdminAssignScreen} />
+          <Stack.Screen name="AdminUsers" component={AdminUsersScreen} />
+        </>
+      )}
+
+      {role === 'employee' && (
+        <>
           <Stack.Screen
             name="EmployeeDashboard"
             component={EmployeeDashboardScreen}
@@ -143,7 +177,30 @@ const App = () => {
             name="EmployeeJobDetail"
             component={EmployeeJobDetailScreen}
           />
-        </Stack.Navigator>
+        </>
+      )}
+
+      {role !== 'admin' && role !== 'employee' && (
+        <>
+          <Stack.Screen name="ClientHome" component={ClientHomeScreen} />
+          <Stack.Screen name="ClientQuote" component={ClientQuoteScreen} />
+          <Stack.Screen
+            name="ClientLeadDetail"
+            component={ClientLeadDetailScreen}
+          />
+          <Stack.Screen name="ClientProfile" component={ClientProfileScreen} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
+};
+
+// Main App Component
+const App = () => {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <RootNavigator />
       </NavigationContainer>
     </AuthProvider>
   );

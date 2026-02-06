@@ -47,6 +47,7 @@ exports.login = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          phone: user.phone,
         },
         token,
       },
@@ -110,17 +111,32 @@ exports.register = async (req, res) => {
   }
 };
 
-// Get current user
+// Get current authenticated user (based on JWT)
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
+    }
+
+    const user = await User.findByPk(req.user.id);
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
-    res.json({ success: true, data: user });
+    res.json({
+      success: true,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+      },
+    });
   } catch (error) {
     console.error("Get me error:", error);
     res.status(500).json({ success: false, message: "Failed to get user" });

@@ -92,8 +92,11 @@ async function runMigration() {
         source ENUM('website', 'mobile_app', 'other') DEFAULT 'website',
         status ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled') DEFAULT 'new',
         assigned_to_id INT,
+        user_id INT,
         in_time DATETIME NULL,
         out_time DATETIME NULL,
+        employee_start_time VARCHAR(20),
+        employee_end_time VARCHAR(20),
         employee_notes TEXT NULL,
         client_images JSON NULL,
         completion_images JSON NULL,
@@ -101,7 +104,8 @@ async function runMigration() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL,
-        FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON DELETE SET NULL
+        FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 

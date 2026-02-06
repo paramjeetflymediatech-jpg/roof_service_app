@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
@@ -23,10 +24,75 @@ const AdminAssignScreen = ({ route }) => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState(''); // YYYY-MM-DD
+  const [selectedSlot, setSelectedSlot] = useState(null); // 'morning' | 'afternoon' | 'evening'
+  const [busyEmployeeIds, setBusyEmployeeIds] = useState([]); // employees already booked for selected date/slot
 
   useEffect(() => {
     loadEmployees();
   }, []);
+
+  // Whenever scheduled date or slot changes, recompute which employees are busy
+  useEffect(() => {
+    const updateAvailability = async () => {
+      if (!scheduledDate || !selectedSlot) {
+        setBusyEmployeeIds([]);
+        return;
+      }
+      try {
+        const res = await api.getAllJobs({});
+        const raw =
+          res.data?.items ||
+          res.data?.data ||
+          (Array.isArray(res.data) ? res.data : []);
+
+        const [year, month, day] = scheduledDate.split('-').map(Number);
+        if (!year || !month || !day) {
+          setBusyEmployeeIds([]);
+          return;
+        }
+        const getSlot = dateStr => {
+          const d = new Date(dateStr);
+          if (Number.isNaN(d.getTime())) return null;
+          const h = d.getHours();
+          if (h < 12) return 'morning';
+          if (h < 17) return 'afternoon';
+          return 'evening';
+        };
+
+        const idsSet = new Set();
+        raw.forEach(job => {
+          if (!job.scheduledDate && !job.scheduled_date) return;
+          const dt = new Date(job.scheduledDate || job.scheduled_date);
+          if (Number.isNaN(dt.getTime())) return;
+          if (
+            dt.getFullYear() === year &&
+            dt.getMonth() + 1 === month &&
+            dt.getDate() === day
+          ) {
+            const slot = getSlot(dt.toISOString());
+            if (slot === selectedSlot) {
+              const status = job.status;
+              if (
+                status === 'pending' ||
+                status === 'accepted' ||
+                status === 'in_progress'
+              ) {
+                idsSet.add(job.employeeId || job.employee_id);
+              }
+            }
+          }
+        });
+
+        setBusyEmployeeIds(Array.from(idsSet));
+      } catch (error) {
+        console.log('Availability check error:', error.response || error);
+        setBusyEmployeeIds([]);
+      }
+    };
+
+    updateAvailability();
+  }, [scheduledDate, selectedSlot]);
 
   console.log(user, 'user');
 
@@ -88,9 +154,30 @@ const AdminAssignScreen = ({ route }) => {
     ]);
   };
 
+  const buildScheduledDate = () => {
+    if (!scheduledDate || !selectedSlot) return null;
+    const [year, month, day] = scheduledDate.split('-').map(Number);
+    if (!year || !month || !day) return null;
+    let hour = 9;
+    if (selectedSlot === 'afternoon') hour = 13;
+    if (selectedSlot === 'evening') hour = 17;
+    const d = new Date(year, month - 1, day, hour, 0, 0, 0);
+    return d.toISOString();
+  };
+
   const handleAssign = async () => {
     if (!selectedEmployee) {
       Alert.alert('Error', 'Please select an employee');
+      return;
+    }
+    if (!scheduledDate || !selectedSlot) {
+      Alert.alert('Error', 'Please select a date and time slot for the job.');
+      return;
+    }
+
+    const scheduledISO = buildScheduledDate();
+    if (!scheduledISO) {
+      Alert.alert('Error', 'Please enter a valid date in YYYY-MM-DD format.');
       return;
     }
 
@@ -100,6 +187,7 @@ const AdminAssignScreen = ({ route }) => {
         employeeId: selectedEmployee.id,
         status: LEAD_STATUS.ASSIGNED,
         adminid: user.id,
+        scheduledDate: scheduledISO,
       });
 
       Alert.alert(
@@ -113,6 +201,7 @@ const AdminAssignScreen = ({ route }) => {
       setLoading(false);
     }
   };
+  console.log(selectedQuote, 'selected quote');
 
   if (!selectedQuote) {
     return (
@@ -141,8 +230,79 @@ const AdminAssignScreen = ({ route }) => {
         <InfoRow label="Client" value={selectedQuote.clientName} />
         <InfoRow label="Phone" value={selectedQuote.phone} />
         <InfoRow label="Email" value={selectedQuote.email} />
-        <InfoRow label="Date" value={selectedQuote.date} />
+        <InfoRow label="Prefered Date" value={selectedQuote.preferedDate} />
+        <InfoRow label="Job Post date" value={selectedQuote.date} />
 
+        <Text style={styles.sectionHeader}>Schedule Job</Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Day:</Text>
+          <TextInput
+            style={styles.dateInput}
+            value={scheduledDate}
+            onChangeText={setScheduledDate}
+            placeholder="YYYY-MM-DD"
+          />
+        </View>
+        <View style={styles.slotRow}>
+          <TouchableOpacity
+            style={[
+              styles.slotChip,
+              selectedSlot === 'morning' && styles.slotChipSelected,
+            ]}
+            onPress={() => setSelectedSlot('morning')}
+          >
+            <Text
+              style={[
+                styles.slotChipText,
+                selectedSlot === 'morning' && styles.slotChipTextSelected,
+              ]}
+            >
+              Morning (9–12)
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.slotChip,
+              selectedSlot === 'afternoon' && styles.slotChipSelected,
+            ]}
+            onPress={() => setSelectedSlot('afternoon')}
+          >
+            <Text
+              style={[
+                styles.slotChipText,
+                selectedSlot === 'afternoon' && styles.slotChipTextSelected,
+              ]}
+            >
+              Afternoon (13–17)
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.slotChip,
+              selectedSlot === 'evening' && styles.slotChipSelected,
+            ]}
+            onPress={() => setSelectedSlot('evening')}
+          >
+            <Text
+              style={[
+                styles.slotChipText,
+                selectedSlot === 'evening' && styles.slotChipTextSelected,
+              ]}
+            >
+              Evening (17–20)
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {selectedQuote.employeeStartTime && (
+          <InfoRow
+            label="Start Time"
+            value={selectedQuote.employeeStartTime}
+          />
+        )}
+        {selectedQuote.employeeEndTime && (
+          <InfoRow label="End Time" value={selectedQuote.employeeEndTime} />
+        )}
         {selectedQuote.inTime && (
           <InfoRow label="In Time" value={selectedQuote.inTime} />
         )}
@@ -161,7 +321,8 @@ const AdminAssignScreen = ({ route }) => {
               contentContainerStyle={styles.employeeList}
               renderItem={({ item }) => {
                 const isSelected = selectedEmployee?.id === item.id;
-                const isAvailable = item.available !== false;
+                const isBusy = busyEmployeeIds.includes(item.id);
+                const isAvailable = !isBusy;
 
                 return (
                   <TouchableOpacity
@@ -317,6 +478,41 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 12,
     color: COLORS.text,
+  },
+  dateInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  slotRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  slotChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.textLight,
+    backgroundColor: 'white',
+  },
+  slotChipSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  slotChipText: {
+    fontSize: 12,
+    color: COLORS.text,
+  },
+  slotChipTextSelected: {
+    color: 'white',
   },
   employeeList: {
     gap: 10,

@@ -84,6 +84,15 @@ const Lead = sequelize.define('Lead', {
       key: 'id',
     },
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'user_id',
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
   // Employee time tracking
   inTime: {
     type: DataTypes.DATE,
@@ -91,6 +100,15 @@ const Lead = sequelize.define('Lead', {
   },
   outTime: {
     type: DataTypes.DATE,
+    allowNull: true,
+  },
+  // Employee-entered start/end times (text, e.g. "09:00", "17:30")
+  employeeStartTime: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  employeeEndTime: {
+    type: DataTypes.STRING,
     allowNull: true,
   },
   employeeNotes: {
@@ -120,6 +138,7 @@ const Lead = sequelize.define('Lead', {
 Lead.associate = (models) => {
   Lead.belongsTo(models.Service, { foreignKey: 'serviceId', as: 'service' });
   Lead.belongsTo(models.User, { foreignKey: 'assignedToId', as: 'assignedTo' });
+  Lead.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
 };
 
 module.exports = Lead;

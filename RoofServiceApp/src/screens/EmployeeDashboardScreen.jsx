@@ -8,46 +8,19 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../../App';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { api } from '../config/api';
 import { COLORS, JOB_STATUS } from '../utils/constants';
-//   {
-//     id: '1',
-//     service: 'Roof Repair',
-//     address: '123 Main St, City',
-//     clientName: 'John Doe',
-//     phone: '555-0101',
-//     status: JOB_STATUS.ASSIGNED,
-//     date: '2024-01-15',
-//     notes: 'Leak in the roof, check gutters first',
-//   },
-//   {
-//     id: '2',
-//     service: 'New Roof Installation',
-//     address: '456 Oak Ave, Town',
-//     clientName: 'Jane Smith',
-//     phone: '555-0102',
-//     status: JOB_STATUS.IN_PROGRESS,
-//     date: '2024-01-14',
-//     notes: 'Complete installation, bring extra materials',
-//     inTime: '09:00 AM',
-//   },
-//   {
-//     id: '3',
-//     service: 'Gutter Cleaning',
-//     address: '789 Pine Rd, Village',
-//     clientName: 'Bob Wilson',
-//     phone: '555-0103',
-//     status: JOB_STATUS.COMPLETED,
-//     date: '2024-01-13',
-//     notes: 'Annual cleaning done',
-//     inTime: '08:30 AM',
-//     outTime: '11:45 AM',
-//   },
-// ];
 
+const formatDateLocal = value => {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+  return d.toLocaleDateString();
+};
+  
 const EmployeeDashboardScreen = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
@@ -58,6 +31,13 @@ const EmployeeDashboardScreen = () => {
   useEffect(() => {
     loadJobs();
   }, []);
+
+  // Reload jobs whenever the dashboard screen focuses (after closing detail screen, etc.)
+  useFocusEffect(
+    React.useCallback(() => {
+      loadJobs();
+    }, [user?.id]),
+  );
 
   const loadJobs = async () => {
     setLoading(true);
@@ -72,18 +52,19 @@ const EmployeeDashboardScreen = () => {
 
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
-        const createdAt = lead.createdAt || job.createdAt || '';
+        const createdAt = job.scheduledDate || lead.preferredDate || lead.createdAt || job.createdAt || '';
 
         return {
           id: String(job.id ?? lead.id ?? Math.random()),
+          leadId: lead.id,
           service: lead.serviceType || 'Roof Service',
           address: lead.address || 'N/A',
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,
-          date: createdAt ? String(createdAt).slice(0, 10) : '',
-          inTime: lead.inTime || null,
-          outTime: lead.outTime || null,
+          date: createdAt ? formatDateLocal(createdAt) : '',
+          inTime: job.startTime || lead.inTime || null,
+          outTime: job.endTime || lead.outTime || null,
           notes: lead.message || job.notes || '',
         };
       });
@@ -139,7 +120,7 @@ const EmployeeDashboardScreen = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigation.replace('Login');
+    // RootNavigator will switch to the auth stack (Onboarding/Login/Register)
   };
 
   const renderJobItem = ({ item }) => (

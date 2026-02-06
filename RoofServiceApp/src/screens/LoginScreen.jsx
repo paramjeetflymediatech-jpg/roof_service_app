@@ -52,14 +52,10 @@ const LoginScreen = () => {
         };
 
         Alert.alert('Success', `Welcome, ${userData.name}!`);
+        // Just set the user in context - RootNavigator will automatically re-render
+        // with the authenticated stack, which includes the role-appropriate home screen
         await login(userData);
-        navigation.navigate(
-          userData.role === 'admin'
-            ? 'AdminDashboard'
-            : userData.role === 'employee'
-            ? 'EmployeeDashboard'
-            : 'ClientHome',
-        );
+        // Navigation happens automatically via conditional rendering in App.jsx
       } else {
         Alert.alert('Error', response.data.message || 'Login failed');
       }
