@@ -7,13 +7,26 @@ const { Blog } = require('../models');
  */
 exports.getAdminList = async (req, res) => {
     try {
-        const blogs = await Blog.findAll({
-            order: [['createdAt', 'DESC']]
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const { count, rows: blogs } = await Blog.findAndCountAll({
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
         });
+
+        const totalPages = Math.ceil(count / limit);
+
         res.render('admin/blogs/list', {
             title: 'Manage Blogs',
             path: '/admin/blogs',
             blogs,
+            currentPage: page,
+            totalPages,
+            totalItems: count,
+            limit,
             user: req.session.user || { name: 'Admin', role: 'admin' }
         });
     } catch (error) {
@@ -43,17 +56,30 @@ exports.postCreate = async (req, res) => {
         // Basic validation
         if (!title || !slug || !content) {
             // In a real app, you'd flash an error message
-            return res.redirect('/admin/blogs/create');
+            return res.status(400).send('Missing required fields: title, slug, or content');
         }
+
+        const generateUniqueSlug = async (baseSlug) => {
+            let uniqueSlug = baseSlug;
+            let counter = 1;
+            while (await Blog.findOne({ where: { slug: uniqueSlug } })) {
+                uniqueSlug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+            return uniqueSlug;
+        };
+
+        const baseSlug = slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const uniqueSlug = await generateUniqueSlug(baseSlug);
 
         const blogData = {
             title,
-            slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+            slug: uniqueSlug,
             content,
             excerpt,
             image,
             author,
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+            tags: tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
             status,
             metaTitle,
             metaDescription,
@@ -71,7 +97,10 @@ exports.postCreate = async (req, res) => {
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error creating blog:', error);
-        res.status(500).send('Error creating blog');
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).send('Error: A blog with this slug already exists.');
+        }
+        res.status(500).send('Error creating blog: ' + error.message);
     }
 };
 
@@ -103,14 +132,31 @@ exports.postUpdate = async (req, res) => {
     try {
         const { title, slug, content, excerpt, image, author, tags, status, metaTitle, metaDescription, metaRobots, ogTitle, ogDescription, ogImage, canonicalUrl, schemaMarkup, googleAnalyticsId, googleTagManagerId } = req.body;
 
+        const generateUniqueSlug = async (baseSlug, currentId) => {
+            let uniqueSlug = baseSlug;
+            let counter = 1;
+            while (true) {
+                const existingBlog = await Blog.findOne({ where: { slug: uniqueSlug } });
+                if (!existingBlog || existingBlog.id === parseInt(currentId)) {
+                    break;
+                }
+                uniqueSlug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+            return uniqueSlug;
+        };
+
+        const baseSlug = slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const uniqueSlug = await generateUniqueSlug(baseSlug, req.params.id);
+
         await Blog.update({
             title,
-            slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+            slug: uniqueSlug,
             content,
             excerpt,
             image,
             author,
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+            tags: tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
             status,
             metaTitle,
             metaDescription,
@@ -129,7 +175,10 @@ exports.postUpdate = async (req, res) => {
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error updating blog:', error);
-        res.status(500).send('Error updating blog');
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).send('Error: A blog with this slug already exists.');
+        }
+        res.status(500).send('Error updating blog: ' + error.message);
     }
 };
 
@@ -155,13 +204,29 @@ exports.delete = async (req, res) => {
  */
 exports.getApiList = async (req, res) => {
     try {
-        const blogs = await Blog.findAll({
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const { count, rows: blogs } = await Blog.findAndCountAll({
             where: { status: 'published' },
             attributes: ['title', 'slug', 'excerpt', 'image', 'createdAt', 'tags'],
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
         });
 
-        res.json({ success: true, count: blogs.length, data: blogs });
+        res.json({
+            success: true,
+            count: blogs.length,
+            data: blogs,
+            pagination: {
+                page,
+                limit,
+                totalPages: Math.ceil(count / limit),
+                totalItems: count
+            }
+        });
     } catch (error) {
         console.error('API Error fetching blogs:', error);
         res.status(500).json({ success: false, message: 'Server Error' });

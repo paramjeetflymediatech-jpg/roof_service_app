@@ -1,8 +1,8 @@
 import apiClient from '../apiClient';
 
-export const getBlogs = async () => {
+export const getBlogs = async (params = {}) => {
     try {
-        const response = await apiClient.get('/blogs');
+        const response = await apiClient.get('/blogs', { params });
         return response.data;
     } catch (error) {
         console.error('Error fetching blogs:', error);
