@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { submitLead } from '@/lib/api/leads';
 
 export default function QuoteForm() {
+    const router = useRouter();
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -11,6 +13,16 @@ export default function QuoteForm() {
         message: '',
     });
     const [loading, setLoading] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                router.push('/');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isSubmitted, router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -63,6 +75,9 @@ export default function QuoteForm() {
                 phone: '',
                 message: '',
             });
+
+            // Set submitted state to true to show thank you screen
+            setIsSubmitted(true);
         } catch (err) {
             console.error(err);
             // Show error toast
@@ -71,6 +86,32 @@ export default function QuoteForm() {
             setLoading(false);
         }
     };
+
+    if (isSubmitted) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-4 text-center"
+            >
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Thank You!</h2>
+                <p className="text-xl text-gray-600 mb-8 max-w-lg">
+                    Your message has been sent successfully. We will get back to you shortly.
+                </p>
+                <button
+                    onClick={() => router.push('/')}
+                    className="btn btn-primary text-lg px-8 py-3 shadow-lg shadow-primary/20"
+                >
+                    Back to Home
+                </button>
+            </motion.div>
+        );
+    }
 
     return (
         <section className="section-padding bg-white">

@@ -33,6 +33,7 @@ async function runMigration() {
     await connection.query("DROP TABLE IF EXISTS sessions");
     await connection.query("DROP TABLE IF EXISTS services");
     await connection.query("DROP TABLE IF EXISTS users");
+    await connection.query("DROP TABLE IF EXISTS blogs");
 
     // Create users table
     console.log("Creating users table...");
@@ -152,7 +153,7 @@ async function runMigration() {
      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
 
-        // Create jobs table
+    // Create jobs table
     console.log("Creating jobs table...");
     await connection.query(`
       CREATE TABLE IF NOT EXISTS jobs (
@@ -201,6 +202,32 @@ async function runMigration() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS blogs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        content LONGTEXT NOT NULL,
+        excerpt TEXT,
+        image VARCHAR(255) DEFAULT '',
+        author VARCHAR(255) DEFAULT 'Admin',
+        tags JSON,
+        status ENUM('draft', 'published') DEFAULT 'published',
+        meta_title VARCHAR(255),
+        meta_description VARCHAR(255),
+        meta_robots VARCHAR(255) DEFAULT 'index, follow',
+        og_title VARCHAR(255),
+        og_description VARCHAR(255),
+        og_image VARCHAR(255),
+        canonical_url VARCHAR(255),
+        schema_markup TEXT,
+        google_analytics_id VARCHAR(255),
+        google_tag_manager_id VARCHAR(255),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
