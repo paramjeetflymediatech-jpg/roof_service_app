@@ -30,7 +30,8 @@ async function runAlterMigration() {
       `ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_images JSON NULL`,
       `ALTER TABLE leads ADD COLUMN IF NOT EXISTS completion_images JSON NULL`,
       `ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_date DATETIME NULL`,
-      `ALTER TABLE users MODIFY role ENUM('admin', 'user', 'employee') NOT NULL DEFAULT 'user'`
+      `ALTER TABLE users MODIFY role ENUM('admin', 'user', 'employee') NOT NULL DEFAULT 'user'`,
+      `ALTER TABLE blogs ADD COLUMN IF NOT EXISTS slug VARCHAR(255) NOT NULL UNIQUE`,
     ];
 
     for (const query of alterQueries) {

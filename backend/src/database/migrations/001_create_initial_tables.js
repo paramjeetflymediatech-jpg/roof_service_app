@@ -33,6 +33,7 @@ async function runMigration() {
     await connection.query("DROP TABLE IF EXISTS sessions");
     await connection.query("DROP TABLE IF EXISTS services");
     await connection.query("DROP TABLE IF EXISTS users");
+    await connection.query("DROP TABLE IF EXISTS blogs");
 
     // Create users table
     console.log("Creating users table...");
@@ -197,6 +198,24 @@ async function runMigration() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS blogs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        short_description VARCHAR(255),
+        long_description TEXT,
+        icon VARCHAR(255),
+        featured_image_url VARCHAR(255),
+        is_active BOOLEAN DEFAULT FALSE,
+        base_price DECIMAL(10, 2),
+        status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
+        seo JSON,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
