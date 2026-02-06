@@ -149,7 +149,7 @@ async function runMigration() {
      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
 
-        // Create jobs table
+    // Create jobs table
     console.log("Creating jobs table...");
     await connection.query(`
       CREATE TABLE IF NOT EXISTS jobs (
@@ -206,14 +206,22 @@ async function runMigration() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         slug VARCHAR(255) NOT NULL UNIQUE,
-        short_description VARCHAR(255),
-        long_description TEXT,
-        icon VARCHAR(255),
-        featured_image_url VARCHAR(255),
-        is_active BOOLEAN DEFAULT FALSE,
-        base_price DECIMAL(10, 2),
-        status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
-        seo JSON,
+        content LONGTEXT NOT NULL,
+        excerpt TEXT,
+        image VARCHAR(255) DEFAULT '',
+        author VARCHAR(255) DEFAULT 'Admin',
+        tags JSON,
+        status ENUM('draft', 'published') DEFAULT 'published',
+        meta_title VARCHAR(255),
+        meta_description VARCHAR(255),
+        meta_robots VARCHAR(255) DEFAULT 'index, follow',
+        og_title VARCHAR(255),
+        og_description VARCHAR(255),
+        og_image VARCHAR(255),
+        canonical_url VARCHAR(255),
+        schema_markup TEXT,
+        google_analytics_id VARCHAR(255),
+        google_tag_manager_id VARCHAR(255),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
