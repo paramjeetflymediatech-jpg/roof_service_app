@@ -2,9 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this to your backend server IP/URL
-const API_BASE_URL = 'http://10.0.2.2:5000/api'; // For Android emulator
+// const API_BASE_URL = 'http://10.0.2.2:5000/api'; // For Android emulator
 // const API_BASE_URL = 'http://localhost:5000/api'; // For iOS simulator
-// const API_BASE_URL = 'http://YOUR_IP:5000/api'; // For physical device
+const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -73,13 +73,15 @@ export const api = {
   getJobById: jobId => apiClient.get(`/jobs/${jobId}`),
   createJob: data => apiClient.post('/jobs', data),
   updateJob: (jobId, data) => apiClient.put(`/jobs/${jobId}`, data),
-  updateJobStatus: (jobId, data) => apiClient.put(`/jobs/${jobId}/status`, data),
+  updateJobStatus: (jobId, data) =>
+    apiClient.put(`/jobs/${jobId}/status`, data),
   getEmployeeJobs: employeeId => apiClient.get(`/jobs/employee/${employeeId}`),
   getMyJobs: () => apiClient.get('/jobs/my-jobs'),
   startJob: jobId => apiClient.post(`/jobs/${jobId}/start`),
   completeJob: (jobId, data) => apiClient.post(`/jobs/${jobId}/complete`, data),
   getJobLogs: jobId => apiClient.get(`/jobs/${jobId}/logs`),
-  getEmployeeStats: employeeId => apiClient.get(`/jobs/stats/${employeeId || ''}`),
+  getEmployeeStats: employeeId =>
+    apiClient.get(`/jobs/stats/${employeeId || ''}`),
   deleteJob: jobId => apiClient.delete(`/jobs/${jobId}`),
 
   // Services
