@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 24rem;
+        }
+
+        h1 {
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+
+        a {
+            color: white;
+            background-color: #2563eb;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 0.25rem;
+        }
+
+        a:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Error</h1>
+        <p>
+            <%= typeof message !=='undefined' ? message : 'An unexpected error occurred.' %>
+        </p>
+        <a href="/admin/dashboard">Return to Dashboard</a>
+    </div>
+</body>
+
+</html>

@@ -1,80 +1,93 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/mysql');
 
-const blogSchema = new mongoose.Schema({
+const Blog = sequelize.define('Blog', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     title: {
-        type: String,
-        required: true,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
     },
     slug: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     },
     content: {
-        type: String, // Can store HTML or Markdown
-        required: true
+        type: DataTypes.TEXT('long'), // Use LONGTEXT for potentially large HTML/Markdown content
+        allowNull: false
     },
     excerpt: {
-        type: String,
-        trim: true
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     image: {
-        type: String, // URL to the image
-        default: ''
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: ''
     },
     author: {
-        type: String,
-        default: 'Admin'
+        type: DataTypes.STRING,
+        defaultValue: 'Admin'
     },
-    tags: [{
-        type: String,
-        trim: true
-    }],
+    tags: {
+        type: DataTypes.JSON, // Storing tags as JSON array
+        allowNull: true,
+        defaultValue: []
+    },
     status: {
-        type: String,
-        enum: ['draft', 'published'],
-        default: 'published'
+        type: DataTypes.ENUM('draft', 'published'),
+        defaultValue: 'published'
     },
-    metaTitle: String,
-    metaDescription: String,
+    metaTitle: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    metaDescription: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     metaRobots: {
-        type: String,
-        default: 'index, follow',
-        trim: true
+        type: DataTypes.STRING,
+        defaultValue: 'index, follow'
     },
     ogTitle: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     ogDescription: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     ogImage: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     canonicalUrl: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     schemaMarkup: {
-        type: String, // Stored as stringified JSON
-        trim: true
+        type: DataTypes.TEXT, // Stored as stringified JSON
+        allowNull: true
     },
     googleAnalyticsId: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     },
     googleTagManagerId: {
-        type: String,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
+    tableName: 'blogs',
     timestamps: true
 });
 
-module.exports = mongoose.model('Blog', blogSchema);
+module.exports = Blog;

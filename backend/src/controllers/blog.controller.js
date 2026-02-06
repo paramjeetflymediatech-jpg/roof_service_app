@@ -1,4 +1,4 @@
-const Blog = require('../models/Blog');
+const { Blog } = require('../models');
 
 // --- Admin Controller Methods ---
 
@@ -7,12 +7,14 @@ const Blog = require('../models/Blog');
  */
 exports.getAdminList = async (req, res) => {
     try {
-        const blogs = await Blog.find().sort({ createdAt: -1 });
+        const blogs = await Blog.findAll({
+            order: [['createdAt', 'DESC']]
+        });
         res.render('admin/blogs/list', {
             title: 'Manage Blogs',
             path: '/admin/blogs',
             blogs,
-            user: req.session.user || { name: 'Admin', role: 'admin' } // Fallback if session user structure differs
+            user: req.session.user || { name: 'Admin', role: 'admin' }
         });
     } catch (error) {
         console.error('Error fetching blogs:', error);
@@ -44,7 +46,7 @@ exports.postCreate = async (req, res) => {
             return res.redirect('/admin/blogs/create');
         }
 
-        const newBlog = new Blog({
+        const blogData = {
             title,
             slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             content,
@@ -63,9 +65,9 @@ exports.postCreate = async (req, res) => {
             schemaMarkup,
             googleAnalyticsId,
             googleTagManagerId
-        });
+        };
 
-        await newBlog.save();
+        await Blog.create(blogData);
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error creating blog:', error);
@@ -78,7 +80,7 @@ exports.postCreate = async (req, res) => {
  */
 exports.getEdit = async (req, res) => {
     try {
-        const blog = await Blog.findById(req.params.id);
+        const blog = await Blog.findByPk(req.params.id);
         if (!blog) {
             return res.redirect('/admin/blogs');
         }
@@ -101,7 +103,7 @@ exports.postUpdate = async (req, res) => {
     try {
         const { title, slug, content, excerpt, image, author, tags, status, metaTitle, metaDescription, metaRobots, ogTitle, ogDescription, ogImage, canonicalUrl, schemaMarkup, googleAnalyticsId, googleTagManagerId } = req.body;
 
-        await Blog.findByIdAndUpdate(req.params.id, {
+        await Blog.update({
             title,
             slug: slug.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             content,
@@ -120,6 +122,8 @@ exports.postUpdate = async (req, res) => {
             schemaMarkup,
             googleAnalyticsId,
             googleTagManagerId
+        }, {
+            where: { id: req.params.id }
         });
 
         res.redirect('/admin/blogs');
@@ -134,7 +138,9 @@ exports.postUpdate = async (req, res) => {
  */
 exports.delete = async (req, res) => {
     try {
-        await Blog.findByIdAndDelete(req.params.id);
+        await Blog.destroy({
+            where: { id: req.params.id }
+        });
         res.redirect('/admin/blogs');
     } catch (error) {
         console.error('Error deleting blog:', error);
@@ -149,9 +155,11 @@ exports.delete = async (req, res) => {
  */
 exports.getApiList = async (req, res) => {
     try {
-        const blogs = await Blog.find({ status: 'published' })
-            .select('title slug excerpt image createdAt tags')
-            .sort({ createdAt: -1 });
+        const blogs = await Blog.findAll({
+            where: { status: 'published' },
+            attributes: ['title', 'slug', 'excerpt', 'image', 'createdAt', 'tags'],
+            order: [['createdAt', 'DESC']]
+        });
 
         res.json({ success: true, count: blogs.length, data: blogs });
     } catch (error) {
@@ -166,8 +174,10 @@ exports.getApiList = async (req, res) => {
 exports.getApiDetail = async (req, res) => {
     try {
         const blog = await Blog.findOne({
-            slug: req.params.slug,
-            status: 'published'
+            where: {
+                slug: req.params.slug,
+                status: 'published'
+            }
         });
 
         if (!blog) {

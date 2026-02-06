@@ -2,12 +2,14 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/mysql');
 
 // Import models
+// Import models
 const User = require('./User');
 const Lead = require('./Lead');
 const Service = require('./Service');
 const SeoMeta = require('./SeoMeta');
 const Job = require('./Job');
 const JobLog = require('./JobLog');
+const Blog = require('./Blog');
 
 // Define associations
 // Lead associations
@@ -43,5 +45,6 @@ module.exports = {
   Service,
   SeoMeta,
   Job,
-  JobLog
+  JobLog,
+  Blog
 };
