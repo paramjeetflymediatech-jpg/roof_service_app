@@ -14,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
@@ -219,9 +220,15 @@ const AdminDashboardScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Admin Dashboard</Text>
-          <Text style={styles.userName}>{user?.name || 'Admin'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.welcomeText}>Admin Dashboard</Text>
+            <Text style={styles.userName}>{user?.name || 'Admin'}</Text>
+          </View>
         </View>
         <Button
           title="Logout"

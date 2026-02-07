@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { COLORS } from '../utils/constants';
 import { api } from '../config/api';
@@ -100,7 +101,10 @@ const ClientLeadDetailScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.title}>{service}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={styles.title}>{service}</Text>
+        <BrandLogo imageStyle={{ width: 40, height: 40 }} resizeMode="contain" />
+      </View>
       <Text style={styles.subtitle}>{address}</Text>
 
       <Card title="Lead Details">

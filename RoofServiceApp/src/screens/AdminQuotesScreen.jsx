@@ -12,6 +12,7 @@ import Button from '../components/Button';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
 import { useAuth } from '../../App';
+import BrandLogo from '../components/BrandLogo';
 const AdminQuotesScreen = ({ route }) => {
   const navigation = useNavigation();
   const { quote } = route?.params || {};
@@ -139,7 +140,10 @@ const AdminQuotesScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.quoteDetails}>
-        <Text style={styles.title}>{selectedQuote.service}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.title}>{selectedQuote.service}</Text>
+          <BrandLogo imageStyle={{ width: 40, height: 40 }} resizeMode="contain" />
+        </View>
         <Text style={styles.subtitle}>{selectedQuote.address}</Text>
 
         <DetailRow label="Client" value={selectedQuote.clientName} />

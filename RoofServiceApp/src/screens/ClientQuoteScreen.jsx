@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Input from '../components/Input';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import ImagePicker from '../components/ImagePicker';
 import { COLORS } from '../utils/constants';
 import { api } from '../config/api';
@@ -440,7 +441,12 @@ const ClientQuoteScreen = () => {
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Request Quote</Text>
-          <View style={styles.headerRight} />
+          <View style={styles.headerRight}>
+            <BrandLogo
+              imageStyle={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+          </View>
         </View>
 
         {renderProgressBar()}

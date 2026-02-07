@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, Alert
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { COLORS } from '../utils/constants';
 import { api } from '../config/api';
@@ -71,9 +72,15 @@ const ClientProfileScreen = () => {
     <View style={styles.container}>
       {/* Header with simple nav */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Profile</Text>
-          <Text style={styles.userName}>{user?.name || 'Client'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.welcomeText}>Profile</Text>
+            <Text style={styles.userName}>{user?.name || 'Client'}</Text>
+          </View>
         </View>
         <Button
           title="Logout"

@@ -14,6 +14,7 @@ import { useAuth } from '../../App';
 import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import { COLORS } from '../utils/constants';
 
 const RegisterScreen = () => {
@@ -120,7 +121,7 @@ const RegisterScreen = () => {
       >
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>Roof Service</Text>
+            <BrandLogo imageStyle={{ width: 100, height: 100 }} />
             <Text style={styles.subtitle}>Create Your Account</Text>
           </View>
 

@@ -11,6 +11,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ImagePickerComponent from '../components/ImagePicker';
+import BrandLogo from '../components/BrandLogo';
 import { COLORS, JOB_STATUS } from '../utils/constants';
 import { api } from '../config/api';
 
@@ -256,7 +257,10 @@ const EmployeeJobDetailScreen = () => {
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
     >
-      <Text style={styles.title}>{currentJob.service}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={styles.title}>{currentJob.service}</Text>
+        <BrandLogo imageStyle={{ width: 40, height: 40 }} resizeMode="contain" />
+      </View>
       <Text style={styles.subtitle}>{currentJob.address}</Text>
 
       <Card title="Job Details">

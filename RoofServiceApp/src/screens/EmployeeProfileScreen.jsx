@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { COLORS } from '../utils/constants';
 import { api } from '../config/api';
@@ -77,9 +78,15 @@ const EmployeeProfileScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Profile</Text>
-          <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.welcomeText}>Profile</Text>
+            <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
+          </View>
         </View>
         <Button
           title="Logout"

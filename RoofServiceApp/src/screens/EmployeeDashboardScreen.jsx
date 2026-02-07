@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { api } from '../config/api';
 import { COLORS, JOB_STATUS } from '../utils/constants';
@@ -182,9 +183,15 @@ const EmployeeDashboardScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>My Jobs</Text>
-          <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.welcomeText}>My Jobs</Text>
+            <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
+          </View>
         </View>
         <Button title="Logout" onPress={handleLogout} variant="outline" size="small" />
       </View>

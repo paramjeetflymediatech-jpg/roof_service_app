@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS } from '../utils/constants';
@@ -173,6 +174,10 @@ Address:${item.address}
           >
             <Text style={styles.menuIcon}>≡</Text>
           </TouchableOpacity>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
           <View>
             <Text style={styles.welcomeText}>Welcome,</Text>
             <Text style={styles.userName}>{user?.name || 'Client'}</Text>

@@ -13,6 +13,7 @@ import { useAuth } from '../../App';
 import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import { COLORS } from '../utils/constants';
 
 const LoginScreen = () => {
@@ -77,7 +78,7 @@ const LoginScreen = () => {
     >
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Roof Service</Text>
+          <BrandLogo imageStyle={{ width: 120, height: 120 }} />
           <Text style={styles.subtitle}>Your Trusted Roofing Partner</Text>
         </View>
 

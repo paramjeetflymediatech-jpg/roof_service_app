@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Alert, TextInput } from 'react-native
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
+import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
 import { api } from '../config/api';
 import { COLORS, ROLES } from '../utils/constants';
@@ -169,9 +170,15 @@ const AdminUsersScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Admin - Users</Text>
-          <Text style={styles.headerSubtitle}>{user?.name || 'Admin'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BrandLogo
+            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.headerTitle}>Admin - Users</Text>
+            <Text style={styles.headerSubtitle}>{user?.name || 'Admin'}</Text>
+          </View>
         </View>
         <View style={styles.headerActions}>
           <Button
