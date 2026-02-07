@@ -44,12 +44,12 @@
 
 // export default App;
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { api, setOnUnauthorized } from './src/config/api';
 import { COLORS } from './src/utils/constants';
 
 // Auth Context
@@ -59,18 +59,47 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuthState();
+  // Logout function for API interceptor
+  const forceLogout = useCallback(() => {
+    setUser(null);
   }, []);
+
+  useEffect(() => {
+    // Register logout callback with API interceptor
+    setOnUnauthorized(forceLogout);
+    checkAuthState();
+  }, [forceLogout]);
 
   const checkAuthState = async () => {
     try {
       const userData = await AsyncStorage.getItem('user');
       if (userData) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        // Validate user still exists in backend
+        const response = await api.getUserById(parsedUser._id || parsedUser.id);
+        if (response.data && response.data.user) {
+          // User exists, update with latest data
+          const updatedUser = { ...parsedUser, ...response.data.user };
+          setUser(updatedUser);
+        } else {
+          // User not found, logout
+          await AsyncStorage.removeItem('user');
+          setUser(null);
+        }
       }
     } catch (error) {
       console.log('Auth state check error:', error);
+      // If API returns 404 or 401, user was deleted or unauthorized
+      if (error.response?.status === 404 || error.response?.status === 401) {
+        await AsyncStorage.removeItem('user');
+        setUser(null);
+      } else {
+        // For other errors (network issues), use cached user data
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -113,6 +142,7 @@ import AdminQuotesScreen from './src/screens/AdminQuotesScreen';
 import AdminAssignScreen from './src/screens/AdminAssignScreen';
 import EmployeeDashboardScreen from './src/screens/EmployeeDashboardScreen';
 import EmployeeJobDetailScreen from './src/screens/EmployeeJobDetailScreen';
+import EmployeeProfileScreen from './src/screens/EmployeeProfileScreen';
 import ClientLeadDetailScreen from './src/screens/ClientLeadDetailScreen';
 import ClientProfileScreen from './src/screens/ClientProfileScreen';
 import AdminUsersScreen from './src/screens/AdminUsersScreen';
@@ -155,7 +185,7 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {role === 'admin' && (
+      {role === 'admin' && isAuthenticated && (
         <>
           <Stack.Screen
             name="AdminDashboard"
@@ -167,7 +197,7 @@ const RootNavigator = () => {
         </>
       )}
 
-      {role === 'employee' && (
+      {role === 'employee' && isAuthenticated && (
         <>
           <Stack.Screen
             name="EmployeeDashboard"
@@ -177,10 +207,14 @@ const RootNavigator = () => {
             name="EmployeeJobDetail"
             component={EmployeeJobDetailScreen}
           />
+          <Stack.Screen
+            name="EmployeeProfile"
+            component={EmployeeProfileScreen}
+          />
         </>
       )}
 
-      {role !== 'admin' && role !== 'employee' && (
+      {role !== 'admin' && role !== 'employee' && isAuthenticated && (
         <>
           <Stack.Screen name="ClientHome" component={ClientHomeScreen} />
           <Stack.Screen name="ClientQuote" component={ClientQuoteScreen} />

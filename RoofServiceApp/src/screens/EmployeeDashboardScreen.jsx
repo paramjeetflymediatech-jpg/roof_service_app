@@ -6,6 +6,8 @@ import {
   FlatList,
   RefreshControl,
   Alert,
+  TextInput,
+  TouchableOpacity,
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -27,6 +29,7 @@ const EmployeeDashboardScreen = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadJobs();
@@ -52,7 +55,8 @@ const EmployeeDashboardScreen = () => {
 
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
-        const createdAt = job.scheduledDate || lead.preferredDate || lead.createdAt || job.createdAt || '';
+        const scheduledDate = job.scheduledDate || lead.preferredDate || '';
+        const createdDate = lead.createdAt || job.createdAt || '';
 
         return {
           id: String(job.id ?? lead.id ?? Math.random()),
@@ -62,7 +66,8 @@ const EmployeeDashboardScreen = () => {
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,
-          date: createdAt ? formatDateLocal(createdAt) : '',
+          date: createdDate ? formatDateLocal(createdDate) : '',
+          preferredDate: scheduledDate ? formatDateLocal(scheduledDate) : '',
           inTime: job.startTime || lead.inTime || null,
           outTime: job.endTime || lead.outTime || null,
           notes: lead.message || job.notes || '',
@@ -132,7 +137,9 @@ const EmployeeDashboardScreen = () => {
       onPress={() => navigation.navigate('EmployeeJobDetail', { job: item })}
     >
       <View style={styles.cardDetails}>
-        <Text style={styles.detailText}>📅 {item.date}</Text>
+        {item.preferredDate && (
+          <Text style={styles.detailText}>📅 Scheduled: {item.preferredDate}</Text>
+        )}
         <Text style={styles.detailText}>📞 {item.phone}</Text>
         {item.inTime && (
           <Text style={styles.detailText}>🕐 In: {item.inTime}</Text>
@@ -144,12 +151,33 @@ const EmployeeDashboardScreen = () => {
     </Card>
   );
 
-  const activeJobs = jobs.filter(
-    (job) => job.status !== JOB_STATUS.COMPLETED
+  // Filter jobs based on search query
+  const filterJobs = (jobsList) => {
+    if (!searchQuery.trim()) return jobsList;
+    const query = searchQuery.toLowerCase();
+    return jobsList.filter(
+      (job) =>
+        job.clientName?.toLowerCase().includes(query) ||
+        job.address?.toLowerCase().includes(query) ||
+        job.phone?.toLowerCase().includes(query) ||
+        job.service?.toLowerCase().includes(query) ||
+        job.date?.toLowerCase().includes(query) ||
+        job.preferredDate?.toLowerCase().includes(query) ||
+        job.inTime?.toLowerCase().includes(query) ||
+        job.outTime?.toLowerCase().includes(query)
+    );
+  };
+
+  const activeJobs = filterJobs(
+    jobs.filter((job) => job.status !== JOB_STATUS.COMPLETED && job.status !== 'completed')
   );
-  const completedJobs = jobs.filter(
-    (job) => job.status === JOB_STATUS.COMPLETED
+  const completedJobs = filterJobs(
+    jobs.filter((job) => job.status === JOB_STATUS.COMPLETED || job.status === 'completed')
   );
+
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
 
   return (
     <View style={styles.container}>
@@ -159,6 +187,27 @@ const EmployeeDashboardScreen = () => {
           <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
         </View>
         <Button title="Logout" onPress={handleLogout} variant="outline" size="small" />
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputWrapper}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by client, address, phone..."
+            placeholderTextColor={COLORS.textLight}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <View style={styles.statsContainer}>
@@ -200,6 +249,23 @@ const EmployeeDashboardScreen = () => {
           />
         </>
       )}
+
+      {/* Footer Navigation */}
+      <View style={styles.footer}>
+        <Button
+          title="My Jobs"
+          size="small"
+          onPress={() => {}}
+          style={styles.footerButton}
+        />
+        <Button
+          title="Profile"
+          size="small"
+          onPress={() => navigation.navigate('EmployeeProfile')}
+          style={styles.footerButton}
+          variant="outline"
+        />
+      </View>
     </View>
   );
 };
@@ -208,7 +274,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    marginTop:40
+    marginTop: 40,
+    paddingBottom: 70,
   },
   header: {
     flexDirection: 'row',
@@ -216,6 +283,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: COLORS.white,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+  },
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 6,
+    marginLeft: 4,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    fontWeight: '600',
   },
   welcomeText: {
     fontSize: 14,
@@ -283,6 +384,24 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: COLORS.textLight,
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  footerButton: {
+    flex: 1,
+    marginHorizontal: 4,
   },
 });
 

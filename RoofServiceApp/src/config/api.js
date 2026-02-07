@@ -2,13 +2,20 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this to your backend server IP/URL
-// const API_BASE_URL = 'http://10.0.2.2:5000/api'; // For Android emulator
+const API_BASE_URL = 'http://10.0.2.2:5000/api'; // For Android emulator
 // const API_BASE_URL = 'http://localhost:5000/api'; // For iOS simulator
-const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
+// const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
+
+// Logout callback - will be set by AuthProvider
+let onUnauthorized = null;
+
+export const setOnUnauthorized = (callback) => {
+  onUnauthorized = callback;
+};
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
@@ -35,8 +42,13 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   response => response,
   async error => {
+    // Check if user was deleted or unauthorized (401 or 404 on user-related endpoints)
     if (error.response?.status === 401) {
       await AsyncStorage.removeItem('user');
+      // Trigger logout in the app
+      if (onUnauthorized) {
+        onUnauthorized();
+      }
     }
     return Promise.reject(error);
   },
@@ -52,6 +64,7 @@ export const api = {
 
   // Leads/Quotes
   getLeads: (params = {}) => apiClient.get('/leads', { params }),
+  searchLeads: (search, params = {}) => apiClient.get('/leads', { params: { ...params, search } }),
   getLeadById: id => apiClient.get(`/leads/${id}`),
   createLead: (data, config = {}) => apiClient.post('/leads/create', data, config),
   updateLead: (id, data) => apiClient.put(`/leads/${id}`, data),

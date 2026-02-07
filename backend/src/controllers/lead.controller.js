@@ -138,7 +138,7 @@ exports.createLeadByApp = async (req, res, next) => {
   }
 };
 
-// Get leads (basic pagination + optional filters)
+// Get leads (basic pagination + optional filters + search)
 exports.getLeads = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -150,6 +150,86 @@ exports.getLeads = async (req, res, next) => {
     if (req.query.leadType) where.leadType = req.query.leadType;
     if (req.query.assignedToId) where.assignedToId = req.query.assignedToId;
     if (req.query.userId) where.userId = req.query.userId;
+
+    // Filter by date (createdAt)
+    if (req.query.date) {
+      const filterDate = new Date(req.query.date);
+      if (!Number.isNaN(filterDate.getTime())) {
+        const startOfDay = new Date(filterDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(filterDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.createdAt = { [Op.between]: [startOfDay, endOfDay] };
+      }
+    }
+
+    // Filter by preferredDate
+    if (req.query.preferredDate) {
+      const prefDate = new Date(req.query.preferredDate);
+      if (!Number.isNaN(prefDate.getTime())) {
+        const startOfDay = new Date(prefDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(prefDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.preferredDate = { [Op.between]: [startOfDay, endOfDay] };
+      }
+    }
+
+    // Filter by inTime and outTime
+    if (req.query.inTime) {
+      const inTimeDate = new Date(req.query.inTime);
+      if (!Number.isNaN(inTimeDate.getTime())) {
+        where.inTime = { [Op.gte]: inTimeDate };
+      }
+    }
+    if (req.query.outTime) {
+      const outTimeDate = new Date(req.query.outTime);
+      if (!Number.isNaN(outTimeDate.getTime())) {
+        where.outTime = { [Op.lte]: outTimeDate };
+      }
+    }
+
+    // Filter by date range (createdAt)
+    if (req.query.startDate && req.query.endDate) {
+      const startDate = new Date(req.query.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(req.query.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+        where.createdAt = { [Op.between]: [startDate, endDate] };
+      }
+    }
+
+    // Search functionality - search by name, email, phone, address, city, serviceType, and dates
+    if (req.query.search) {
+      const searchTerm = req.query.search.trim();
+      const searchConditions = [
+        { name: { [Op.like]: `%${searchTerm}%` } },
+        { email: { [Op.like]: `%${searchTerm}%` } },
+        { phone: { [Op.like]: `%${searchTerm}%` } },
+        { address: { [Op.like]: `%${searchTerm}%` } },
+        { city: { [Op.like]: `%${searchTerm}%` } },
+        { serviceType: { [Op.like]: `%${searchTerm}%` } },
+      ];
+
+      // Check if search term is a valid date (YYYY-MM-DD format)
+      const dateMatch = searchTerm.match(/^\d{4}-\d{2}-\d{2}$/);
+      if (dateMatch) {
+        const searchDate = new Date(searchTerm);
+        if (!Number.isNaN(searchDate.getTime())) {
+          const startOfDay = new Date(searchDate);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(searchDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          searchConditions.push(
+            { createdAt: { [Op.between]: [startOfDay, endOfDay] } },
+            { preferredDate: { [Op.between]: [startOfDay, endOfDay] } }
+          );
+        }
+      }
+
+      where[Op.or] = searchConditions;
+    }
 
     const [leads, total] = await Promise.all([
       Lead.findAll({

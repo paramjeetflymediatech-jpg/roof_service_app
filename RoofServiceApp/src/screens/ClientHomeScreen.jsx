@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -32,6 +33,7 @@ const ClientHomeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadQuotes();
@@ -110,6 +112,25 @@ const ClientHomeScreen = () => {
     navigation.navigate('ClientLeadDetail', { lead: item });
   };
 
+  // Filter quotes based on search query
+  const filteredQuotes = quotes.filter(quote => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      quote.service?.toLowerCase().includes(query) ||
+      quote.address?.toLowerCase().includes(query) ||
+      quote.description?.toLowerCase().includes(query) ||
+      quote.status?.toLowerCase().includes(query) ||
+      quote.assignedEmployeeName?.toLowerCase().includes(query) ||
+      quote.date?.toLowerCase().includes(query) ||
+      quote.preferedDate?.toLowerCase().includes(query)
+    );
+  });
+
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
   const renderQuoteItem = ({ item }) => (
     <Card
       title={item.service}
@@ -173,10 +194,31 @@ Address:${item.address}
         />
       </View>
 
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputWrapper}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by service, address, status..."
+            placeholderTextColor={COLORS.textLight}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <Text style={styles.sectionTitle}>My Quotes</Text>
 
       <FlatList
-        data={quotes}
+        data={filteredQuotes}
         keyExtractor={item => item.id}
         renderItem={renderQuoteItem}
         contentContainerStyle={styles.listContent}
@@ -297,6 +339,39 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     width: '100%',
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 6,
+    marginLeft: 4,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
