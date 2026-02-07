@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../utils/constants';
+import { COLORS, SHADOWS, FONTS } from '../utils/constants';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const Card = ({
   title,
@@ -15,7 +16,8 @@ const Card = ({
     <TouchableOpacity
       style={[styles.card, style]}
       onPress={onPress}
-      activeOpacity={0.7}
+      activeOpacity={onPress ? 0.7 : 1}
+      disabled={!onPress}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleContainer}>
@@ -40,51 +42,55 @@ const Card = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.surface,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    marginBottom: verticalScale(16),
+    ...SHADOWS.small,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: verticalScale(10),
   },
   cardTitleContainer: {
     flex: 1,
+    paddingRight: moderateScale(10),
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: moderateScale(FONTS.sizes.body),
+    fontWeight: '700',
     color: COLORS.text,
+    letterSpacing: 0.3,
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.caption),
     color: COLORS.textLight,
-    marginTop: 4,
+    marginTop: verticalScale(4),
+    lineHeight: moderateScale(20),
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(4),
+    borderRadius: moderateScale(12),
+    minWidth: moderateScale(70),
+    alignItems: 'center',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: moderateScale(10),
+    fontWeight: '700',
     color: COLORS.white,
-    textTransform: 'capitalize',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   cardContent: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: verticalScale(8),
+    paddingTop: verticalScale(12),
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: COLORS.border,
   },
 });
 

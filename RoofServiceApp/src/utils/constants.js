@@ -34,8 +34,57 @@ export const COLORS = {
   info: '#2196f3',
   white: '#ffffff',
   background: '#f5f5f5',
-  text: '#333333',
-  textLight: '#666666',
+  text: '#1a1a1a',
+  textLight: '#535252ff',
+  surface: '#ffffff',
+  border: '#cccccc',
+};
+
+export const SHADOWS = {
+  small: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 2,
+  },
+  medium: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 5,
+  },
+  large: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 9,
+    },
+    shadowOpacity: 0.48,
+    shadowRadius: 11.95,
+    elevation: 10,
+  },
+};
+
+export const FONTS = {
+  regular: 'System',
+  medium: 'System',
+  bold: 'System',
+  sizes: {
+    h1: 32,
+    h2: 24,
+    h3: 18,
+    body: 16,
+    caption: 14,
+    small: 12,
+  },
 };
 
 // API Configuration

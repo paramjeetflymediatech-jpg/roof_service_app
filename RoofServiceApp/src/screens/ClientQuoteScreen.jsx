@@ -10,8 +10,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Modal,
+  ImageBackground,
+  Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -19,23 +21,26 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import ImagePicker from '../components/ImagePicker';
-import { COLORS } from '../utils/constants';
+import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
+// Mapped service types with images
 const serviceTypes = [
-  { id: 'repair', label: 'Roof Repair', icon: '🔧' },
-  { id: 'new', label: 'New Installation', icon: '🏠' },
-  { id: 'replace', label: 'Replacement', icon: '🔄' },
-  { id: 'gutter_clean', label: 'Gutter Cleaning', icon: '🍂' },
-  { id: 'gutter_install', label: 'Gutter Install', icon: '💧' },
-  { id: 'storm', label: 'Storm Damage', icon: '⛈️' },
-  { id: 'inspect', label: 'Inspection', icon: '🔍' },
-  { id: 'maintain', label: 'Maintenance', icon: '🛠️' },
-  { id: 'other', label: 'Other', icon: '📝' },
+  { id: 'repair', label: 'Roof Repair', image: require('../../assets/Repai.jpg') },
+  { id: 'new', label: 'New Installation', image: require('../../assets/New-construction.jpg') },
+  { id: 'replace', label: 'Replacement', image: require('../../assets/Reroofs-New.jpg') },
+  { id: 'gutter', label: 'Gutter Services', image: require('../../assets/Rain.jpg') },
+  { id: 'inspect', label: 'Inspection', image: require('../../assets/ab-roof-chimney.jpg') },
+  { id: 'skylight', label: 'Skylight', image: require('../../assets/ab-roof-window.jpg') },
+  { id: 'storm', label: 'Storm Damage', image: require('../../assets/flat-roofing.jpg') },
+  { id: 'emergency', label: 'Emergency', image: require('../../assets/flat-roofing.jpg') }, // Reusing for now
+  { id: 'commercial', label: 'Commercial', image: require('../../assets/Epdm.jpg') },
 ];
 
 const ClientQuoteScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -44,7 +49,7 @@ const ClientQuoteScreen = () => {
     phone: user?.phone || '',
     address: '',
     city: '',
-    serviceType: '',
+    serviceType: route.params?.serviceType || '',
     description: '',
     preferredDate: '',
   });
@@ -148,18 +153,15 @@ const ClientQuoteScreen = () => {
     try {
       const payload = new FormData();
 
-      // text fields
       Object.keys(formData).forEach(key => {
         if (formData[key]) {
           payload.append(key, formData[key]);
         }
       });
 
-      // required backend fields
       payload.append('leadType', 'quote');
       payload.append('source', 'mobile_app');
 
-      // images
       images.forEach((img, index) => {
         payload.append('images', {
           uri: img.uri,
@@ -176,24 +178,12 @@ const ClientQuoteScreen = () => {
 
       Alert.alert(
         '✅ Quote Submitted!',
-        'Thank you! We will review your request and contact you within 24 hours.',
+        'Thank you! We will review your request and get back to you shortly.',
         [
           {
-            text: 'Done',
+            text: 'Return Home',
             onPress: () => {
-              setFormData({
-                name: user?.name || '',
-                email: user?.email || '',
-                phone: user?.phone || '',
-                address: '',
-                city: '',
-                serviceType: '',
-                description: '',
-                preferredDate: '',
-              });
-              setImages([]);
-              setCurrentStep(1);
-              navigation.goBack();
+              navigation.navigate('ClientHome');
             },
           },
         ],
@@ -206,172 +196,166 @@ const ClientQuoteScreen = () => {
     }
   };
 
-  const renderProgressBar = () => (
+  const ProgressSteps = () => (
     <View style={styles.progressContainer}>
-      <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${(currentStep / 3) * 100}%` }]} />
-      </View>
-      <View style={styles.stepsIndicator}>
-        {[1, 2, 3].map(step => (
-          <View
-            key={step}
-            style={[
-              styles.stepDot,
-              currentStep >= step && styles.stepDotActive,
-            ]}
-          >
-            <Text style={[
-              styles.stepNumber,
-              currentStep >= step && styles.stepNumberActive,
-            ]}>
-              {step}
-            </Text>
-          </View>
+        {[1, 2, 3].map((step, index) => (
+            <React.Fragment key={step}>
+                <View style={styles.stepWrapper}>
+                     <View 
+                        style={[
+                            styles.stepCircle, 
+                            currentStep >= step && styles.stepCircleActive,
+                            currentStep === step && styles.stepCircleCurrent
+                        ]}
+                     >
+                         <Text style={[
+                             styles.stepText,
+                             currentStep >= step && styles.stepTextActive
+                         ]}>
+                             {step}
+                         </Text>
+                     </View>
+                     <Text style={[
+                         styles.stepLabel, 
+                         currentStep >= step && styles.stepLabelActive
+                     ]}>
+                         {step === 1 ? 'Contact' : step === 2 ? 'Service' : 'Details'}
+                     </Text>
+                </View>
+                {step < 3 && (
+                    <View style={[
+                        styles.stepLine,
+                        currentStep > step && styles.stepLineActive
+                    ]} />
+                )}
+            </React.Fragment>
         ))}
-      </View>
-      <View style={styles.stepLabels}>
-        <Text style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}>Contact</Text>
-        <Text style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}>Service</Text>
-        <Text style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}>Details</Text>
-      </View>
     </View>
   );
 
   const renderStep1 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>📋 Contact Information</Text>
-      <Text style={styles.stepSubtitle}>Let us know how to reach you</Text>
-
-      <View style={styles.inputGroup}>
-        <Input
-          label="Full Name"
-          placeholder="John Doe"
-          value={formData.name}
-          onChangeText={value => handleInputChange('name', value)}
-          error={errors.name}
+      <Text style={styles.stepHeader}>Contact Details</Text>
+      <Text style={styles.stepSubHeader}>We need these to contact you with your quote.</Text>
+      
+      <Input
+        label="Full Name"
+        placeholder="Enter your name"
+        value={formData.name}
+        onChangeText={val => handleInputChange('name', val)}
+        error={errors.name}
         />
-
-        <Input
-          label="Email Address"
-          placeholder="john@example.com"
-          value={formData.email}
-          onChangeText={value => handleInputChange('email', value)}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          error={errors.email}
-        />
-
-        <Input
-          label="Phone Number"
-          placeholder="(555) 123-4567"
-          value={formData.phone}
-          onChangeText={value => handleInputChange('phone', value)}
-          keyboardType="phone-pad"
-          maxLength={15}
-          error={errors.phone}
-        />
-      </View>
+      <Input
+        label="Email Address"
+        placeholder="Enter your email"
+        keyboardType="email-address"
+        value={formData.email}
+        onChangeText={val => handleInputChange('email', val)}
+        error={errors.email}
+      />
+      <Input
+        label="Phone Number"
+        placeholder="(555) 123-4567"
+        keyboardType="phone-pad"
+        value={formData.phone}
+        onChangeText={val => handleInputChange('phone', val)}
+        error={errors.phone}
+      />
     </View>
   );
 
   const renderStep2 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>🏠 Service & Location</Text>
-      <Text style={styles.stepSubtitle}>What do you need help with?</Text>
+      <Text style={styles.stepHeader}>Property & Service</Text>
+      <Text style={styles.stepSubHeader}>Where and what can we help you with?</Text>
 
-      <View style={styles.inputGroup}>
-        <Input
-          label="Property Address"
-          placeholder="123 Main Street"
-          value={formData.address}
-          onChangeText={value => handleInputChange('address', value)}
-          error={errors.address}
-        />
+      <Input
+        label="Property Address"
+        placeholder="123 Main St"
+        value={formData.address}
+        onChangeText={val => handleInputChange('address', val)}
+        error={errors.address}
+      />
+      
+      <Input
+        label="City"
+        placeholder="City"
+        value={formData.city}
+        onChangeText={val => handleInputChange('city', val)}
+        containerStyle={{ marginBottom: verticalScale(20) }}
+      />
 
-        <Input
-          label="City"
-          placeholder="Your City"
-          value={formData.city}
-          onChangeText={value => handleInputChange('city', value)}
-        />
-
-        <View style={styles.serviceSection}>
-          <Text style={styles.label}>Select Service Type</Text>
-          {errors.serviceType && (
-            <Text style={styles.errorText}>{errors.serviceType}</Text>
-          )}
-          <View style={styles.serviceGrid}>
-            {serviceTypes.map(service => (
-              <TouchableOpacity
-                key={service.id}
+      <Text style={styles.inputLabel}>Select Service Needed</Text>
+      {errors.serviceType && <Text style={styles.errorText}>{errors.serviceType}</Text>}
+      
+      <View style={styles.servicesGrid}>
+          {serviceTypes.map((item) => (
+              <TouchableOpacity 
+                key={item.id} 
                 style={[
-                  styles.serviceCard,
-                  formData.serviceType === service.label &&
-                    styles.serviceCardSelected,
+                    styles.serviceCard,
+                    formData.serviceType === item.label && styles.serviceCardSelected
                 ]}
-                onPress={() => handleInputChange('serviceType', service.label)}
+                onPress={() => handleInputChange('serviceType', item.label)}
+                activeOpacity={0.8}
               >
-                <Text style={styles.serviceIcon}>{service.icon}</Text>
-                <Text
-                  style={[
-                    styles.serviceLabel,
-                    formData.serviceType === service.label &&
-                      styles.serviceLabelSelected,
-                  ]}
-                >
-                  {service.label}
-                </Text>
+                  <ImageBackground 
+                    source={item.image} 
+                    style={styles.serviceImage}
+                    imageStyle={{ borderRadius: moderateScale(12) }}
+                  >
+                      <View style={[
+                          styles.serviceOverlay,
+                          formData.serviceType === item.label && styles.serviceOverlaySelected
+                        ]}>
+                          <Text style={styles.serviceText}>{item.label}</Text>
+                          {formData.serviceType === item.label && (
+                              <View style={styles.checkIcon}>
+                                  <Text style={{color: COLORS.white}}>✓</Text>
+                              </View>
+                          )}
+                      </View>
+                  </ImageBackground>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+          ))}
       </View>
     </View>
   );
 
   const renderStep3 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>📝 Project Details</Text>
-      <Text style={styles.stepSubtitle}>Tell us more about your project</Text>
+      <Text style={styles.stepHeader}>Project Details</Text>
+      <Text style={styles.stepSubHeader}>Help us understand the scope of work.</Text>
 
-      <View style={styles.inputGroup}>
-        <Input
-          label="Describe the Work Needed"
-          placeholder="Please describe the issue or work you need done. Include any relevant details like roof age, visible damage, urgency, etc."
-          value={formData.description}
-          onChangeText={value => handleInputChange('description', value)}
-          multiline
-          numberOfLines={5}
-          error={errors.description}
-        />
+      <Input
+        label="Description of Issue"
+        placeholder="Describe the problem, roof age, leak location, etc."
+        multiline
+        numberOfLines={5}
+        value={formData.description}
+        onChangeText={val => handleInputChange('description', val)}
+        error={errors.description}
+      />
 
-        <View style={styles.datePickerSection}>
-          <Text style={styles.label}>Preferred Date (Optional)</Text>
+       <View style={styles.dateSection}>
+          <Text style={styles.inputLabel}>Preferred Date (Optional)</Text>
           <TouchableOpacity
-            style={styles.datePickerButton}
+            style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.datePickerIcon}>📅</Text>
-            <Text style={[
-              styles.datePickerText,
-              !formData.preferredDate && styles.datePickerPlaceholder
-            ]}>
-              {formData.preferredDate 
-                ? formatDisplayDate(selectedDate)
-                : 'Select a date'
-              }
+            <Text style={styles.dateIcon}>📅</Text>
+            <Text style={[styles.dateText, !formData.preferredDate && { color: COLORS.textLight }]}>
+                {formData.preferredDate ? formatDisplayDate(selectedDate) : 'Select a date'}
             </Text>
             {formData.preferredDate && (
-              <TouchableOpacity
-                onPress={clearDate}
-                style={styles.dateClearButton}
-              >
-                <Text style={styles.dateClearText}>✕</Text>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={clearDate} style={{ padding: 5 }}>
+                    <Text style={{ color: COLORS.textLight }}>✕</Text>
+                </TouchableOpacity>
             )}
           </TouchableOpacity>
-        </View>
+       </View>
 
+        {/* Date Picker Modal logic same as before (omitted for brevity, using existing logic) */}
         {/* Date Picker Modal for iOS */}
         {Platform.OS === 'ios' && (
           <Modal
@@ -397,6 +381,7 @@ const ClientQuoteScreen = () => {
                   onChange={handleDateChange}
                   minimumDate={new Date()}
                   style={styles.datePicker}
+                  textColor="black"
                 />
               </View>
             </View>
@@ -414,293 +399,253 @@ const ClientQuoteScreen = () => {
           />
         )}
 
-        <View style={styles.imageSection}>
-          <Text style={styles.imageSectionTitle}>📷 Add Photos (Optional)</Text>
-          <Text style={styles.imageSectionSubtitle}>
-            Photos help us provide a more accurate quote
-          </Text>
-          <ImagePicker
+       <Text style={[styles.inputLabel, { marginTop: verticalScale(16) }]}>Photos (Optional)</Text>
+       <ImagePicker
             images={images}
             onImagesChange={setImages}
             maxImages={5}
-          />
-        </View>
-      </View>
+       />
     </View>
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
+      <KeyboardAvoidingView 
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Request Quote</Text>
-          <View style={styles.headerRight}>
-            <BrandLogo
-              imageStyle={{ width: 30, height: 30 }}
-              resizeMode="contain"
-            />
-          </View>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                 <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Request a Quote</Text>
+            <View style={{ width: 30 }} />
         </View>
 
-        {renderProgressBar()}
+        {/* Progress */}
+        <ProgressSteps />
 
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.formCard}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {currentStep === 1 && renderStep1()}
             {currentStep === 2 && renderStep2()}
             {currentStep === 3 && renderStep3()}
-          </View>
         </ScrollView>
 
-        {/* Bottom Actions */}
-        <View style={styles.bottomActions}>
-          {currentStep < 3 ? (
-            <Button
-              title={`Continue →`}
-              onPress={handleNext}
-              style={styles.actionButton}
-            />
-          ) : (
-            <Button
-              title="Submit Quote Request"
-              onPress={handleSubmit}
-              loading={loading}
-              style={styles.actionButton}
-            />
-          )}
+        {/* Bottom Bar */}
+        <View style={styles.footer}>
+             <Button
+                title={currentStep === 3 ? "Submit Request" : "Next Step →"}
+                onPress={currentStep === 3 ? handleSubmit : handleNext}
+                loading={loading}
+                size="large"
+             />
         </View>
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
-export default ClientQuoteScreen;
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8F9FA',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: COLORS.primary,
-  },
-  backButton: {
-    padding: 4,
-  },
-  backButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '500',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: moderateScale(20),
+      paddingVertical: verticalScale(16),
+      backgroundColor: COLORS.white,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '700',
+      fontSize: moderateScale(18),
+      fontWeight: '700',
+      color: COLORS.text,
   },
-  headerRight: {
-    width: 60,
+  backButton: {
+      padding: moderateScale(8),
+  },
+  backButtonText: {
+      fontSize: moderateScale(24),
+      color: COLORS.text,
   },
   progressContainer: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: verticalScale(20),
+      backgroundColor: COLORS.white,
+      marginBottom: verticalScale(10),
   },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 2,
-    marginBottom: 16,
+  stepWrapper: {
+      alignItems: 'center',
+      width: moderateScale(60),
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+  stepCircle: {
+      width: moderateScale(30),
+      height: moderateScale(30),
+      borderRadius: moderateScale(15),
+      backgroundColor: '#f0f0f0',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: verticalScale(4),
   },
-  stepsIndicator: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  stepCircleActive: {
+      backgroundColor: COLORS.primary,
   },
-  stepDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e0e0e0',
-    alignItems: 'center',
-    justifyContent: 'center',
+  stepCircleCurrent: {
+      borderWidth: 2,
+      borderColor: COLORS.primary + '50', // light halo
   },
-  stepDotActive: {
-    backgroundColor: COLORS.primary,
+  stepText: {
+      fontSize: moderateScale(12),
+      fontWeight: '700',
+      color: COLORS.textLight,
   },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textLight,
-  },
-  stepNumberActive: {
-    color: COLORS.white,
-  },
-  stepLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  stepTextActive: {
+      color: COLORS.white,
   },
   stepLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    width: 70,
+      fontSize: moderateScale(10),
+      color: COLORS.textLight,
   },
   stepLabelActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
+      color: COLORS.primary,
+      fontWeight: '600',
+  },
+  stepLine: {
+      width: moderateScale(40),
+      height: 2,
+      backgroundColor: '#f0f0f0',
+      marginTop: -verticalScale(14), // align with circles
+  },
+  stepLineActive: {
+      backgroundColor: COLORS.primary,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  formCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+      paddingHorizontal: moderateScale(20),
+      paddingBottom: verticalScale(100),
   },
   stepContent: {
-    flex: 1,
+      flex: 1,
   },
-  stepTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
+  stepHeader: {
+      fontSize: moderateScale(22),
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: verticalScale(4),
   },
-  stepSubtitle: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    marginBottom: 24,
+  stepSubHeader: {
+      fontSize: moderateScale(14),
+      color: COLORS.textLight,
+      marginBottom: verticalScale(24),
   },
-  inputGroup: {
-    gap: 4,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  serviceSection: {
-    marginTop: 8,
-  },
-  serviceGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+  servicesGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginTop: verticalScale(10),
   },
   serviceCard: {
-    width: '30%',
-    aspectRatio: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
+      width: '48%',
+      aspectRatio: 1.3,
+      marginBottom: verticalScale(16),
+      borderRadius: moderateScale(12),
+      overflow: 'hidden',
+      ...SHADOWS.small,
+      backgroundColor: COLORS.white,
+      borderWidth: 2,
+      borderColor: 'transparent',
   },
   serviceCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#f0f7ff',
+      borderColor: COLORS.primary,
   },
-  serviceIcon: {
-    fontSize: 24,
-    marginBottom: 6,
+  serviceImage: {
+      flex: 1,
   },
-  serviceLabel: {
-    fontSize: 11,
-    color: COLORS.text,
-    textAlign: 'center',
-    fontWeight: '500',
+  serviceOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
   },
-  serviceLabelSelected: {
-    color: COLORS.primary,
-    fontWeight: '600',
+  serviceOverlaySelected: {
+      backgroundColor: 'rgba(33, 150, 243, 0.6)', // Primary color overlay
+  },
+  serviceText: {
+      color: COLORS.white,
+      fontWeight: '700',
+      fontSize: moderateScale(16),
+      textAlign: 'center',
+      textShadowColor: 'rgba(0,0,0,0.7)',
+      textShadowRadius: 4,
+  },
+  checkIcon: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      backgroundColor: COLORS.success,
+      borderRadius: 10,
+      width: 20,
+      height: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.white,
+  },
+  inputLabel: {
+      fontSize: moderateScale(12),
+      color: COLORS.textLight,
+      marginBottom: verticalScale(8),
+      fontWeight: '600',
   },
   errorText: {
-    fontSize: 12,
-    color: COLORS.error,
-    marginBottom: 8,
+      color: COLORS.error,
+      fontSize: moderateScale(12),
+      marginBottom: verticalScale(8),
   },
-  imageSection: {
-    marginTop: 16,
+  dateSection: {
+      marginTop: verticalScale(10),
   },
-  imageSectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
+  dateButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.white,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: moderateScale(8),
+      padding: moderateScale(12),
   },
-  imageSectionSubtitle: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginBottom: 12,
+  dateIcon: {
+      fontSize: moderateScale(18),
+      marginRight: moderateScale(10),
   },
-  datePickerSection: {
-    marginBottom: 16,
+  dateText: {
+      flex: 1,
+      fontSize: moderateScale(16),
+      color: COLORS.text,
   },
-  datePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  footer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: COLORS.white,
+      padding: moderateScale(20),
+      paddingBottom: Platform.OS === 'ios' ? verticalScale(30) : verticalScale(20),
+      borderTopWidth: 1,
+      borderTopColor: '#f0f0f0',
   },
-  datePickerIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  datePickerText: {
-    flex: 1,
-    fontSize: 16,
-    color: COLORS.text,
-  },
-  datePickerPlaceholder: {
-    color: COLORS.textLight,
-  },
-  dateClearButton: {
-    padding: 4,
-  },
-  dateClearText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    fontWeight: '600',
-  },
+  // Date Picker Modal styles (copied from original)
   dateModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -708,54 +653,36 @@ const styles = StyleSheet.create({
   },
   dateModalContent: {
     backgroundColor: COLORS.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 30,
+    borderTopLeftRadius: moderateScale(20),
+    borderTopRightRadius: moderateScale(20),
+    paddingBottom: verticalScale(30),
   },
   dateModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: verticalScale(16),
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: COLORS.border,
   },
   dateModalTitle: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '600',
     color: COLORS.text,
   },
   dateModalCancel: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: COLORS.textLight,
   },
   dateModalDone: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: COLORS.primary,
     fontWeight: '600',
   },
   datePicker: {
-    height: 200,
-  },
-  bottomActions: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  actionButton: {
-    marginTop: 0,
+    height: verticalScale(200),
   },
 });
+
+export default ClientQuoteScreen;

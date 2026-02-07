@@ -6,21 +6,23 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  Platform,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
-import Card from '../components/Card';
 import ImagePickerComponent from '../components/ImagePicker';
-import BrandLogo from '../components/BrandLogo';
-import { COLORS, JOB_STATUS } from '../utils/constants';
+import { COLORS, JOB_STATUS, FONTS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const isValidHHMM = value => TIME_REGEX.test(value.trim());
 
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
-  console.log(useRoute().params, ' useRoute().params');
   const { job } = useRoute().params || {};
   const [currentJob, setCurrentJob] = useState(job);
   const [images, setImages] = useState([]);
@@ -33,27 +35,17 @@ const EmployeeJobDetailScreen = () => {
     job?.outTime || job?.employeeEndTime || '',
   );
 
+  // Status Checkers
+  const jobStatus = currentJob?.status;
+  const isPending = jobStatus === 'assigned' || jobStatus === 'pending';
+  const isAccepted = jobStatus === 'accepted';
+  const isInProgress = jobStatus === 'in_progress';
+  const isCompleted = jobStatus === 'completed';
+
   const handleSaveLeadDetails = async () => {
-    if (!job?.leadId) {
-      Alert.alert('Error', 'Missing lead information for this job.');
-      return;
-    }
-
-    if (inTime && !isValidHHMM(inTime)) {
-      Alert.alert(
-        'Invalid time',
-        'Please enter start time in HH:MM format, e.g. 09:00.',
-      );
-      return;
-    }
-
-    if (outTime && !isValidHHMM(outTime)) {
-      Alert.alert(
-        'Invalid time',
-        'Please enter end time in HH:MM format, e.g. 17:30.',
-      );
-      return;
-    }
+    if (!job?.leadId) return Alert.alert('Error', 'Missing lead info.');
+    if (inTime && !isValidHHMM(inTime)) return Alert.alert('Invalid Start Time', 'Use HH:MM format');
+    if (outTime && !isValidHHMM(outTime)) return Alert.alert('Invalid End Time', 'Use HH:MM format');
 
     setLoading(true);
     try {
@@ -70,64 +62,23 @@ const EmployeeJobDetailScreen = () => {
         completionImages,
       });
 
-      Alert.alert('Saved', 'Lead details have been updated.');
+      Alert.alert('Saved', 'Details updated successfully.');
     } catch (error) {
-      console.log('Save lead details error:', error.response || error);
-      Alert.alert('Error', 'Failed to update lead details. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveDetails = async () => {
-    if (!currentJob || currentJob.status === JOB_STATUS.COMPLETED) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const afterImages = images.map(img => ({
-        uri: img.uri,
-        fileName: img.fileName,
-        type: img.type,
-      }));
-
-      const response = await api.updateJob(currentJob.id, {
-        employeeNotes: notes,
-        afterImages,
-      });
-
-      const updated = response.data?.data || response.data || {};
-      setCurrentJob(prev => ({ ...prev, ...updated }));
-      Alert.alert('Saved', 'Job details have been updated.');
-    } catch (error) {
-      console.log('Save job details error:', error.response || error);
-      Alert.alert('Error', 'Failed to save job details. Please try again.');
+      console.log('Save details error:', error);
+      Alert.alert('Error', 'Failed to save details.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleClockIn = async () => {
-    console.log(currentJob, 'currentJob');
-    if (
-      currentJob.status === 'in_progress' ||
-      currentJob.status === 'completed'
-    ) {
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await api.startJob(currentJob.id);
       const updatedJob = response.data?.data || response.data || {};
-      const start =
-        updatedJob.inTime || updatedJob.startTime || new Date().toISOString();
+      const start = updatedJob.inTime || new Date().toISOString();
       const startDate = new Date(start);
-      const timeString = `${String(startDate.getHours()).padStart(
-        2,
-        '0',
-      )}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+      const timeString = `${String(startDate.getHours()).padStart(2,'0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
 
       setInTime(timeString);
       setCurrentJob(prev => ({
@@ -135,70 +86,42 @@ const EmployeeJobDetailScreen = () => {
         status: JOB_STATUS.IN_PROGRESS,
         inTime: timeString,
       }));
-      Alert.alert('Clocked In', `You clocked in at ${timeString}`);
+      Alert.alert('Clocked In', `Started at ${timeString}`);
     } catch (error) {
-      console.log('Clock in error:', error.response || error);
-      Alert.alert('Error', 'Failed to clock in. Please try again.');
+      Alert.alert('Error', 'Failed to clock in.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleAcceptJob = async () => {
-    if (!currentJob) return;
-
     setLoading(true);
     try {
-      const response = await api.updateJobStatus(currentJob.id, {
+      await api.updateJobStatus(currentJob.id, {
         status: 'accepted',
         notes: 'Employee accepted job',
       });
-      const updatedJob = response.data?.data || response.data || {};
-      setCurrentJob(prev => ({
-        ...prev,
-        status: updatedJob.status || 'accepted',
-      }));
-      Alert.alert('Job Accepted', 'You have accepted this job.');
+      setCurrentJob(prev => ({ ...prev, status: 'accepted' }));
+      Alert.alert('Accepted', 'Job accepted successfully.');
     } catch (error) {
-      console.log('Accept job error:', error.response || error);
-      Alert.alert('Error', 'Failed to accept job. Please try again.');
+      Alert.alert('Error', 'Failed to accept job.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleClockOut = () => {
-    console.log(currentJob, 'currentJob');
-    if (!inTime) {
-      Alert.alert('Error', 'Please clock in first');
-      return;
-    }
+    if (!inTime) return Alert.alert('Error', 'Must clock in first');
     const now = new Date();
-    const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(
-      now.getMinutes(),
-    ).padStart(2, '0')}`;
+    const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     setOutTime(timeString);
     setCurrentJob({ ...currentJob, outTime: timeString });
-    Alert.alert('Clocked Out', `You clocked out at ${timeString}`);
+    Alert.alert('Clocked Out', `Finished at ${timeString}`);
   };
 
   const handleCompleteJob = async () => {
-    if (!inTime) {
-      Alert.alert('Error', 'Please enter start time first');
-      return;
-    }
-    if (!outTime) {
-      Alert.alert('Error', 'Please clock out first');
-      return;
-    }
-    if (!isValidHHMM(inTime) || !isValidHHMM(outTime)) {
-      Alert.alert(
-        'Invalid time',
-        'Please enter start and end times in HH:MM format, e.g. 09:00 and 17:30.',
-      );
-      return;
-    }
-
+    if (!inTime || !outTime) return Alert.alert('Error', 'Clock in and out times are required.');
+    
     setLoading(true);
     try {
       const afterImages = images.map(img => ({
@@ -207,335 +130,391 @@ const EmployeeJobDetailScreen = () => {
         type: img.type,
       }));
 
-      const response = await api.completeJob(currentJob.id, {
+      await api.completeJob(currentJob.id, {
         completionNotes: notes,
         afterImages,
       });
 
-      console.log('Complete job response:', response.data);
-
-      setCurrentJob(prev => ({
-        ...prev,
-        status: JOB_STATUS.COMPLETED,
-        outTime,
-      }));
-
-      Alert.alert(
-        'Job Completed',
-        'The job has been marked as complete. The admin will be notified.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
+      setCurrentJob(prev => ({ ...prev, status: JOB_STATUS.COMPLETED }));
+      Alert.alert('Success', 'Job marked as completed!', [{ text: 'Back', onPress: () => navigation.goBack() }]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to complete job');
+      Alert.alert('Error', 'Failed to complete job.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!currentJob) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>No job selected</Text>
-      </View>
-    );
-  }
-  console.log(currentJob, 'job', JOB_STATUS);
+  if (!currentJob) return <View style={styles.container}><Text>No Job Found</Text></View>;
 
-  const jobStatus = currentJob.status;
-  const isPending = jobStatus === 'assigned' || jobStatus === 'pending';
-  const isAccepted = jobStatus === 'accepted';
-  const isInProgress = jobStatus === 'in_progress';
-  const isCompleted = jobStatus === 'completed';
+  const TimelineItem = ({ title, active, completed, isLast }) => (
+      <View style={styles.timelineItem}>
+          <View style={styles.timelineLeft}>
+              <View style={[styles.timelineDot, (active || completed) && styles.timelineDotActive]} />
+              {!isLast && <View style={[styles.timelineLine, completed && styles.timelineLineActive]} />}
+          </View>
+          <View style={styles.timelineContent}>
+              <Text style={[styles.timelineTitle, (active || completed) && styles.timelineTitleActive]}>{title}</Text>
+          </View>
+      </View>
+  );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={styles.title}>{currentJob.service}</Text>
-        <BrandLogo imageStyle={{ width: 40, height: 40 }} resizeMode="contain" />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+             <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Job Details</Text>
+        <View style={{ width: 40 }} />
       </View>
-      <Text style={styles.subtitle}>{currentJob.address}</Text>
 
-      <Card title="Job Details">
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Client:</Text>
-          <Text style={styles.detailValue}>{currentJob.clientName}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Phone:</Text>
-          <Text style={styles.detailValue}>{currentJob.phone}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date:</Text>
-          <Text style={styles.detailValue}>{currentJob.date}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Notes:</Text>
-          <Text style={styles.detailValue}>{currentJob.notes}</Text>
-        </View>
-      </Card>
-
-      {(isPending || isAccepted) && (
-        <Card title="Job Status">
-          <Text style={styles.cardText}>
-            You have been assigned to this job. Please accept and start the
-            work.
-          </Text>
-          {isPending && (
-            <Button
-              title="Accept Job"
-              onPress={handleAcceptJob}
-              loading={loading}
-              style={styles.clockButton}
-            />
-          )}
-          {isAccepted && (
-            <Button
-              title="Clock In"
-              onPress={handleClockIn}
-              style={styles.clockButton}
-            />
-          )}
-        </Card>
-      )}
-
-      {isInProgress && (
-        <Card title="Job in Progress">
-          <View style={styles.timeContainer}>
-            <View style={styles.timeBox}>
-              <Text style={styles.timeLabel}>Clock In</Text>
-              <Text style={styles.timeValue}>{inTime || 'Not set'}</Text>
-            </View>
-            <View style={styles.timeBox}>
-              <Text style={styles.timeLabel}>Clock Out</Text>
-              <Text style={styles.timeValue}>{outTime || 'Not set'}</Text>
-            </View>
-          </View>
-
-          {!outTime ? (
-            <Button
-              title="Clock Out"
-              onPress={handleClockOut}
-              variant="secondary"
-              style={styles.clockButton}
-            />
-          ) : (
-            <Card title="Work Details" style={styles.photosCard}>
-              <Text style={styles.cardText}>
-                Enter start/end time and upload photos of the completed work.
-              </Text>
-
-              <View style={styles.timeInputRow}>
-                <View style={styles.timeInputContainer}>
-                  <Text style={styles.label}>Start Time (HH:MM)</Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={inTime}
-                    onChangeText={setInTime}
-                    placeholder="e.g. 09:00"
-                  />
-                </View>
-                <View style={styles.timeInputContainer}>
-                  <Text style={styles.label}>End Time (HH:MM)</Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={outTime}
-                    onChangeText={setOutTime}
-                    placeholder="e.g. 17:30"
-                  />
-                </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Job Info Card */}
+          <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                  <Text style={styles.serviceTitle}>{currentJob.service}</Text>
+                  <View style={[styles.statusBadge, isCompleted ? { backgroundColor: COLORS.success } : { backgroundColor: COLORS.primary }]}>
+                      <Text style={styles.statusText}>{jobStatus.toUpperCase().replace('_', ' ')}</Text>
+                  </View>
+              </View>
+              
+              <View style={styles.divider} />
+              
+              <View style={styles.infoRow}>
+                  <Text style={styles.infoIcon}>👤</Text>
+                  <View>
+                      <Text style={styles.infoLabel}>Client</Text>
+                      <Text style={styles.infoValue}>{currentJob.clientName}</Text>
+                  </View>
+              </View>
+              
+              <View style={styles.infoRow}>
+                  <Text style={styles.infoIcon}>📍</Text>
+                  <View>
+                      <Text style={styles.infoLabel}>Address</Text>
+                      <Text style={styles.infoValue}>{currentJob.address}</Text>
+                  </View>
               </View>
 
-              <ImagePickerComponent
-                images={images}
-                onImagesChange={setImages}
-                maxImages={10}
-              />
-
-              <View style={styles.notesContainer}>
-                <Text style={styles.label}>Work Notes</Text>
-                <TextInput
-                  style={styles.notesInput}
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder="Add notes about the work completed..."
-                  multiline
-                  numberOfLines={4}
-                />
+               <View style={styles.infoRow}>
+                  <Text style={styles.infoIcon}>📞</Text>
+                  <View>
+                      <Text style={styles.infoLabel}>Contact</Text>
+                      <Text style={styles.infoValue}>{currentJob.phone}</Text>
+                  </View>
               </View>
 
-              <Button
-                title="Save Lead Details"
-                onPress={handleSaveLeadDetails}
-                loading={loading}
-                style={styles.saveButton}
-              />
-
-              <Button
-                title="Complete Job"
-                onPress={handleCompleteJob}
-                loading={loading}
-                variant="success"
-                style={styles.completeButton}
-              />
-            </Card>
-          )}
-        </Card>
-      )}
-
-      {isCompleted && (
-        <Card title="Job Completed">
-          <View style={styles.timeContainer}>
-            <View style={styles.timeBox}>
-              <Text style={styles.timeLabel}>Clock In</Text>
-              <Text style={styles.timeValue}>{currentJob.inTime}</Text>
-            </View>
-            <View style={styles.timeBox}>
-              <Text style={styles.timeLabel}>Clock Out</Text>
-              <Text style={styles.timeValue}>{currentJob.outTime}</Text>
-            </View>
+              <View style={styles.infoRow}>
+                  <Text style={styles.infoIcon}>📝</Text>
+                  <View>
+                      <Text style={styles.infoLabel}>Notes</Text>
+                      <Text style={styles.infoValue}>{currentJob.notes || 'No notes provided.'}</Text>
+                  </View>
+              </View>
           </View>
-          <Text style={styles.completedText}>
-            ✓ This job has been completed
-          </Text>
-        </Card>
-      )}
-    </ScrollView>
+
+          {/* Timeline / Progress */}
+          <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Progress</Text>
+              <View style={styles.timelineContainer}>
+                  <TimelineItem title="Job Assigned" completed={true} />
+                  <TimelineItem title="Accepted" active={isAccepted} completed={isInProgress || isCompleted} />
+                  <TimelineItem title="In Progress" active={isInProgress} completed={isCompleted} />
+                  <TimelineItem title="Completed" active={isCompleted} completed={isCompleted} isLast />
+              </View>
+          </View>
+
+          {/* Actions */}
+          <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Actions</Text>
+              
+              {isPending && (
+                  <Button title="Accept Job" onPress={handleAcceptJob} loading={loading} />
+              )}
+
+              {isAccepted && (
+                  <Button title="Clock In & Start" onPress={handleClockIn} loading={loading} />
+              )}
+
+              {isInProgress && (
+                <View style={styles.progressActions}>
+                    <View style={styles.clockRow}>
+                        <View style={styles.clockInput}>
+                             <Text style={styles.clockLabel}>Start Time</Text>
+                             <TextInput 
+                                style={styles.timeInput}
+                                value={inTime}
+                                onChangeText={setInTime}
+                                placeholder="09:00"
+                             />
+                        </View>
+                        <View style={styles.clockInput}>
+                             <Text style={styles.clockLabel}>End Time</Text>
+                             <TextInput 
+                                style={styles.timeInput} 
+                                value={outTime}
+                                onChangeText={setOutTime}
+                                placeholder="17:00"
+                             />
+                        </View>
+                    </View>
+
+                    {!outTime && (
+                         <Button 
+                            title="Clock Out" 
+                            onPress={handleClockOut} 
+                            style={{ marginBottom: 20 }}
+                            variant="secondary"
+                         />
+                    )}
+
+                    <Text style={styles.clockLabel}>Upload Photos</Text>
+                    <ImagePickerComponent images={images} onImagesChange={setImages} maxImages={6} />
+                    
+                    <Text style={[styles.clockLabel, { marginTop: 16 }]}>Completion Notes</Text>
+                    <TextInput
+                        style={styles.textArea}
+                        value={notes}
+                        onChangeText={setNotes}
+                        multiline
+                        placeholder="Describe work done..."
+                    />
+
+                    <View style={styles.actionButtons}>
+                        <Button 
+                            title="Save Progress" 
+                            onPress={handleSaveLeadDetails} 
+                            variant="outline" 
+                            style={{ flex: 1, marginRight: 8 }}
+                            loading={loading}
+                        />
+                        <Button 
+                            title="Complete Job" 
+                            onPress={handleCompleteJob} 
+                            style={{ flex: 1, marginLeft: 8 }}
+                            loading={loading}
+                        />
+                    </View>
+                </View>
+              )}
+
+              {isCompleted && (
+                  <View style={styles.completedBanner}>
+                       <Text style={styles.completedBannerText}>✓ Job Completed</Text>
+                       <Text style={styles.completedTimeText}>
+                           Time: {inTime} - {outTime}
+                       </Text>
+                  </View>
+              )}
+          </View>
+          <View style={{height: 40}} />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: verticalScale(16),
+    backgroundColor: COLORS.white,
+    ...SHADOWS.small,
+  },
+  backButton: {
+      padding: 8,
+  },
+  backButtonText: {
+      fontSize: 24,
+      color: COLORS.text,
+  },
+  headerTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+      padding: moderateScale(20),
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text,
+  card: {
+      backgroundColor: COLORS.white,
+      borderRadius: moderateScale(16),
+      padding: moderateScale(20),
+      ...SHADOWS.small,
+      marginBottom: verticalScale(20),
   },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    marginBottom: 20,
+  cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: verticalScale(12),
   },
-  detailRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
+  serviceTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: COLORS.text,
+      flex: 1,
   },
-  detailLabel: {
-    width: 80,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textLight,
+  statusBadge: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
+      marginLeft: 10,
   },
-  detailValue: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.text,
+  statusText: {
+     color: COLORS.white,
+     fontSize: 10,
+     fontWeight: '700',
   },
-  cardText: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    marginBottom: 16,
+  divider: {
+      height: 1,
+      backgroundColor: '#f0f0f0',
+      marginBottom: verticalScale(16),
   },
-  timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+  infoRow: {
+      flexDirection: 'row',
+      marginBottom: verticalScale(16),
   },
-  timeBox: {
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    padding: 16,
-    width: '45%',
-    alignItems: 'center',
+  infoIcon: {
+      fontSize: 18,
+      width: 30,
+      marginTop: 2,
   },
-  timeLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginBottom: 4,
+  infoLabel: {
+      fontSize: 12,
+      color: COLORS.textLight,
+      marginBottom: 2,
   },
-  timeValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
+  infoValue: {
+      fontSize: 14,
+      color: COLORS.text,
+      fontWeight: '500',
+      lineHeight: 20,
   },
-  clockButton: {
-    width: '100%',
+  sectionContainer: {
+      marginBottom: verticalScale(24),
   },
-  photosCard: {
-    marginTop: 16,
+  sectionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: verticalScale(12),
+      marginLeft: 4,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 8,
+  timelineContainer: {
+      backgroundColor: COLORS.white,
+      borderRadius: 16,
+      padding: 20,
+      ...SHADOWS.small,
   },
-  notesContainer: {
-    marginTop: 16,
-    marginBottom: 16,
+  timelineItem: {
+      flexDirection: 'row',
+      marginBottom: 0,
   },
-  timeInputRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 16,
+  timelineLeft: {
+      alignItems: 'center',
+      width: 30,
   },
-  timeInputContainer: {
-    flex: 1,
+  timelineDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: '#e0e0e0',
+      borderWidth: 2,
+      borderColor: COLORS.white,
+      zIndex: 1,
+  },
+  timelineDotActive: {
+      backgroundColor: COLORS.primary,
+  },
+  timelineLine: {
+      width: 2,
+      height: 30,
+      backgroundColor: '#e0e0e0',
+      marginVertical: 4,
+  },
+  timelineLineActive: {
+      backgroundColor: COLORS.primary,
+  },
+  timelineContent: {
+      flex: 1,
+      paddingBottom: 20,
+  },
+  timelineTitle: {
+      fontSize: 14,
+      color: COLORS.textLight,
+      marginTop: -4,
+  },
+  timelineTitleActive: {
+      color: COLORS.text,
+      fontWeight: '600',
+  },
+  progressActions: {
+      backgroundColor: COLORS.white,
+      borderRadius: 16,
+      padding: 20,
+      ...SHADOWS.small,
+  },
+  clockRow: {
+      flexDirection: 'row',
+      gap: 16,
+      marginBottom: 20,
+  },
+  clockInput: {
+      flex: 1,
+  },
+  clockLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: COLORS.text,
+      marginBottom: 8,
   },
   timeInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    color: COLORS.text,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 8,
+      padding: 10,
+      fontSize: 16,
+      textAlign: 'center',
   },
-  notesInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: COLORS.text,
-    minHeight: 80,
-    textAlignVertical: 'top',
+  textArea: {
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 8,
+      padding: 12,
+      minHeight: 80,
+      textAlignVertical: 'top',
+      marginBottom: 20,
   },
-  saveButton: {
-    width: '100%',
-    marginTop: 16,
+  actionButtons: {
+      flexDirection: 'row',
   },
-  completeButton: {
-    width: '100%',
-    marginTop: 16,
+  completedBanner: {
+      backgroundColor: '#e6f4ea',
+      borderRadius: 12,
+      padding: 20,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#ceead6',
   },
-  completedText: {
-    fontSize: 16,
-    color: COLORS.success,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 16,
+  completedBannerText: {
+      color: COLORS.success,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 4,
   },
-  errorText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginTop: 40,
+  completedTimeText: {
+      color: COLORS.success,
+      fontSize: 14,
   },
 });
 

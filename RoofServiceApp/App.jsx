@@ -44,7 +44,13 @@
 
 // export default App;
 
-import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useCallback,
+} from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -138,14 +144,20 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import ClientHomeScreen from './src/screens/ClientHomeScreen';
 import ClientQuoteScreen from './src/screens/ClientQuoteScreen';
 import AdminDashboardScreen from './src/screens/AdminDashboardScreen';
-import AdminQuotesScreen from './src/screens/AdminQuotesScreen';
+// AdminQuotesScreen removed
 import AdminAssignScreen from './src/screens/AdminAssignScreen';
 import EmployeeDashboardScreen from './src/screens/EmployeeDashboardScreen';
 import EmployeeJobDetailScreen from './src/screens/EmployeeJobDetailScreen';
 import EmployeeProfileScreen from './src/screens/EmployeeProfileScreen';
 import ClientLeadDetailScreen from './src/screens/ClientLeadDetailScreen';
 import ClientProfileScreen from './src/screens/ClientProfileScreen';
+import AdminProfileScreen from './src/screens/AdminProfileScreen';
+import AdminLeadsScreen from './src/screens/AdminLeadsScreen';
 import AdminUsersScreen from './src/screens/AdminUsersScreen';
+import ClientServicesScreen from './src/screens/ClientServicesScreen';
+import ClientGalleryScreen from './src/screens/ClientGalleryScreen';
+import ClientMyQuotesScreen from './src/screens/ClientMyQuotesScreen';
+import EmployeeMyJobsScreen from './src/screens/EmployeeMyJobsScreen';
 
 // Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -191,9 +203,10 @@ const RootNavigator = () => {
             name="AdminDashboard"
             component={AdminDashboardScreen}
           />
-          <Stack.Screen name="AdminQuotes" component={AdminQuotesScreen} />
           <Stack.Screen name="AdminAssign" component={AdminAssignScreen} />
           <Stack.Screen name="AdminUsers" component={AdminUsersScreen} />
+          <Stack.Screen name="AdminProfile" component={AdminProfileScreen} />
+          <Stack.Screen name="AdminLeads" component={AdminLeadsScreen} />
         </>
       )}
 
@@ -202,6 +215,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name="EmployeeDashboard"
             component={EmployeeDashboardScreen}
+          />
+          <Stack.Screen
+            name="EmployeeMyJobs"
+            component={EmployeeMyJobsScreen}
           />
           <Stack.Screen
             name="EmployeeJobDetail"
@@ -223,6 +240,15 @@ const RootNavigator = () => {
             component={ClientLeadDetailScreen}
           />
           <Stack.Screen name="ClientProfile" component={ClientProfileScreen} />
+          <Stack.Screen
+            name="ClientServices"
+            component={ClientServicesScreen}
+          />
+          <Stack.Screen name="ClientGallery" component={ClientGalleryScreen} />
+          <Stack.Screen
+            name="ClientMyQuotes"
+            component={ClientMyQuotesScreen}
+          />
         </>
       )}
     </Stack.Navigator>

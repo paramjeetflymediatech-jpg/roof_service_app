@@ -3,261 +3,221 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
-  Alert,
   TouchableOpacity,
-  TextInput,
+  Image,
+  ImageBackground,
+  Platform,
+  RefreshControl,
+  StatusBar,
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
-import Card from '../components/Card';
 import { api } from '../config/api';
-import { COLORS, LEAD_STATUS } from '../utils/constants';
+import { COLORS, FONTS, SHADOWS, LEAD_STATUS } from '../utils/constants';
+import { moderateScale, verticalScale, width } from '../utils/responsive';
 
-const formatDateLocal = value => {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
-  return d.toLocaleDateString();
-};
+// Use a local image for Hero background if available, or a nice placeholder
+const HERO_IMAGE = require('../../assets/roofing-background.jpg'); // Ensure this exists or use a fallback
 
 const ClientHomeScreen = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
-  const [quotes, setQuotes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    activeQuotes: 0,
+    pending: 0,
+    approved: 0,
+    completed: 0,
+  });
   const [refreshing, setRefreshing] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    loadQuotes();
+    loadStats();
   }, []);
 
-  // Reload quotes whenever screen comes into focus (so new quotes appear)
   useFocusEffect(
     React.useCallback(() => {
-      loadQuotes();
-    }, [user?.id]),
+      loadStats();
+    }, [user?.id])
   );
 
-  const loadQuotes = async () => {
-    setLoading(true);
+  const loadStats = async () => {
     try {
       const response = await api.getLeads({ userId: user?.id });
-      console.log('Get leads API response:', response.data);
-      // Backend returns { items, total, ... }
-      const clientLeads = response.data?.items || [];
-      console.log('Client leads:', clientLeads);
+      const leads = response.data?.items || [];
+      
+      const pending = leads.filter(l => l.status === LEAD_STATUS.PENDING).length;
+      const approved = leads.filter(l => l.status === LEAD_STATUS.APPROVED || l.status === LEAD_STATUS.ASSIGNED).length;
+      const completed = leads.filter(l => l.status === LEAD_STATUS.COMPLETED).length;
 
-      const mapped = clientLeads.map(lead => ({
-        id: String(lead.id),
-        service: lead.serviceType || 'Roof Service',
-        address: lead.address || lead.city || 'N/A',
-        status: lead.status,
-        date: formatDateLocal(lead.createdAt),
-        description: lead.message || lead.description || '',
-        preferedDate: lead.preferredDate
-          ? formatDateLocal(lead.preferredDate)
-          : null,
-        assignedEmployeeName:
-          lead.assignedEmployee?.name || lead.assignedTo?.name || null,
-        assignedEmployeePhone:
-          lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
-        employeeStartTime: lead.employeeStartTime || null,
-        employeeEndTime: lead.employeeEndTime || null,
-      }));
-      setQuotes(mapped);
+      setStats({
+        activeQuotes: leads.length,
+        pending,
+        approved,
+        completed,
+      });
     } catch (error) {
-      console.log('Load quotes error:', error.response || error);
-      Alert.alert('Error', 'Failed to load quotes');
-    } finally {
-      setLoading(false);
+      console.log('Error loading stats:', error);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadQuotes();
+    await loadStats();
     setRefreshing(false);
-  };
-
-  const getStatusColor = status => {
-    switch (status) {
-      case LEAD_STATUS.PENDING:
-        return COLORS.warning;
-      case LEAD_STATUS.APPROVED:
-      case LEAD_STATUS.ASSIGNED:
-        return COLORS.info;
-      case LEAD_STATUS.COMPLETED:
-        return COLORS.success;
-      case LEAD_STATUS.REJECTED:
-        return COLORS.error;
-      default:
-        return COLORS.textLight;
-    }
   };
 
   const handleLogout = async () => {
     await logout();
-    // RootNavigator will switch to the auth stack (Onboarding/Login/Register)
   };
 
-  const handleOpenDetails = item => {
-    navigation.navigate('ClientLeadDetail', { lead: item });
-  };
-
-  // Filter quotes based on search query
-  const filteredQuotes = quotes.filter(quote => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      quote.service?.toLowerCase().includes(query) ||
-      quote.address?.toLowerCase().includes(query) ||
-      quote.description?.toLowerCase().includes(query) ||
-      quote.status?.toLowerCase().includes(query) ||
-      quote.assignedEmployeeName?.toLowerCase().includes(query) ||
-      quote.date?.toLowerCase().includes(query) ||
-      quote.preferedDate?.toLowerCase().includes(query)
-    );
-  });
-
-  const clearSearch = () => {
-    setSearchQuery('');
-  };
-
-  const renderQuoteItem = ({ item }) => (
-    <Card
-      title={item.service}
-      subtitle={`
-Date• ${item.preferedDate}
-Address:${item.address}
-        `}
-      status={item.status}
-      statusColor={getStatusColor(item.status)}
-      onPress={() => handleOpenDetails(item)}
+  const QuickActionCard = ({ title, icon, color, onPress, subtitle }) => (
+    <TouchableOpacity
+      style={styles.actionCard}
+      onPress={onPress}
+      activeOpacity={0.8}
     >
-      <Text style={styles.description}>{item.description}</Text>
-      {item.assignedEmployeeName && (
-        <Text style={styles.assignedText}>
-          Assigned Employee: {item.assignedEmployeeName}
-          {item.assignedEmployeePhone ? ` (${item.assignedEmployeePhone})` : ''}
-        </Text>
-      )}
-      {item.employeeStartTime && (
-        <Text style={styles.assignedText}>
-          Start Time: {item.employeeStartTime}
-        </Text>
-      )}
-      {item.employeeEndTime && (
-        <Text style={styles.assignedText}>
-          End Time: {item.employeeEndTime}
-        </Text>
-      )}
-    </Card>
+      <View style={[styles.actionIconContainer, { backgroundColor: color + '20' }]}>
+        <Text style={styles.actionIcon}>{icon}</Text>
+      </View>
+      <View>
+        <Text style={styles.actionTitle}>{title}</Text>
+        <Text style={styles.actionSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={[styles.arrowIcon, { color: color }]}>→</Text>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* Header with burger + logout */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            onPress={() => setIsMenuOpen(true)}
-            style={styles.menuButton}
-          >
-            <Text style={styles.menuIcon}>≡</Text>
-          </TouchableOpacity>
-          <BrandLogo
-            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
-            resizeMode="contain"
-          />
-          <View>
-            <Text style={styles.welcomeText}>Welcome,</Text>
-            <Text style={styles.userName}>{user?.name || 'Client'}</Text>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.white} />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Section */}
+        <ImageBackground
+          source={HERO_IMAGE}
+          style={styles.heroSection}
+          imageStyle={styles.heroImage}
+        >
+          <View style={styles.heroOverlay}>
+             {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                <TouchableOpacity onPress={() => setIsMenuOpen(true)}>
+                  <Text style={styles.menuIcon}>≡</Text>
+                </TouchableOpacity>
+                <BrandLogo
+                    imageStyle={{ width: moderateScale(35), height: moderateScale(35), marginLeft: moderateScale(10) }}
+                    resizeMode="contain"
+                    tintColor={COLORS.white}
+                />
+              </View>
+              <TouchableOpacity onPress={() => navigation.navigate('ClientProfile')}>
+                 <View style={styles.profileIcon}>
+                    <Text style={styles.profileInitials}>
+                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    </Text>
+                 </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.heroContent}>
+              <Text style={styles.greeting}>Welcome, {user?.name?.split(' ')[0] || 'Client'}!</Text>
+              <Text style={styles.heroTitle}>Premium Roofing Services</Text>
+              <Text style={styles.heroSubtitle}>
+                Quality you can trust, right over your head.
+              </Text>
+              <TouchableOpacity
+                style={styles.ctaButton}
+                onPress={() => navigation.navigate('ClientQuote')}
+              >
+                <Text style={styles.ctaButtonText}>Request a Quote</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ImageBackground>
+
+        {/* Dashboard Stats */}
+        <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{stats.activeQuotes}</Text>
+                <Text style={styles.statLabel}>Total Quotes</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: COLORS.warning }]}>{stats.pending}</Text>
+                <Text style={styles.statLabel}>Pending</Text>
+            </View>
+            <View style={styles.statDivider} />
+             <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: COLORS.success }]}>{stats.approved}</Text>
+                <Text style={styles.statLabel}>Active</Text>
+            </View>
+        </View>
+
+        {/* Quick Actions Grid */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.gridContainer}>
+            <QuickActionCard
+              title="My Quotes"
+              subtitle="Track status"
+              icon="📋"
+              color={COLORS.primary}
+              onPress={() => navigation.navigate('ClientMyQuotes')}
+            />
+            <QuickActionCard
+              title="Services"
+              subtitle="What we do"
+              icon="🛠️"
+              color="#FF9800"
+              onPress={() => navigation.navigate('ClientServices')}
+            />
+            <QuickActionCard
+              title="Gallery"
+              subtitle="Our Past Work"
+              icon="📷"
+              color="#4CAF50"
+              onPress={() => navigation.navigate('ClientGallery')}
+            />
+             <QuickActionCard
+              title="Profile"
+              subtitle="Manage account"
+              icon="👤"
+              color="#9C27B0"
+              onPress={() => navigation.navigate('ClientProfile')}
+            />
           </View>
         </View>
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          variant="outline"
-          size="small"
-        />
-      </View>
 
-      <View style={styles.actionsContainer}>
-        <Button
-          title="Request New Quote"
-          onPress={() => navigation.navigate('ClientQuote')}
-          style={styles.actionButton}
-        />
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputWrapper}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by service, address, status..."
-            placeholderTextColor={COLORS.textLight}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-              <Text style={styles.clearButtonText}>✕</Text>
-            </TouchableOpacity>
-          )}
+        {/* Promo / Info Card */}
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Why Choose Us?</Text>
+            <View style={styles.promoCard}>
+                <Image 
+                    source={require('../../assets/roofing-logo.png')} 
+                    style={styles.promoImage} 
+                    resizeMode="contain"
+                />
+                <View style={styles.promoContent}>
+                    <Text style={styles.promoTitle}>Certified Experts</Text>
+                    <Text style={styles.promoText}>
+                        Over 20 years of experience in residential and commercial roofing. We guarantee satisfaction.
+                    </Text>
+                </View>
+            </View>
         </View>
-      </View>
+        
+        <View style={{ height: 100 }} />
+      </ScrollView>
 
-      <Text style={styles.sectionTitle}>My Quotes</Text>
-
-      <FlatList
-        data={filteredQuotes}
-        keyExtractor={item => item.id}
-        renderItem={renderQuoteItem}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No quotes yet</Text>
-            <Text style={styles.emptySubtext}>
-              Request a quote to get started
-            </Text>
-          </View>
-        }
-      />
-
-      {/* Bottom navigation bar */}
-      <View style={styles.footer}>
-        <Button
-          title="My Leads"
-          size="small"
-          onPress={() => navigation.navigate('ClientHome')}
-          style={styles.footerButton}
-        />
-        <Button
-          title="Profile"
-          size="small"
-          onPress={() => navigation.navigate('ClientProfile')}
-          style={styles.footerButton}
-          variant="outline"
-        />
-      </View>
-
-      {/* Simple sidebar menu */}
+      {/* Menu Overlay */}
       {isMenuOpen && (
         <View style={styles.menuOverlay}>
           <TouchableOpacity
@@ -265,33 +225,28 @@ Address:${item.address}
             onPress={() => setIsMenuOpen(false)}
           />
           <View style={styles.menuContainer}>
-            <Text style={styles.menuTitle}>Menu</Text>
-            <Button
-              title="My Leads"
-              onPress={() => {
-                setIsMenuOpen(false);
-                navigation.navigate('ClientHome');
-              }}
-              style={styles.menuButtonItem}
-            />
-            <Button
-              title="Profile"
-              onPress={() => {
-                setIsMenuOpen(false);
-                navigation.navigate('ClientProfile');
-              }}
-              style={styles.menuButtonItem}
-              variant="outline"
-            />
-            <Button
-              title="Logout"
-              onPress={async () => {
-                setIsMenuOpen(false);
-                await handleLogout();
-              }}
-              style={styles.menuButtonItem}
-              variant="danger"
-            />
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Menu</Text>
+              <TouchableOpacity onPress={() => setIsMenuOpen(false)}>
+                <Text style={styles.closeMenuText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientMyQuotes'); }} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>My Quotes</Text>
+            </TouchableOpacity>
+             <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientServices'); }} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>Services</Text>
+            </TouchableOpacity>
+             <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientGallery'); }} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientProfile'); }} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>Profile</Text>
+            </TouchableOpacity>
+            <View style={styles.menuDivider} />
+            <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
+                <Text style={[styles.menuItemText, { color: COLORS.error }]}>Logout</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -302,134 +257,205 @@ Address:${item.address}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    marginTop: 30,
+    backgroundColor: '#F8F9FA', // Slightly gray background for dashboard feel
   },
-  scrollContainer: {
-    flexGrow: 1,
-    backgroundColor: '#ffffff',
-    paddingBottom: 20,
+  scrollContent: {
+    paddingBottom: 0,
   },
-
+  heroSection: {
+    height: verticalScale(300),
+    width: '100%',
+    marginBottom: verticalScale(30), // Space for overlapping stats
+  },
+  heroImage: {
+    borderBottomLeftRadius: moderateScale(30),
+    borderBottomRightRadius: moderateScale(30),
+  },
+  heroOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // Dark overlay for text readability
+    borderBottomLeftRadius: moderateScale(30),
+    borderBottomRightRadius: moderateScale(30),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: COLORS.white,
+    paddingHorizontal: moderateScale(20),
+    marginBottom: verticalScale(20),
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuButton: {
-    marginRight: 12,
-    padding: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
   },
   menuIcon: {
-    fontSize: 22,
-    color: COLORS.text,
+    fontSize: moderateScale(30),
+    color: COLORS.white,
+    marginRight: moderateScale(10),
   },
-  welcomeText: {
-    fontSize: 14,
-    color: COLORS.textLight,
+  profileIcon: {
+      width: moderateScale(40),
+      height: moderateScale(40),
+      borderRadius: moderateScale(20),
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.5)',
   },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
+  profileInitials: {
+      color: COLORS.white,
+      fontWeight: '700',
+      fontSize: moderateScale(16),
   },
-  actionsContainer: {
-    padding: 20,
+  heroContent: {
+      paddingHorizontal: moderateScale(20),
+      justifyContent: 'flex-end',
+      flex: 1,
+      paddingBottom: verticalScale(50), // Increased bottom padding to make room for stats
   },
-  actionButton: {
-    width: '100%',
+  greeting: {
+      color: 'rgba(255,255,255,0.9)',
+      fontSize: moderateScale(16),
+      marginBottom: verticalScale(4),
   },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
+  heroTitle: {
+      color: COLORS.white,
+      fontSize: moderateScale(28),
+      fontWeight: '800',
+      marginBottom: verticalScale(8),
+      letterSpacing: 0.5,
   },
-  searchInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 46,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+  heroSubtitle: {
+      color: 'rgba(255,255,255,0.8)',
+      fontSize: moderateScale(14),
+      marginBottom: verticalScale(20),
   },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
+  ctaButton: {
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: moderateScale(24),
+      paddingVertical: verticalScale(12),
+      borderRadius: moderateScale(30),
+      alignSelf: 'flex-start',
+      ...SHADOWS.medium,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: COLORS.text,
-    paddingVertical: 0,
+  ctaButtonText: {
+      color: COLORS.white,
+      fontWeight: '700',
+      fontSize: moderateScale(16),
   },
-  clearButton: {
-    padding: 6,
-    marginLeft: 4,
+  statsContainer: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.white,
+      marginHorizontal: moderateScale(20),
+      marginTop: -verticalScale(40), // Negative margin to overlap hero
+      borderRadius: moderateScale(16),
+      paddingVertical: verticalScale(20),
+      paddingHorizontal: moderateScale(10),
+      ...SHADOWS.medium,
+      justifyContent: 'space-around',
+      alignItems: 'center',
   },
-  clearButtonText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    fontWeight: '600',
+  statItem: {
+      alignItems: 'center',
+      flex: 1,
+  },
+  statNumber: {
+      fontSize: moderateScale(24),
+      fontWeight: '700',
+      color: COLORS.text,
+  },
+  statLabel: {
+      fontSize: moderateScale(12),
+      color: COLORS.textLight,
+      marginTop: verticalScale(4),
+  },
+  statDivider: {
+      width: 1,
+      height: '60%',
+      backgroundColor: COLORS.border,
+  },
+  sectionContainer: {
+      marginTop: verticalScale(24),
+      paddingHorizontal: moderateScale(20),
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.text,
-    paddingHorizontal: 20,
-    marginBottom: 12,
+      fontSize: moderateScale(20),
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: verticalScale(16),
   },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 80,
+  gridContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      gap: moderateScale(16),
   },
-  description: {
-    fontSize: 14,
-    color: COLORS.textLight,
+  actionCard: { // Updated Grid Card Style
+      width: '47%', // slightly less than 50% for gap
+      backgroundColor: COLORS.white,
+      borderRadius: moderateScale(16),
+      padding: moderateScale(16),
+      ...SHADOWS.small,
+      marginBottom: verticalScale(8),
+      minHeight: verticalScale(130),
+      justifyContent: 'space-between',
   },
-  assignedText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: COLORS.textLight,
+  actionIconContainer: {
+      width: moderateScale(44),
+      height: moderateScale(44),
+      borderRadius: moderateScale(12),
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: verticalScale(12),
   },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
+  actionIcon: {
+      fontSize: moderateScale(22),
   },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
+  actionTitle: {
+      fontSize: moderateScale(16),
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: verticalScale(2),
   },
-  emptySubtext: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    marginTop: 4,
+  actionSubtitle: {
+      fontSize: moderateScale(12),
+      color: COLORS.textLight,
   },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+  arrowIcon: {
+      position: 'absolute',
+      right: moderateScale(12),
+      top: moderateScale(12),
+      fontSize: moderateScale(20),
+      fontWeight: 'bold',
   },
-  footerButton: {
-    flex: 1,
-    marginHorizontal: 4,
+  promoCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: moderateScale(16),
+      padding: moderateScale(16),
+      flexDirection: 'row',
+      alignItems: 'center',
+      ...SHADOWS.small,
+  },
+  promoImage: {
+      width: moderateScale(60),
+      height: moderateScale(60),
+      marginRight: moderateScale(16),
+  },
+  promoContent: {
+      flex: 1,
+  },
+  promoTitle: {
+      fontSize: moderateScale(16),
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: verticalScale(4),
+  },
+  promoText: {
+      fontSize: moderateScale(12),
+      color: COLORS.textLight,
+      lineHeight: verticalScale(18),
   },
   menuOverlay: {
     position: 'absolute',
@@ -438,32 +464,50 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
+    zIndex: 100,
   },
   menuOverlayBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   menuContainer: {
-    width: '70%',
+    width: '75%',
     backgroundColor: COLORS.white,
-    paddingTop: 40,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: -2, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
+    paddingHorizontal: moderateScale(20),
+    paddingBottom: verticalScale(24),
+    ...SHADOWS.large,
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(24),
   },
   menuTitle: {
-    fontSize: 18,
+    fontSize: moderateScale(24),
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 16,
   },
-  menuButtonItem: {
-    width: '100%',
-    marginTop: 8,
+  closeMenuText: {
+    fontSize: moderateScale(24),
+    color: COLORS.textLight,
+    padding: moderateScale(4),
+  },
+  menuItem: {
+      paddingVertical: verticalScale(16),
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+  },
+  menuItemText: {
+      fontSize: moderateScale(16),
+      color: COLORS.text,
+      fontWeight: '500',
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: verticalScale(16),
   },
 });
 

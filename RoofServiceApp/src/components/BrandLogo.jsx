@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import { moderateScale } from '../utils/responsive';
 
 const BrandLogo = ({ style, imageStyle, resizeMode = 'contain' }) => {
   return (
@@ -19,8 +20,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: moderateScale(150),
+    height: moderateScale(150),
   },
 });
 

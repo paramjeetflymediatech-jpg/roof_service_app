@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS } from '../utils/constants';
+import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
   if (!value) return '';
@@ -70,12 +71,12 @@ const ClientLeadDetailScreen = () => {
     return (
       <View style={styles.container}>
         {loading ? (
-          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: verticalScale(40) }} />
         ) : (
-          <>
+          <View style={styles.errorContainer}>
             <Text style={styles.errorText}>No lead selected</Text>
-            <Button title="Back" onPress={() => navigation.goBack()} />
-          </>
+            <Button title="Back" onPress={() => navigation.goBack()} size="small" />
+          </View>
         )}
       </View>
     );
@@ -101,31 +102,35 @@ const ClientLeadDetailScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={styles.title}>{service}</Text>
-        <BrandLogo imageStyle={{ width: 40, height: 40 }} resizeMode="contain" />
+      <View style={styles.header}>
+        <View style={styles.headerInfo}>
+          <Text style={styles.title}>{service}</Text>
+          <Text style={styles.subtitle}>{address}</Text>
+        </View>
+        <BrandLogo imageStyle={{ width: moderateScale(40), height: moderateScale(40) }} resizeMode="contain" />
       </View>
-      <Text style={styles.subtitle}>{address}</Text>
 
-      <Card title="Lead Details">
+      <Card title="Lead Details" style={styles.card}>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Status:</Text>
-          <Text style={styles.detailValue}>{statusLabel}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: COLORS.info }]}>
+             <Text style={styles.statusText}>{statusLabel}</Text>
+          </View>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Date:</Text>
-          <Text style={styles.detailValue}>{preferedDate}</Text>
+          <Text style={styles.detailValue}>{preferedDate || 'N/A'}</Text>
         </View>
         
         {!!description && (
           <View style={styles.detailRowColumn}>
             <Text style={styles.detailLabel}>Description</Text>
-            <Text style={styles.detailValue}>{description}</Text>
+            <Text style={styles.descriptionValue}>{description}</Text>
           </View>
         )}
       </Card>
 
-      <Card title="Assigned Employee">
+      <Card title="Assigned Employee" style={styles.card}>
         {assignedEmployeeName ? (
           <>
             <View style={styles.detailRow}>
@@ -144,7 +149,7 @@ const ClientLeadDetailScreen = () => {
         )}
 
         {(employeeStartTime || employeeEndTime) && (
-          <View style={styles.detailRow}>
+          <View style={[styles.detailRow, { marginTop: verticalScale(8) }]}>
             <Text style={styles.detailLabel}>Work Time:</Text>
             <Text style={styles.detailValue}>
               {employeeStartTime || '--:--'}
@@ -155,7 +160,7 @@ const ClientLeadDetailScreen = () => {
       </Card>
 
       {Array.isArray(completionImages) && completionImages.length > 0 && (
-        <Card title="Work Photos">
+        <Card title="Work Photos" style={styles.card}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -176,6 +181,7 @@ const ClientLeadDetailScreen = () => {
         title="Back to My Quotes"
         onPress={() => navigation.goBack()}
         style={styles.backButton}
+        variant="outline"
       />
     </ScrollView>
   );
@@ -185,59 +191,96 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    marginTop: 30,
+    paddingTop: verticalScale(20),
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: moderateScale(20),
+    paddingBottom: verticalScale(40),
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(20),
+  },
+  headerInfo: {
+    flex: 1,
+    marginRight: moderateScale(16),
   },
   title: {
-    fontSize: 22,
+    fontSize: moderateScale(FONTS.sizes.h2),
     fontWeight: '700',
     color: COLORS.text,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
-    marginBottom: 16,
+    marginTop: verticalScale(4),
+  },
+  card: {
+    marginBottom: verticalScale(16),
   },
   detailRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: verticalScale(12),
   },
   detailRowColumn: {
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   detailLabel: {
-    width: 90,
-    fontSize: 14,
+    width: moderateScale(100),
+    fontSize: moderateScale(FONTS.sizes.body),
     fontWeight: '600',
     color: COLORS.textLight,
   },
   detailValue: {
     flex: 1,
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.text,
+    fontWeight: '500',
+  },
+  descriptionValue: {
+    marginTop: verticalScale(4),
+    fontSize: moderateScale(FONTS.sizes.body),
+    color: COLORS.text,
+    lineHeight: verticalScale(20),
+  },
+  statusBadge: {
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(4),
+    borderRadius: moderateScale(12),
+  },
+  statusText: {
+    color: COLORS.white,
+    fontSize: moderateScale(12),
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   imagesRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: moderateScale(12),
+    paddingVertical: verticalScale(8),
   },
   image: {
-    width: 90,
-    height: 90,
-    borderRadius: 8,
+    width: moderateScale(90),
+    height: moderateScale(90),
+    borderRadius: moderateScale(8),
     backgroundColor: '#eee',
   },
   backButton: {
-    marginTop: 24,
+    marginTop: verticalScale(16),
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: moderateScale(20),
   },
   errorText: {
-    fontSize: 16,
+    fontSize: moderateScale(FONTS.sizes.h3),
     color: COLORS.textLight,
-    textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: verticalScale(16),
   },
 });
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { COLORS } from '../utils/constants';
+import { COLORS, SHADOWS, FONTS } from '../utils/constants';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const Button = ({ 
   title, 
@@ -10,6 +11,7 @@ const Button = ({
   loading = false,
   disabled = false,
   style,
+  textStyle,
 }) => {
   const getBackgroundColor = () => {
     if (disabled) return COLORS.textLight;
@@ -35,22 +37,22 @@ const Button = ({
   const getFontSize = () => {
     switch (size) {
       case 'small':
-        return 14;
+        return moderateScale(FONTS.sizes.caption);
       case 'large':
-        return 18;
+        return moderateScale(FONTS.sizes.h3);
       default:
-        return 16;
+        return moderateScale(FONTS.sizes.body);
     }
   };
 
   const getPadding = () => {
     switch (size) {
       case 'small':
-        return 10;
+        return verticalScale(8);
       case 'large':
-        return 16;
+        return verticalScale(16);
       default:
-        return 14;
+        return verticalScale(12);
     }
   };
 
@@ -61,20 +63,31 @@ const Button = ({
         {
           backgroundColor: getBackgroundColor(),
           paddingVertical: getPadding(),
-          paddingHorizontal: getPadding() * 2,
+          paddingHorizontal: moderateScale(16),
           borderWidth: variant === 'outline' ? 1 : 0,
           borderColor: COLORS.primary,
+          // Apply shadow only for solid buttons
+          ...(variant !== 'outline' && variant !== 'transparent' && !disabled ? SHADOWS.small : {}),
         },
         style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.white} />
+        <ActivityIndicator color={COLORS.white} size="small" />
       ) : (
-        <Text style={[styles.buttonText, { color: getTextColor(), fontSize: getFontSize() }]}>
+        <Text 
+          style={[
+            styles.buttonText, 
+            { 
+              color: getTextColor(), 
+              fontSize: getFontSize() 
+            },
+            textStyle
+          ]}
+        >
           {title}
         </Text>
       )}
@@ -84,12 +97,15 @@ const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
+    borderRadius: moderateScale(10),
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
   },
   buttonText: {
     fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
 });
 

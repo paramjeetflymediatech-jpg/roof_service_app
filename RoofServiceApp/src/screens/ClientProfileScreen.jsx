@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TextInput,
+  Alert,
+  Platform,
+  TouchableOpacity,
+  ImageBackground,
+  Image,
+  SafeAreaView,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
-import Card from '../components/Card';
-import { COLORS } from '../utils/constants';
+import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
+import { moderateScale, verticalScale } from '../utils/responsive';
+
+// Reuse the hero background if available
+const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 
 const ClientProfileScreen = () => {
   const navigation = useNavigation();
@@ -14,6 +30,9 @@ const ClientProfileScreen = () => {
   const [stats, setStats] = useState({ total: 0, inProgress: 0, completed: 0 });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Form State
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
 
@@ -28,8 +47,12 @@ const ClientProfileScreen = () => {
           lead => lead.email?.toLowerCase() === user.email.toLowerCase(),
         );
         const total = clientLeads.length;
-        const inProgress = clientLeads.filter(l => l.status === 'in_progress').length;
-        const completed = clientLeads.filter(l => l.status === 'completed').length;
+        const inProgress = clientLeads.filter(l =>
+          ['pending', 'approved', 'assigned', 'in_progress'].includes(l.status),
+        ).length;
+        const completed = clientLeads.filter(
+          l => l.status === 'completed',
+        ).length;
         setStats({ total, inProgress, completed });
       } catch (error) {
         console.log('Client profile stats error:', error.response || error);
@@ -42,8 +65,14 @@ const ClientProfileScreen = () => {
   }, [user?.email]);
 
   const handleLogout = async () => {
-    await logout();
-    // RootNavigator will switch to the auth stack (Onboarding/Login/Register)
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => await logout(),
+      },
+    ]);
   };
 
   const handleSaveProfile = async () => {
@@ -53,13 +82,17 @@ const ClientProfileScreen = () => {
     }
     try {
       setSaving(true);
-      const res = await api.updateMe({ name: name.trim(), phone: phone.trim() });
+      const res = await api.updateMe({
+        name: name.trim(),
+        phone: phone.trim(),
+      });
       const updatedUser = res.data?.data || res.data || {};
 
       // merge with existing auth user to preserve token and role
       const merged = { ...(user || {}), ...updatedUser };
       await login(merged);
-      Alert.alert('Profile Updated', 'Your profile has been saved.');
+      Alert.alert('Success', 'Profile updated successfully');
+      setIsEditing(false);
     } catch (error) {
       console.log('Update profile error:', error.response || error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
@@ -68,100 +101,229 @@ const ClientProfileScreen = () => {
     }
   };
 
+  const StatItem = ({ label, value, color }) => (
+    <View style={styles.statItem}>
+      <Text style={[styles.statValue, { color: color || COLORS.text }]}>
+        {value}
+      </Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+
+  const SettingsItem = ({ icon, title, onPress, isDestructive }) => (
+    <TouchableOpacity
+      style={styles.settingsItem}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.settingsIconContainer,
+          isDestructive && styles.destructiveIconContainer,
+        ]}
+      >
+        <Text
+          style={[styles.settingsIcon, isDestructive && styles.destructiveText]}
+        >
+          {icon}
+        </Text>
+      </View>
+      <Text
+        style={[styles.settingsTitle, isDestructive && styles.destructiveText]}
+      >
+        {title}
+      </Text>
+      <Text style={styles.settingsArrow}>→</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      {/* Header with simple nav */}
-      <View style={styles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <BrandLogo
-            imageStyle={{ width: 40, height: 40, marginRight: 10 }}
-            resizeMode="contain"
-          />
-          <View>
-            <Text style={styles.welcomeText}>Profile</Text>
-            <Text style={styles.userName}>{user?.name || 'Client'}</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        style={{ zIndex: 10 }}
+      >
+        {/* Header Section */}
+        <ImageBackground
+          source={HERO_IMAGE}
+          style={styles.headerBackground}
+          imageStyle={styles.headerImageStyle}
+        >
+          <View style={styles.headerOverlay}>
+            <View style={styles.navBar}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <Text style={styles.backButtonText}>←</Text>
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>My Profile</Text>
+              <TouchableOpacity
+                onPress={() => setIsEditing(!isEditing)}
+                style={styles.editButton}
+              >
+                <Text style={styles.editButtonText}>
+                  {isEditing ? 'Cancel' : 'Edit'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.profileHeaderContent}>
+              <View style={styles.avatarContainer}>
+                <Text style={styles.avatarText}>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </Text>
+                {isEditing && (
+                  <TouchableOpacity style={styles.cameraButton}>
+                    <Text style={styles.cameraIcon}>📷</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.userName}>{user?.name || 'Client Name'}</Text>
+              <Text style={styles.userEmail}>
+                {user?.email || 'email@example.com'}
+              </Text>
+            </View>
+          </View>
+        </ImageBackground>
+
+        {/* Stats Card */}
+        <View style={styles.statsCardWrapper}>
+          <View style={styles.statsCard}>
+            <StatItem
+              label="Total Quotes"
+              value={stats.total}
+              color={COLORS.primary}
+            />
+            <View style={styles.statDivider} />
+            <StatItem
+              label="Active"
+              value={stats.inProgress}
+              color={COLORS.warning}
+            />
+            <View style={styles.statDivider} />
+            <StatItem
+              label="Completed"
+              value={stats.completed}
+              color={COLORS.success}
+            />
           </View>
         </View>
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          variant="outline"
-          size="small"
-        />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Card title="Personal Info">
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Name:</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Your name"
-            />
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Email:</Text>
-            <Text style={styles.detailValue}>{user?.email || '-'}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Phone:</Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Phone number"
-              keyboardType="phone-pad"
-            />
-          </View>
-        </Card>
-
-        <Button
-          title="Save Profile"
-          onPress={handleSaveProfile}
-          loading={saving}
-          style={{ marginBottom: 16 }}
-        />
-
-        <Card title="My Leads Summary">
-          {loading ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
-          ) : (
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statNumber}>{stats.total}</Text>
-                <Text style={styles.statLabel}>Total</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statNumber}>{stats.inProgress}</Text>
-                <Text style={styles.statLabel}>In Progress</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statNumber}>{stats.completed}</Text>
-                <Text style={styles.statLabel}>Completed</Text>
-              </View>
+        {/* User Details Form (Editable) */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Personal Information</Text>
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.input}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Your Name"
+                />
+              ) : (
+                <Text style={styles.infoText}>{user?.name || 'N/A'}</Text>
+              )}
             </View>
-          )}
-        </Card>
-      </ScrollView>
 
-      {/* Simple bottom nav bar */}
-      <View style={styles.footer}>
-        <Button
-          title="My Leads"
-          size="small"
-          onPress={() => navigation.navigate('ClientHome')}
-          style={styles.footerButton}
-          variant="outline"
-        />
-        <Button
-          title="Profile"
-          size="small"
-          onPress={() => {}}
-          style={styles.footerButton}
-        />
-      </View>
+            <View style={styles.divider} />
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <Text style={[styles.infoText, { color: COLORS.textLight }]}>
+                {user?.email || 'N/A'}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.input}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Phone Number"
+                  keyboardType="phone-pad"
+                />
+              ) : (
+                <Text style={styles.infoText}>{user?.phone || 'Not set'}</Text>
+              )}
+            </View>
+          </View>
+
+          {isEditing && (
+            <Button
+              title="Save Changes"
+              onPress={handleSaveProfile}
+              loading={saving}
+              style={styles.saveButton}
+            />
+          )}
+        </View>
+
+        {/* Settings / Menu */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+          <View style={styles.menuContainer}>
+            <SettingsItem
+              icon="🔔"
+              title="Notifications"
+              onPress={() =>
+                Alert.alert(
+                  'Coming Soon',
+                  'Notification settings will be available soon.',
+                )
+              }
+            />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon="🛡️"
+              title="Privacy & Security"
+              onPress={() =>
+                Alert.alert(
+                  'Coming Soon',
+                  'Security settings will be available soon.',
+                )
+              }
+            />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon="❓"
+              title="Help & Support"
+              onPress={() =>
+                Alert.alert(
+                  'Support',
+                  'Contact us at support@mainstreetroofing.ca',
+                )
+              }
+            />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon="ℹ️"
+              title="About App"
+              onPress={() => Alert.alert('About', 'Roof Service App v1.0.0')}
+            />
+          </View>
+        </View>
+
+        <View style={styles.logoutContainer}>
+          <Button
+            title="Log Out"
+            onPress={handleLogout}
+            variant="outline"
+            style={{ borderColor: COLORS.error }}
+            textStyle={{ color: COLORS.error }}
+          />
+          <Text style={styles.versionText}>Version 1.0.0</Text>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
     </View>
   );
 };
@@ -169,89 +331,229 @@ const ClientProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    marginTop: 30,
-    paddingBottom: 70,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: COLORS.white,
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: COLORS.textLight,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
+    backgroundColor: '#F8F9FA',
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    gap: 16,
+    paddingBottom: verticalScale(20),
   },
-  detailRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
+  headerBackground: {
+    width: '100%',
+    height: verticalScale(280),
   },
-  detailLabel: {
-    width: 80,
-    fontWeight: '600',
-    color: COLORS.textLight,
+  headerImageStyle: {
+    borderBottomLeftRadius: moderateScale(30),
+    borderBottomRightRadius: moderateScale(30),
   },
-  detailValue: {
+  headerOverlay: {
     flex: 1,
-    color: COLORS.text,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderBottomLeftRadius: moderateScale(30),
+    borderBottomRightRadius: moderateScale(30),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
+    paddingHorizontal: moderateScale(20),
   },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  statsRow: {
+  navBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  statBox: {
     alignItems: 'center',
-    flex: 1,
+    marginBottom: verticalScale(20),
   },
-  statNumber: {
-    fontSize: 24,
+  backButton: {
+    padding: moderateScale(8),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: moderateScale(20),
+  },
+  backButtonText: {
+    fontSize: moderateScale(20),
+    color: COLORS.white,
+    fontWeight: 'bold',
+  },
+  headerTitle: {
+    fontSize: moderateScale(18),
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  editButton: {
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(6),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: moderateScale(15),
+  },
+  editButtonText: {
+    color: COLORS.white,
+    fontWeight: '600',
+    fontSize: moderateScale(12),
+  },
+  profileHeaderContent: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: moderateScale(90),
+    height: moderateScale(90),
+    borderRadius: moderateScale(45),
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.3)',
+    marginBottom: verticalScale(12),
+  },
+  avatarText: {
+    fontSize: moderateScale(36),
     fontWeight: '700',
     color: COLORS.primary,
   },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginTop: 4,
-  },
-  footer: {
+  cameraButton: {
     position: 'absolute',
-    left: 0,
-    right: 0,
     bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.secondary, // or a bright color
+    width: moderateScale(28),
+    height: moderateScale(28),
+    borderRadius: moderateScale(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+  },
+  cameraIcon: {
+    fontSize: moderateScale(14),
+  },
+  userName: {
+    fontSize: moderateScale(22),
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: verticalScale(4),
+  },
+  userEmail: {
+    fontSize: moderateScale(14),
+    color: 'rgba(255,255,255,0.8)',
+  },
+  statsCardWrapper: {
+    paddingHorizontal: moderateScale(20),
+    marginTop: -verticalScale(40),
+  },
+  statsCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    paddingVertical: verticalScale(20),
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    ...SHADOWS.medium,
   },
-  footerButton: {
+  statItem: {
+    alignItems: 'center',
     flex: 1,
-    marginHorizontal: 4,
+  },
+  statValue: {
+    fontSize: moderateScale(20),
+    fontWeight: '700',
+    marginBottom: verticalScale(4),
+  },
+  statLabel: {
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
+  },
+  statDivider: {
+    width: 1,
+    height: '60%',
+    backgroundColor: COLORS.border,
+  },
+  sectionContainer: {
+    marginTop: verticalScale(24),
+    paddingHorizontal: moderateScale(20),
+  },
+  sectionTitle: {
+    fontSize: moderateScale(16),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: verticalScale(12),
+    marginLeft: moderateScale(4),
+  },
+  formContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    ...SHADOWS.small,
+  },
+  inputGroup: {
+    marginBottom: verticalScale(4),
+  },
+  inputLabel: {
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
+    marginBottom: verticalScale(4),
+  },
+  input: {
+    fontSize: moderateScale(16),
+    color: COLORS.text,
+    paddingVertical: verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primary,
+  },
+  infoText: {
+    fontSize: moderateScale(16),
+    color: COLORS.text,
+    paddingVertical: verticalScale(8),
+    fontWeight: '500',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: verticalScale(12),
+  },
+  saveButton: {
+    marginTop: verticalScale(16),
+  },
+  menuContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    paddingHorizontal: moderateScale(16),
+    ...SHADOWS.small,
+  },
+  settingsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: verticalScale(12),
+  },
+  settingsIconContainer: {
+    width: moderateScale(36),
+    height: moderateScale(36),
+    borderRadius: moderateScale(18),
+    backgroundColor: '#F0F4F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: moderateScale(12),
+  },
+  destructiveIconContainer: {
+    backgroundColor: '#FEE2E2',
+  },
+  settingsIcon: {
+    fontSize: moderateScale(18),
+  },
+  settingsTitle: {
+    flex: 1,
+    fontSize: moderateScale(16),
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  destructiveText: {
+    color: COLORS.error,
+  },
+  settingsArrow: {
+    fontSize: moderateScale(18),
+    color: COLORS.textLight,
+  },
+  logoutContainer: {
+    marginTop: verticalScale(30),
+    paddingHorizontal: moderateScale(20),
+    alignItems: 'center',
+  },
+  versionText: {
+    marginTop: verticalScale(16),
+    color: COLORS.textLight,
+    fontSize: moderateScale(12),
   },
 });
 

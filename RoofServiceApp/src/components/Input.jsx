@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { TextInput, Text, StyleSheet, View } from 'react-native';
-import { COLORS } from '../utils/constants';
+import { COLORS, FONTS } from '../utils/constants';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const Input = forwardRef(({
   label,
@@ -40,35 +41,40 @@ const Input = forwardRef(({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: verticalScale(16),
   },
   label: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.caption),
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 6,
+    marginBottom: verticalScale(6),
+    marginLeft: moderateScale(2),
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
+    borderColor: COLORS.border,
+    borderRadius: moderateScale(10),
+    paddingHorizontal: moderateScale(14),
+    paddingVertical: verticalScale(12),
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.text,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    minHeight: verticalScale(48),
   },
   multiline: {
-    minHeight: 100,
+    minHeight: verticalScale(120),
     textAlignVertical: 'top',
+    paddingTop: verticalScale(12),
   },
   inputError: {
     borderColor: COLORS.error,
+    borderWidth: 1.5,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: moderateScale(FONTS.sizes.small),
     color: COLORS.error,
-    marginTop: 4,
+    marginTop: verticalScale(4),
+    marginLeft: moderateScale(2),
   },
 });
 

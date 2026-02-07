@@ -15,7 +15,8 @@ import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
-import { COLORS } from '../utils/constants';
+import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { moderateScale, verticalScale } from '../utils/responsive';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -121,7 +122,7 @@ const RegisterScreen = () => {
       >
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <BrandLogo imageStyle={{ width: 100, height: 100 }} />
+            <BrandLogo imageStyle={{ width: moderateScale(100), height: moderateScale(100) }} />
             <Text style={styles.subtitle}>Create Your Account</Text>
           </View>
 
@@ -191,6 +192,7 @@ const RegisterScreen = () => {
               onPress={handleRegister}
               loading={loading}
               style={styles.registerButton}
+              size="large"
             />
 
             <View style={styles.loginLinkContainer}>
@@ -213,65 +215,58 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingVertical: verticalScale(20),
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingHorizontal: moderateScale(24),
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
+    marginBottom: verticalScale(30),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
-    marginTop: 8,
+    marginTop: verticalScale(8),
+    textAlign: 'center',
   },
   formContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    backgroundColor: COLORS.surface,
+    borderRadius: moderateScale(20),
+    padding: moderateScale(24),
+    ...SHADOWS.medium,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 8,
+    fontSize: moderateScale(28),
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: verticalScale(8),
+    letterSpacing: 0.5,
   },
   subtitleText: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   registerButton: {
-    marginTop: 16,
+    marginTop: verticalScale(16),
   },
   loginLinkContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(24),
   },
   loginText: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
   },
   loginLink: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 

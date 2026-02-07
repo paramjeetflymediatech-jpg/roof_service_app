@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   Animated,
   Easing,
   TouchableOpacity,
 } from 'react-native';
 import Button from '../components/Button';
-import { COLORS } from '../utils/constants';
+import BrandLogo from '../components/BrandLogo';
+import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { moderateScale, verticalScale, scale } from '../utils/responsive';
 
 const OnboardingScreen = ({ navigation }) => {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -25,28 +26,26 @@ const OnboardingScreen = ({ navigation }) => {
     }).start();
 
     // Subtle pulsing animation for logo
-    // Animated.once(
-    Animated.sequence(
-      [
+    Animated.loop(
+      Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 1.05,
-          duration: 900,
+          duration: 2000,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 0.95,
-          duration: 900,
+          duration: 2000,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ],
-      // ),
+      ])
     ).start();
   }, [opacityAnim, scaleAnim]);
 
   const handleGetStarted = () => {
-    navigation.replace('Register');
+    navigation.replace('Login');
   };
 
   return (
@@ -55,11 +54,7 @@ const OnboardingScreen = ({ navigation }) => {
         <Animated.View
           style={[styles.logoContainer, { transform: [{ scale: scaleAnim }] }]}
         >
-          <Image
-            source={require('../../assets/roofing-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <BrandLogo imageStyle={{ width: moderateScale(180), height: moderateScale(180) }} />
           <Text style={styles.appName}>Roof Service</Text>
           <Text style={styles.tagline}>
             Reliable roofing, right at your fingertips.
@@ -78,14 +73,11 @@ const OnboardingScreen = ({ navigation }) => {
           title="Get Started"
           onPress={handleGetStarted}
           style={styles.button}
+          size="large"
         />
 
-        {/* <Text style={styles.helperText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.LoginText}> You can Login</Text>
-        </TouchableOpacity> */}
         <View style={styles.helperText}>
-          <Text style={styles.LoginText}>Already have an account? </Text>
+          <Text style={styles.loginText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.loginLink}>Sign In</Text>
           </TouchableOpacity>
@@ -100,65 +92,68 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: moderateScale(24),
   },
   content: {
     alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: moderateScale(20),
+    padding: moderateScale(30),
+    ...SHADOWS.medium,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 32,
-  },
-  logo: {
-    width: 180,
-    height: 180,
-    marginBottom: 16,
+    marginBottom: verticalScale(32),
   },
   appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: moderateScale(FONTS.sizes.h1),
+    fontWeight: '800',
     color: COLORS.primary,
+    marginTop: verticalScale(16),
+    letterSpacing: 0.5,
   },
   tagline: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
-    marginTop: 4,
+    marginTop: verticalScale(8),
     textAlign: 'center',
+    lineHeight: verticalScale(22),
   },
   textSection: {
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
+    alignItems: 'center',
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: moderateScale(FONTS.sizes.h2),
+    fontWeight: '700',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: verticalScale(12),
   },
   description: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
     textAlign: 'center',
+    lineHeight: verticalScale(24),
   },
   button: {
     alignSelf: 'stretch',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   helperText: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
-  LoginText: {
-    fontSize: 14,
+  loginText: {
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.textLight,
   },
-
   loginLink: {
-    fontSize: 14,
+    fontSize: moderateScale(FONTS.sizes.body),
     color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 
