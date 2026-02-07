@@ -6,6 +6,12 @@ const { jwtAuth, isAdmin } = require("../middlewares/auth.middleware");
 
 // /api/leads
 router.post("/", upload.array("images", 5), leadController.createLead);
+router.post(
+  "/create",
+  jwtAuth,
+  upload.array("images", 5),
+  leadController.createLeadByApp,
+);
 router.get("/", jwtAuth, leadController.getLeads);
 router.get("/:id", jwtAuth, leadController.getLeadById);
 router.put("/:id", jwtAuth, isAdmin, leadController.updateLead);

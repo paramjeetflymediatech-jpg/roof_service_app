@@ -12,7 +12,6 @@ const jwtAuth = async (req, res, next) => {
         .status(401)
         .json({ success: false, message: "No token provided" });
     }
-    console.log(authHeader, "dd");
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 

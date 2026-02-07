@@ -53,7 +53,7 @@ export const api = {
   // Leads/Quotes
   getLeads: (params = {}) => apiClient.get('/leads', { params }),
   getLeadById: id => apiClient.get(`/leads/${id}`),
-  createLead: (data, config = {}) => apiClient.post('/leads', data, config),
+  createLead: (data, config = {}) => apiClient.post('/leads/create', data, config),
   updateLead: (id, data) => apiClient.put(`/leads/${id}`, data),
   assignLead: (id, data) => apiClient.put(`/leads/${id}/assign`, data),
 

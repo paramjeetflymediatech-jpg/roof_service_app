@@ -72,6 +72,71 @@ exports.createLead = async (req, res, next) => {
     next(err);
   }
 };
+exports.createLeadByApp = async (req, res, next) => {
+  try {
+    const payload = { ...req.body };
+
+    // If authenticated user exists, attach userId so we can filter leads per client
+    if (req.user && req.user.id) {
+      payload.userId = req.user.id;
+    }
+
+    if (!payload.name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    if (!payload.source) payload.source = "mobile_app";
+
+    if (payload.leadType === "quote") {
+      payload.status = "pending";
+    }
+
+    // 1️⃣ Prepare image metadata
+    let clientImages = [];
+
+    if (req.files && req.files.length > 0) {
+      clientImages = req.files.map((file) => ({
+        filename: file.filename,
+        url: `/public/leads_images/${file.filename}`,
+        mimeType: file.mimetype,
+        size: file.size,
+      }));
+    }
+
+    // 2️⃣ Attach images to payload
+    payload.clientImages = clientImages.length > 0 ? clientImages : null;
+    console.log(payload, "---payload");
+    // 3️⃣ Create lead
+    const lead = await Lead.create(payload);
+    console.log(lead, "lead------------");
+
+    // 4️⃣ Fire emails async
+    sendLeadNotification(lead).catch((err) =>
+      console.error("Email notification error:", err),
+    );
+    sendCustomerConfirmation(lead).catch((err) =>
+      console.error("Customer email error:", err),
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Thank you! We will contact you soon.",
+      lead,
+    });
+  } catch (err) {
+    if (
+      err.name === "SequelizeUniqueConstraintError" &&
+      err.errors?.[0]?.path === "email"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This email has already been submitted. Please use a different email or contact us directly.",
+      });
+    }
+    next(err);
+  }
+};
 
 // Get leads (basic pagination + optional filters)
 exports.getLeads = async (req, res, next) => {
