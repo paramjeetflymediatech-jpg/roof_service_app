@@ -40,7 +40,7 @@ const OnboardingScreen = ({ navigation }) => {
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [opacityAnim, scaleAnim]);
 
@@ -50,11 +50,18 @@ const OnboardingScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.circle1} />
+      <View style={styles.circle2} />
       <Animated.View style={[styles.content, { opacity: opacityAnim }]}>
         <Animated.View
           style={[styles.logoContainer, { transform: [{ scale: scaleAnim }] }]}
         >
-          <BrandLogo imageStyle={{ width: moderateScale(180), height: moderateScale(180) }} />
+          <BrandLogo
+            imageStyle={{
+              width: moderateScale(180),
+              height: moderateScale(180),
+            }}
+          />
           <Text style={styles.appName}>Roof Service</Text>
           <Text style={styles.tagline}>
             Reliable roofing, right at your fingertips.
@@ -90,70 +97,96 @@ const OnboardingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.primary, // Deep Blue Background
     justifyContent: 'center',
     paddingHorizontal: moderateScale(24),
   },
   content: {
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: moderateScale(20),
-    padding: moderateScale(30),
-    ...SHADOWS.medium,
+    // Removed card styling for immersive feel
+    paddingVertical: verticalScale(50),
+    paddingHorizontal: moderateScale(10),
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: verticalScale(32),
+    marginBottom: verticalScale(40),
   },
   appName: {
-    fontSize: moderateScale(FONTS.sizes.h1),
-    fontWeight: '800',
-    color: COLORS.primary,
-    marginTop: verticalScale(16),
-    letterSpacing: 0.5,
+    fontSize: moderateScale(40),
+    fontWeight: '900',
+    color: COLORS.white,
+    marginTop: verticalScale(20),
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
   tagline: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
-    marginTop: verticalScale(8),
+    fontSize: moderateScale(16),
+    color: '#e0e0e0', // Slightly off-white for subtitle
+    marginTop: verticalScale(12),
     textAlign: 'center',
-    lineHeight: verticalScale(22),
+    letterSpacing: 1,
+    fontStyle: 'italic',
   },
   textSection: {
-    marginBottom: verticalScale(32),
+    marginBottom: verticalScale(50),
     alignItems: 'center',
   },
   title: {
-    fontSize: moderateScale(FONTS.sizes.h2),
+    fontSize: moderateScale(28),
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.white,
     textAlign: 'center',
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(16),
+    lineHeight: verticalScale(36),
   },
   description: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
+    fontSize: moderateScale(16),
+    color: '#cccccc', // Light gray for description
     textAlign: 'center',
-    lineHeight: verticalScale(24),
+    lineHeight: verticalScale(26),
+    paddingHorizontal: moderateScale(10),
   },
   button: {
-    alignSelf: 'stretch',
-    marginTop: verticalScale(8),
+    width: '100%',
+    borderRadius: moderateScale(30), // Pill shape for premium feel
+    height: verticalScale(56),
+    backgroundColor: COLORS.secondary, // Gold/Orange accent
+    ...SHADOWS.medium,
   },
   helperText: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: verticalScale(20),
+    marginTop: verticalScale(30),
   },
   loginText: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
+    fontSize: moderateScale(15),
+    color: '#bbbbbb',
   },
   loginLink: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.primary,
+    fontSize: moderateScale(15),
+    color: COLORS.secondary, // Gold accent
     fontWeight: '700',
+    marginLeft: moderateScale(4),
+  },
+  // Decorative circles
+  circle1: {
+    position: 'absolute',
+    top: -100,
+    left: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  circle2: {
+    position: 'absolute',
+    bottom: -50,
+    right: -50,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
 });
 

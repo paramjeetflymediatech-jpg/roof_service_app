@@ -10,6 +10,7 @@ import {
   Modal,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
@@ -34,6 +35,9 @@ const AdminLeadsScreen = () => {
   const [dateFilter, setDateFilter] = useState(null);
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempDate, setTempDate] = useState('');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     loadQuotes('');
@@ -52,17 +56,39 @@ const AdminLeadsScreen = () => {
       return;
     }
     const timeout = setTimeout(() => {
-      loadQuotes(searchQuery, dateFilter);
+      setPage(1);
+      loadQuotes(searchQuery, dateFilter, 1, false);
     }, 500);
     return () => clearTimeout(timeout);
-  }, [searchQuery, dateFilter]);
+  }, [searchQuery, dateFilter, statusFilter]);
 
-  const loadQuotes = async (search = '', date = null) => {
-    setLoading(true);
+  const loadQuotes = async (
+    search = '',
+    date = null,
+    pageNum = 1,
+    shouldAppend = false,
+  ) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const params = {};
+      const params = { page: pageNum, limit: 10 };
       if (search) params.search = search;
       if (date) params.date = date;
+      // Add existing filters if needed, though statusFilter is local filtering currently?
+      // Wait, statusFilter is applied on `filteredQuotes` in frontend.
+      // The backend has `req.query.status`.
+      // The current frontend uses `filteredQuotes = quotes.filter(...)` which means it fetches ALL and filters locally?
+      // Looking at `loadQuotes`, it calls `api.getLeads(params)`.
+      // The backend `getLeads` uses `req.query.status`.
+      // BUT `AdminLeadsScreen` logic: `const filteredQuotes = quotes.filter(...)`.
+      // This means we are fetching paginated data and filtering locally? That's bad for pagination.
+      // If we paginate, we must filter on backend.
+      // Current `loadQuotes` does NOT send `status` to backend.
+      // I should update `loadQuotes` to send `status` if `statusFilter !== 'all'`.
+
+      if (statusFilter !== 'all') params.status = statusFilter;
+
       const response = await api.getLeads(params);
       const rawItems =
         response.data?.items ||
@@ -81,32 +107,64 @@ const AdminLeadsScreen = () => {
         preferedDate: formatDateLocal(
           item.preferredDate || item.prefered_date || item.preferedDate,
         ),
+        scheduledAt:
+          item.preferredDate || item.prefered_date || item.preferedDate,
         assignedTo:
           item.assignedEmployee?.name ||
           item.assignedTo?.name ||
           item.assigned_to ||
           null,
+        assignedEmployee: item.assignedEmployee || item.assignedTo || null,
         employeeStartTime: item.employeeStartTime || null,
         employeeEndTime: item.employeeEndTime || null,
-        inTime: item.inTime || null,
-        outTime: item.outTime || null,
+        inTime:
+          item.employeeStartTime != null
+            ? `${item.employeeStartTime} - ${formatDateLocal(item.inTime)}`
+            : null,
+        outTime:
+          item.employeeEndTime != null
+            ? `${item.employeeEndTime} - ${formatDateLocal(item.outTime)}`
+            : null,
         employeeNotes: item.employeeNotes || null,
         completionImages: item.completionImages || null,
       }));
 
-      setQuotes(normalizedItems);
+      if (shouldAppend) {
+        setQuotes(prev => [...prev, ...normalizedItems]);
+      } else {
+        // When invalidating logic (new search/filter), we set quotes to new items
+        setQuotes(normalizedItems);
+      }
+
+      // Update hasMore
+      if (normalizedItems.length < 10) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
     } catch (error) {
       console.log('Admin load quotes error:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadQuotes(searchQuery, dateFilter);
+    setPage(1);
+    setHasMore(true);
+    await loadQuotes(searchQuery, dateFilter, 1, false);
     setRefreshing(false);
-  }, [searchQuery, dateFilter]);
+  }, [searchQuery, dateFilter, statusFilter]);
+
+  const onEndReached = () => {
+    if (!loading && !loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadQuotes(searchQuery, dateFilter, nextPage, true);
+    }
+  };
 
   const clearSearch = () => {
     setSearchQuery('');
@@ -218,6 +276,28 @@ const AdminLeadsScreen = () => {
             </Text>
           </View>
         )}
+        {item.status === 'in_progress' && item.inTime && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailIcon}>📥</Text>
+            <Text style={styles.detailText}>In: {item.inTime}</Text>
+          </View>
+        )}
+        {item.status === 'completed' && (
+          <>
+            {item.inTime && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailIcon}>📥</Text>
+                <Text style={styles.detailText}>In: {item.inTime}</Text>
+              </View>
+            )}
+            {item.outTime && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailIcon}>📤</Text>
+                <Text style={styles.detailText}>Out: {item.outTime}</Text>
+              </View>
+            )}
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -273,7 +353,15 @@ const AdminLeadsScreen = () => {
                 styles.filterChip,
                 statusFilter === f && styles.filterChipActive,
               ]}
-              onPress={() => setStatusFilter(f)}
+              onPress={() => {
+                setStatusFilter(f);
+                setPage(1);
+                // Trigger reload with new status
+                // Since loadQuotes depends on state, and state update is async,
+                // we might need useEffect to trigger reload or pass directly.
+                // The existing useEffect handles search and date, but not status?
+                // Let's add statusFilter to the dependency array of the useEffect.
+              }}
             >
               <Text
                 style={[
@@ -289,7 +377,7 @@ const AdminLeadsScreen = () => {
 
         {/* List */}
         <FlatList
-          data={filteredQuotes}
+          data={quotes} // No longer filtering locally
           renderItem={renderQuoteItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -299,6 +387,15 @@ const AdminLeadsScreen = () => {
               onRefresh={onRefresh}
               tintColor={COLORS.primary}
             />
+          }
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              </View>
+            ) : null
           }
           ListEmptyComponent={
             !loading && (

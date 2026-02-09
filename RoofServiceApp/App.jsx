@@ -141,6 +141,8 @@ export const useAuth = () => {
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 import ClientHomeScreen from './src/screens/ClientHomeScreen';
 import ClientQuoteScreen from './src/screens/ClientQuoteScreen';
 import AdminDashboardScreen from './src/screens/AdminDashboardScreen';
@@ -189,6 +191,8 @@ const RootNavigator = () => {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       </Stack.Navigator>
     );
   }

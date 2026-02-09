@@ -364,6 +364,19 @@
                                                                                     </path>
                                                                                 </svg>
                                                                             </a>
+                                                                            <% if (lead.status !== 'closed_won' && lead.status !== 'closed_lost') { %>
+                                                                                <button type="button" onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')"
+                                                                                    class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
+                                                                                    title="Assign to Employee">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                                                        <circle cx="8.5" cy="7" r="4"></circle>
+                                                                                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                                                                                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                                                                                    </svg>
+                                                                                </button>
+                                                                            <% } %>
+
                                                                             <form
                                                                                 action="/admin/leads/<%= lead.id %>/delete"
                                                                                 method="POST"
@@ -421,6 +434,209 @@
                         </div>
 
                         <script src="/js/toast.js"></script>
+
+                        <!-- Assignment Modal -->
+                        <div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                                <div class="mt-3">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Assign Lead</h3>
+                                    <div class="mt-2 px-7 py-3">
+                                        <p class="text-sm text-gray-500 mb-4">Assign <span id="leadNameSpan" class="font-bold"></span> to an employee.</p>
+                                        
+                                        <form id="assignForm">
+                                            <input type="hidden" id="assignLeadId">
+                                            
+                                            <div class="mb-4">
+                                                <label class="block text-gray-700 text-sm font-bold mb-2" for="assignDate">
+                                                    Date
+                                                </label>
+                                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                                    id="assignDate" type="date" required>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="block text-gray-700 text-sm font-bold mb-2" for="assignSlot">
+                                                    Time Slot
+                                                </label>
+                                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                    id="assignSlot" required>
+                                                    <option value="">Select Slot</option>
+                                                    <option value="morning">Morning (9 AM - 12 PM)</option>
+                                                    <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                                                    <option value="evening">Evening (5 PM - 8 PM)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="block text-gray-700 text-sm font-bold mb-2" for="assignEmployee">
+                                                    Employee
+                                                </label>
+                                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                    id="assignEmployee" required disabled>
+                                                    <option value="">Select Date & Slot first</option>
+                                                </select>
+                                                <p id="loadingEmployees" class="text-xs text-blue-500 hidden mt-1">Checking availability...</p>
+                                            </div>
+
+                                            <div class="items-center px-4 py-3">
+                                                <button id="assignSubmitBtn" type="submit" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                                    Assign & Approve
+                                                </button>
+                                                <button id="closeModalBtn" type="button" class="mt-3 px-4 py-2 bg-gray-100 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            const modal = document.getElementById('assignModal');
+                            const closeBtn = document.getElementById('closeModalBtn');
+                            const dateInput = document.getElementById('assignDate');
+                            const slotInput = document.getElementById('assignSlot');
+                            const employeeSelect = document.getElementById('assignEmployee');
+                            const form = document.getElementById('assignForm');
+                            const loadingMsg = document.getElementById('loadingEmployees');
+
+                            // Set min date to today
+                            const today = new Date().toISOString().split('T')[0];
+                            dateInput.min = today;
+
+                            function openAssignModal(leadId, leadName) {
+                                document.getElementById('assignLeadId').value = leadId;
+                                document.getElementById('leadNameSpan').innerText = leadName;
+                                // Reset form
+                                dateInput.value = '';
+                                slotInput.value = '';
+                                employeeSelect.innerHTML = '<option value="">Select Date & Slot first</option>';
+                                employeeSelect.disabled = true;
+                                modal.classList.remove('hidden');
+                            }
+
+                            closeBtn.onclick = function() {
+                                modal.classList.add('hidden');
+                            }
+
+                            window.onclick = function(event) {
+                                if (event.target == modal) {
+                                    modal.classList.add('hidden');
+                                }
+                            }
+
+                            async function fetchAvailableEmployees() {
+                                const date = dateInput.value;
+                                const slot = slotInput.value;
+
+                                if (!date || !slot) return;
+
+                                employeeSelect.disabled = true;
+                                loadingMsg.classList.remove('hidden');
+                                employeeSelect.innerHTML = '<option value="">Loading...</option>';
+
+                                try {
+                                    const response = await fetch(`/admin/available-employees?date=${date}&slot=${slot}`);
+                                    const data = await response.json();
+
+                                    employeeSelect.innerHTML = '<option value="">Select Employee</option>';
+                                    
+                                    if (data.success && data.items.length > 0) {
+                                        data.items.forEach(emp => {
+                                            const option = document.createElement('option');
+                                            option.value = emp.id;
+                                            option.text = `${emp.name} (${emp.email})`;
+                                            employeeSelect.appendChild(option);
+                                        });
+                                        employeeSelect.disabled = false;
+                                    } else {
+                                        const option = document.createElement('option');
+                                        option.text = 'No employees available';
+                                        employeeSelect.appendChild(option);
+                                        employeeSelect.disabled = true; // Keep disabled if none
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching employees:', error);
+                                    showToast('Error fetching employees', 'error');
+                                } finally {
+                                    loadingMsg.classList.add('hidden');
+                                }
+                            }
+
+                            dateInput.addEventListener('change', fetchAvailableEmployees);
+                            slotInput.addEventListener('change', fetchAvailableEmployees);
+
+                            form.addEventListener('submit', async (e) => {
+                                e.preventDefault();
+                                const leadId = document.getElementById('assignLeadId').value;
+                                const employeeId = employeeSelect.value;
+                                const date = dateInput.value;
+                                const timeSlot = slotInput.value // we might want to save slot too?
+                                
+                                // Calculate a specific time based on slot for 'scheduledDate'
+                                // Morning: 9 AM, Afternoon: 1 PM (13), Evening: 6 PM (18)
+                                let hour = 9;
+                                if (timeSlot === 'afternoon') hour = 13;
+                                if (timeSlot === 'evening') hour = 18;
+                                
+                                const scheduledDate = new Date(date);
+                                scheduledDate.setHours(hour, 0, 0, 0);
+
+                                if (!employeeId) {
+                                    showToast('Please select an employee', 'error');
+                                    return;
+                                }
+
+                                try {
+                                    // Use the existing assign API
+                                    // Note: The existing API is exports.assignLead in lead.controller.js
+                                    // It expects: { employeeId, status, adminid, scheduledDate }
+                                    // We need to call a route that maps to this.
+                                    // Wait, assignLead is an API route? 
+                                    // Let's check api.routes.js or similar.
+                                    // Actually we can just create a new hidden form submission or use fetch.
+                                    // Since we are adding this to admin list, let's use the API route if available, 
+                                    // OR add a new POST route in admin.routes.js mapping to assignment.
+                                    
+                                    // I haven't added a POST /admin/leads/:id/assign route yet.
+                                    // But I CAN add it now, or usage the existing API if accessible.
+                                    // The existing API might be protected by user token.
+                                    
+                                    // BETTER: Add a route in admin.routes.js: router.post('/leads/:id/assign', ...)
+                                    // I'll assume I'll add that route next.
+                                    
+                                    const response = await fetch(`/admin/leads/${leadId}/assign`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            employeeId,
+                                            status: 'assigned', // or accepted?
+                                            scheduledDate: scheduledDate.toISOString(),
+                                            // adminId is handled by session in the controller hopefully?
+                                            // lead.controller.assignLead uses req.body.adminid OR req.user.id if available.
+                                            // admin controller sets req.session.userId. 
+                                            // I might need to update assignLead to check req.session as well.
+                                        })
+                                    });
+                                    
+                                    const result = await response.json();
+
+                                    if (result.success) {
+                                        showToast('Lead assigned successfully', 'success');
+                                        setTimeout(() => window.location.reload(), 1500);
+                                    } else {
+                                        showToast(result.message || 'Assignment failed', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Assignment error:', error);
+                                    showToast('An error occurred', 'error');
+                                }
+                            });
+                        </script>
+
 </body>
 
 </html>

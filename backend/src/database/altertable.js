@@ -13,8 +13,8 @@ async function runAlterMigration() {
     host: process.env.MYSQL_HOST || "localhost",
     port: process.env.MYSQL_PORT || 3306,
     database: process.env.MYSQL_DATABASE || "roof_service",
-    user: process.env.MYSQL_USER || "aman",
-    password: process.env.MYSQL_PASSWORD || "aman1234",
+    user: process.env.MYSQL_USER || "root",
+    password: process.env.MYSQL_PASSWORD || "root",
   });
 
   console.log("Connected to MySQL database");
@@ -24,21 +24,15 @@ async function runAlterMigration() {
 
     // Add columns only if they do not exist
     const alterQueries = [
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS in_time DATETIME NULL`,
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS out_time DATETIME NULL`,
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS employee_notes TEXT NULL`,
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_images JSON NULL`,
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS completion_images JSON NULL`,
-      `ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_date DATETIME NULL`,
-      `ALTER TABLE users MODIFY role ENUM('admin', 'user', 'employee') NOT NULL DEFAULT 'user'`,
-      `ALTER TABLE blogs ADD COLUMN IF NOT EXISTS slug VARCHAR(255) NOT NULL UNIQUE`,
+      `ALTER TABLE users ADD COLUMN reset_password_token TEXT NULL`,
+      `ALTER TABLE users ADD COLUMN reset_password_expire DATETIME NULL`,
     ];
 
     for (const query of alterQueries) {
       await connection.query(query);
     }
 
-    console.log("✅ Leads table updated successfully!");
+    console.log("✅   tables updated successfully!");
   } catch (error) {
     console.error("❌ Alter table migration failed:", error.message);
     throw error;

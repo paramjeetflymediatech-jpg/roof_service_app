@@ -12,7 +12,30 @@ exports.createLead = async (req, res, next) => {
     const payload = { ...req.body };
 
     // If authenticated user exists, attach userId so we can filter leads per client
-    if (req.user && req.user.id) {
+    if (!req.user && !req.user?.id) {
+      const existingUser = await User.findOne({
+        where: { email: req.body.email },
+      });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "User already exists please use app to submit quote",
+        });
+      } else {
+        let password =
+          req.body.name.slice(0, 4) +
+          req.body.phone.slice(
+            req.body.phone.length - 4,
+            req.body.phone.length,
+          );
+        const user = await User.create({
+          name: req.body.name,
+          email: req.body.email,
+          phone: req.body.phone,
+          password: password,
+        });
+        payload.userId = user.id;
+      }
+    } else {
       payload.userId = req.user.id;
     }
 
@@ -20,7 +43,7 @@ exports.createLead = async (req, res, next) => {
       return res.status(400).json({ message: "Name is required" });
     }
 
-    if (!payload.source) payload.source = "mobile_app";
+    if (!payload.source) payload.source = "website";
 
     if (payload.leadType === "quote") {
       payload.status = "pending";
@@ -40,10 +63,8 @@ exports.createLead = async (req, res, next) => {
 
     // 2️⃣ Attach images to payload
     payload.clientImages = clientImages.length > 0 ? clientImages : null;
-    console.log(payload, "---payload");
     // 3️⃣ Create lead
     const lead = await Lead.create(payload);
-    console.log(lead, "lead------------");
 
     // 4️⃣ Fire emails async
     sendLeadNotification(lead).catch((err) =>
@@ -105,10 +126,8 @@ exports.createLeadByApp = async (req, res, next) => {
 
     // 2️⃣ Attach images to payload
     payload.clientImages = clientImages.length > 0 ? clientImages : null;
-    console.log(payload, "---payload");
     // 3️⃣ Create lead
     const lead = await Lead.create(payload);
-    console.log(lead, "lead------------");
 
     // 4️⃣ Fire emails async
     sendLeadNotification(lead).catch((err) =>
@@ -195,7 +214,10 @@ exports.getLeads = async (req, res, next) => {
       startDate.setHours(0, 0, 0, 0);
       const endDate = new Date(req.query.endDate);
       endDate.setHours(23, 59, 59, 999);
-      if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+      if (
+        !Number.isNaN(startDate.getTime()) &&
+        !Number.isNaN(endDate.getTime())
+      ) {
         where.createdAt = { [Op.between]: [startDate, endDate] };
       }
     }
@@ -223,7 +245,7 @@ exports.getLeads = async (req, res, next) => {
           endOfDay.setHours(23, 59, 59, 999);
           searchConditions.push(
             { createdAt: { [Op.between]: [startOfDay, endOfDay] } },
-            { preferredDate: { [Op.between]: [startOfDay, endOfDay] } }
+            { preferredDate: { [Op.between]: [startOfDay, endOfDay] } },
           );
         }
       }
@@ -301,7 +323,6 @@ exports.updateLead = async (req, res, next) => {
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
-    console.log(req.body, "----req.body");
     await lead.update(req.body);
 
     res.json({
@@ -384,10 +405,11 @@ exports.assignLead = async (req, res, next) => {
 
     // 4️⃣ Create job record for this assignment
     // req.user may not be set for mobile/API calls, so fall back to null for assignedById
+    const assignedBy = adminid || (req.user ? req.user.id : null);
     await Job.create({
       leadId: lead.id,
       employeeId: employeeId,
-      assignedById: adminid || null,
+      assignedById: assignedBy,
       status: "pending",
       priority: "medium",
       scheduledDate: scheduled,
@@ -425,5 +447,108 @@ exports.getEmployeeLeads = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+// Get available employees for a specific date and time slot
+exports.getAvailableEmployees = async (req, res, next) => {
+  try {
+    const { date, slot } = req.query;
+
+    if (!date || !slot) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Date and slot are required" });
+    }
+
+    const scheduledDate = new Date(date);
+    if (isNaN(scheduledDate.getTime())) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid date format" });
+    }
+
+    // Define time ranges for slots
+    const slotTimes = {
+      morning: { start: 9, end: 12 }, // 9 AM - 12 PM
+      afternoon: { start: 12, end: 17 }, // 12 PM - 5 PM
+      evening: { start: 17, end: 20 }, // 5 PM - 8 PM
+    };
+
+    if (!slotTimes[slot]) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid slot. Use morning, afternoon, or evening.",
+      });
+    }
+
+    const { start, end } = slotTimes[slot];
+
+    // creating start and end time for the query
+    const startOfDay = new Date(scheduledDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(scheduledDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // 1. Get all employees
+    const employees = await User.findAll({
+      where: { role: "employee", isActive: true },
+      attributes: ["id", "name", "email", "phone"],
+      raw: true,
+    });
+
+    if (employees.length === 0) {
+      return res.json({ success: true, items: [] });
+    }
+
+    // 2. Get all jobs for the date
+    const jobs = await Job.findAll({
+      where: {
+        scheduledDate: { [Op.between]: [startOfDay, endOfDay] },
+        status: { [Op.notIn]: ["cancelled", "completed"] }, // Exclude cancelled/completed jobs? Maybe completed jobs block the slot too? Logic: if they have a job that day in that slot, they are busy.
+        // Let's assume completed jobs don't block FUTURE assignments, but for a specific past date they would.
+        // For planning upcoming jobs, we care about 'pending', 'accepted', 'in_progress'.
+        // 'completed' might physically block the time if we are looking at historic data, but usually we schedule for future.
+        // Let's stick to active statuses for now to be safe: pending, accepted, in_progress.
+        // Actually, if a job is completed, that time slot WAS occupied. But if we are scheduling for today/later, we might care.
+        // Let's include completed to be safe against double booking even if job is done?
+        // No, if it's done, they might be free? But usually slots are fixed blocks.
+        // Let's user the same logic as assignLead: ['pending', 'accepted', 'in_progress']
+        status: { [Op.in]: ["pending", "accepted", "in_progress"] },
+      },
+      raw: true,
+    });
+
+    // 3. Filter employees
+    const availableEmployees = employees.filter((employee) => {
+      // Check if employee has a job in the requested slot
+      const hasClash = jobs.some((job) => {
+        if (job.employeeId !== employee.id) return false;
+        if (!job.scheduledDate) return false;
+
+        const jobDate = new Date(job.scheduledDate);
+        const jobHour = jobDate.getHours();
+
+        // Simple slot logic:
+        // Morning: < 12
+        // Afternoon: 12 <= h < 17
+        // Evening: >= 17
+
+        let jobSlot = "";
+        if (jobHour < 12) jobSlot = "morning";
+        else if (jobHour < 17) jobSlot = "afternoon";
+        else jobSlot = "evening";
+
+        return jobSlot === slot;
+      });
+
+      return !hasClash;
+    });
+
+    res.json({ success: true, items: availableEmployees });
+  } catch (error) {
+    console.error("Get available employees error:", error);
+    next(error);
   }
 };

@@ -94,7 +94,7 @@ const AdminAssignScreen = ({ route }) => {
 
         setBusyEmployeeIds(Array.from(idsSet));
       } catch (error) {
-        // console.log('Availability check error:', error);
+        console.log('Availability check error:', error);
         setBusyEmployeeIds([]);
       }
     };
@@ -216,7 +216,6 @@ const AdminAssignScreen = ({ route }) => {
     (selectedQuote.employeeNotes ||
       (Array.isArray(selectedQuote.completionImages) &&
         selectedQuote.completionImages.length > 0));
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
@@ -273,59 +272,105 @@ const AdminAssignScreen = ({ route }) => {
           </View>
         </View>
 
-        {/* Schedule Section */}
-        <Text style={styles.sectionTitle}>📅 Schedule Job</Text>
-        <View style={styles.card}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date (YYYY-MM-DD)</Text>
-            <TextInput
-              style={styles.input}
-              value={scheduledDate}
-              onChangeText={setScheduledDate}
-              placeholder="2026-02-07"
-              placeholderTextColor={COLORS.textLight}
-              keyboardType="numeric"
-              maxLength={10}
-            />
-          </View>
+        {/* Assigned Employee Details (If Assigned) */}
+        {selectedQuote.assignedEmployee && (
+          <>
+            <Text style={styles.sectionTitle}>👷 Assigned Employee</Text>
+            <View style={styles.card}>
+              <View style={styles.infoGrid}>
+                <InfoItem
+                  icon="👤"
+                  label="Name"
+                  value={selectedQuote.assignedEmployee.name}
+                />
+                <InfoItem
+                  icon="📞"
+                  label="Phone"
+                  value={selectedQuote.assignedEmployee.phone}
+                />
+                <InfoItem
+                  icon="📧"
+                  label="Email"
+                  value={selectedQuote.assignedEmployee.email}
+                />
+                <InfoItem
+                  icon="📥"
+                  label="Start Work Time"
+                  value={
+                    selectedQuote.inTime !== null ? selectedQuote.inTime : 'Not Started'
+                  }
+                />
+                <InfoItem
+                  icon="📥"
+                  label="End Work Time"
+                  value={selectedQuote.outTime!==null?selectedQuote.outTime:'Not Completed'}
+                />
+              </View>
+            </View>
+          </>
+        )}
 
-          <Text style={[styles.inputLabel, { marginTop: verticalScale(12) }]}>
-            Time Slot
-          </Text>
-          <View style={styles.slotContainer}>
-            {[
-              { id: 'morning', label: 'Morning', sub: '9am - 12pm' },
-              { id: 'afternoon', label: 'Afternoon', sub: '1pm - 5pm' },
-              { id: 'evening', label: 'Evening', sub: '5pm - 8pm' },
-            ].map(slot => (
-              <TouchableOpacity
-                key={slot.id}
-                style={[
-                  styles.slotButton,
-                  selectedSlot === slot.id && styles.slotButtonActive,
-                ]}
-                onPress={() => setSelectedSlot(slot.id)}
-              >
+        {/* Schedule Section - Hide if already assigned/completed */}
+        {selectedQuote.status !== LEAD_STATUS.ASSIGNED &&
+          selectedQuote.status !== LEAD_STATUS.COMPLETED &&
+          selectedQuote.status !== LEAD_STATUS.IN_PROGRESS && (
+            <>
+              <Text style={styles.sectionTitle}>📅 Schedule Job</Text>
+              <View style={styles.card}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Date (YYYY-MM-DD)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={scheduledDate}
+                    onChangeText={setScheduledDate}
+                    placeholder="2026-02-07"
+                    placeholderTextColor={COLORS.textLight}
+                    keyboardType="numeric"
+                    maxLength={10}
+                  />
+                </View>
+
                 <Text
-                  style={[
-                    styles.slotTitle,
-                    selectedSlot === slot.id && styles.slotTextActive,
-                  ]}
+                  style={[styles.inputLabel, { marginTop: verticalScale(12) }]}
                 >
-                  {slot.label}
+                  Time Slot
                 </Text>
-                <Text
-                  style={[
-                    styles.slotSub,
-                    selectedSlot === slot.id && styles.slotTextActive,
-                  ]}
-                >
-                  {slot.sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+                <View style={styles.slotContainer}>
+                  {[
+                    { id: 'morning', label: 'Morning', sub: '9am - 12pm' },
+                    { id: 'afternoon', label: 'Afternoon', sub: '1pm - 5pm' },
+                    { id: 'evening', label: 'Evening', sub: '5pm - 8pm' },
+                  ].map(slot => (
+                    <TouchableOpacity
+                      key={slot.id}
+                      style={[
+                        styles.slotButton,
+                        selectedSlot === slot.id && styles.slotButtonActive,
+                      ]}
+                      onPress={() => setSelectedSlot(slot.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.slotTitle,
+                          selectedSlot === slot.id && styles.slotTextActive,
+                        ]}
+                      >
+                        {slot.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.slotSub,
+                          selectedSlot === slot.id && styles.slotTextActive,
+                        ]}
+                      >
+                        {slot.sub}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </>
+          )}
 
         {/* Employee Selection */}
         {selectedQuote.status === LEAD_STATUS.APPROVED && (

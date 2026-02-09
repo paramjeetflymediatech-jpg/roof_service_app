@@ -25,6 +25,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
 
   const validateForm = () => {
     const newErrors = {};
@@ -42,29 +43,39 @@ const LoginScreen = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setFeedback({ type: '', message: '' });
+
     try {
       const response = await api.login({
         email: email.trim().toLowerCase(),
         password,
       });
-      console.log(response, 'resp');
       if (response.data.success) {
-        const userData = {
-          ...response.data.data.user,
-          token: response.data.data.token,
-        };
+        setFeedback({
+          type: 'success',
+          message: `Welcome, ${response.data.data.user.name}!`,
+        });
 
-        Alert.alert('Success', `Welcome, ${userData.name}!`);
-        await login(userData);
+        // Small delay to show success message before state update/navigation
+        setTimeout(async () => {
+          const userData = {
+            ...response.data.data.user,
+            token: response.data.data.token,
+          };
+          await login(userData);
+        }, 1000);
       } else {
-        Alert.alert('Error', response.data.message || 'Login failed');
+        setFeedback({
+          type: 'error',
+          message: response.data.message || 'Login failed',
+        });
       }
     } catch (error) {
       console.log('Login error:', error.response);
       const message =
         error.response?.data?.message ||
         'Invalid credentials. Please try again.';
-      Alert.alert('Error', message);
+      setFeedback({ type: 'error', message: message });
     } finally {
       setLoading(false);
     }
@@ -75,10 +86,20 @@ const LoginScreen = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.circle1} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <BrandLogo imageStyle={{ width: moderateScale(120), height: moderateScale(120) }} />
+            <BrandLogo
+              imageStyle={{
+                width: moderateScale(120),
+                height: moderateScale(120),
+              }}
+            />
+            <Text style={styles.appName}>Roof Service</Text>
             <Text style={styles.subtitle}>Your Trusted Roofing Partner</Text>
           </View>
 
@@ -96,6 +117,7 @@ const LoginScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               error={errors.email}
+              variant="dark"
             />
 
             <Input
@@ -105,7 +127,28 @@ const LoginScreen = () => {
               onChangeText={setPassword}
               secureTextEntry
               error={errors.password}
+              variant="dark"
             />
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={styles.forgotPasswordContainer}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            {feedback.message ? (
+              <View
+                style={[
+                  styles.feedbackContainer,
+                  feedback.type === 'error'
+                    ? styles.feedbackError
+                    : styles.feedbackSuccess,
+                ]}
+              >
+                <Text style={styles.feedbackText}>{feedback.message}</Text>
+              </View>
+            ) : null}
 
             <Button
               title="Sign In"
@@ -133,70 +176,113 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.primary,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: verticalScale(20),
+    justifyContent: 'center',
+    paddingVertical: verticalScale(40),
   },
   content: {
-    flex: 1,
-    justifyContent: 'center',
     paddingHorizontal: moderateScale(24),
-    paddingVertical: verticalScale(20),
   },
   logoContainer: {
     alignItems: 'center',
     marginBottom: verticalScale(40),
   },
+  appName: {
+    fontSize: moderateScale(32),
+    fontWeight: '800',
+    color: COLORS.white,
+    marginTop: verticalScale(10),
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
   subtitle: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
-    marginTop: verticalScale(12),
-    textAlign: 'center',
+    fontSize: moderateScale(16),
+    color: '#e0e0e0',
+    marginTop: verticalScale(4),
+    fontStyle: 'italic',
   },
   formContainer: {
-    backgroundColor: COLORS.surface,
-    borderRadius: moderateScale(20),
-    padding: moderateScale(24),
-    ...SHADOWS.medium,
+    backgroundColor: 'transparent', // Removed card bg
+    padding: moderateScale(10),
   },
   title: {
-    fontSize: moderateScale(28),
+    fontSize: moderateScale(32),
     fontWeight: '800',
-    color: COLORS.primary,
+    color: COLORS.white,
     marginBottom: verticalScale(8),
-    letterSpacing: 0.5,
   },
   subtitleText: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
-    marginBottom: verticalScale(30),
+    fontSize: moderateScale(16),
+    color: '#cccccc',
+    marginBottom: verticalScale(32),
+  },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: verticalScale(16),
+  },
+  forgotPasswordText: {
+    color: COLORS.secondary,
+    fontSize: moderateScale(14),
+    fontWeight: '600',
   },
   loginButton: {
-    marginTop: verticalScale(16),
+    marginTop: verticalScale(24),
+    height: verticalScale(56),
+    borderRadius: moderateScale(30), // Pill shape
+    backgroundColor: COLORS.secondary, // Gold accent
+    ...SHADOWS.medium,
   },
   registerLinkContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: verticalScale(24),
+    marginTop: verticalScale(30),
   },
   registerText: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.textLight,
+    fontSize: moderateScale(15),
+    color: '#bbbbbb',
   },
   registerLink: {
-    fontSize: moderateScale(FONTS.sizes.body),
-    color: COLORS.primary,
+    fontSize: moderateScale(15),
+    color: COLORS.secondary,
     fontWeight: '700',
+    marginLeft: moderateScale(4),
   },
   demoHint: {
-    fontSize: moderateScale(FONTS.sizes.small),
-    color: COLORS.textLight,
+    display: 'none',
+  },
+  // Decorative
+  circle1: {
+    position: 'absolute',
+    top: -100,
+    right: -100,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  feedbackContainer: {
+    padding: moderateScale(12),
+    borderRadius: moderateScale(8),
+    marginBottom: verticalScale(16),
+  },
+  feedbackError: {
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 0, 0, 0.3)',
+  },
+  feedbackSuccess: {
+    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 255, 0, 0.3)',
+  },
+  feedbackText: {
+    color: COLORS.white,
+    fontSize: moderateScale(14),
     textAlign: 'center',
-    marginTop: verticalScale(16),
-    fontStyle: 'italic',
   },
 });
 

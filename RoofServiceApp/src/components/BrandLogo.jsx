@@ -22,6 +22,8 @@ const styles = StyleSheet.create({
   logo: {
     width: moderateScale(150),
     height: moderateScale(150),
+    backgroundColor: '#ffffff',
+    borderRadius: moderateScale(30),
   },
 });
 

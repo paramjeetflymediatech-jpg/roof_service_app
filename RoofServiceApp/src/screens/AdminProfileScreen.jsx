@@ -54,7 +54,7 @@ const AdminProfileScreen = () => {
         activeEmployees: employees,
       });
     } catch (e) {
-      // console.log('Error loading stats', e);
+      console.log('Error loading stats', e);
     }
   };
 
@@ -110,20 +110,6 @@ const AdminProfileScreen = () => {
         imageStyle={styles.headerImage}
       >
         <View style={styles.headerOverlay}>
-          <View style={styles.topBar}>
-            <BrandLogo
-              imageStyle={{ width: 30, height: 30 }}
-              tintColor={COLORS.white}
-              resizeMode="contain"
-            />
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={styles.logoutButton}
-            >
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-
           <View style={styles.profileHeaderContent}>
             <View style={styles.avatarContainer}>
               <Text style={styles.avatarText}>
@@ -249,6 +235,18 @@ const AdminProfileScreen = () => {
         <Text style={styles.versionText}>Version 1.0.2 • Build 2026</Text>
       </ScrollView>
 
+      {/* Top Bar (Overlay) */}
+      <View style={[styles.topBar, styles.topBarOverlay]}>
+        <BrandLogo
+          imageStyle={{ width: 30, height: 30 }}
+          tintColor={COLORS.white}
+          resizeMode="contain"
+        />
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Footer Nav */}
       <View style={styles.footer}>
         <TouchableOpacity
@@ -310,6 +308,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  topBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    padding: moderateScale(20),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+    zIndex: 10,
   },
   logoutButton: {
     paddingHorizontal: moderateScale(12),
