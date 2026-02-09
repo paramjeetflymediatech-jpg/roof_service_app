@@ -1,4 +1,4 @@
-const { User, Lead, Service, SeoMeta } = require("../models");
+const { User, Lead, Service, SeoMeta, ServiceCategory } = require("../models");
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
@@ -717,6 +717,380 @@ const deleteSeo = async (req, res) => {
   }
 };
 
+// GET /admin/categories - Render category list
+const getCategoryList = async (req, res) => {
+  try {
+    const categories = await ServiceCategory.findAll({
+      order: [["name", "ASC"]],
+      include: [{ model: Service, as: "services" }],
+    });
+
+    res.render("admin/categories/list", {
+      title: "Category Management",
+      userName: req.session.userName,
+      categories: categories.map((c) => c.toJSON()),
+    });
+  } catch (error) {
+    console.error("Category list error:", error);
+    req.flash("error", "Error loading category list");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+// GET /admin/categories/create - Render create category form
+const getCreateCategory = (req, res) => {
+  res.render("admin/categories/create", {
+    title: "Add New Category",
+    userName: req.session.userName,
+  });
+};
+
+// POST /admin/categories - Create new category
+const postCreateCategory = async (req, res) => {
+  try {
+    const { name, slug, description, icon } = req.body;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect("/admin/categories/create");
+    }
+
+    const existingCategory = await ServiceCategory.findOne({ where: { slug } });
+    if (existingCategory) {
+      req.flash("error", "Category with this slug already exists");
+      return res.redirect("/admin/categories/create");
+    }
+
+    await ServiceCategory.create({
+      name,
+      slug: slug.toLowerCase(),
+      description,
+      icon,
+    });
+
+    req.flash("success", "Category created successfully");
+    res.redirect("/admin/categories");
+  } catch (error) {
+    console.error("Create category error:", error);
+    req.flash("error", "Error creating category");
+    res.redirect("/admin/categories/create");
+  }
+};
+
+// GET /admin/categories/:id/edit - Render edit category form
+const getEditCategory = async (req, res) => {
+  try {
+    const category = await ServiceCategory.findByPk(req.params.id);
+    if (!category) {
+      req.flash("error", "Category not found");
+      return res.redirect("/admin/categories");
+    }
+
+    res.render("admin/categories/edit", {
+      title: "Edit Category",
+      userName: req.session.userName,
+      category: category.toJSON(),
+    });
+  } catch (error) {
+    console.error("Edit category error:", error);
+    req.flash("error", "Error loading category");
+    res.redirect("/admin/categories");
+  }
+};
+
+// POST /admin/categories/:id - Update category
+const postUpdateCategory = async (req, res) => {
+  try {
+    const { name, slug, description, icon } = req.body;
+    const categoryId = req.params.id;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect(`/admin/categories/${categoryId}/edit`);
+    }
+
+    const category = await ServiceCategory.findByPk(categoryId);
+    if (!category) {
+      req.flash("error", "Category not found");
+      return res.redirect("/admin/categories");
+    }
+
+    // Check unique slug
+    const existingCategory = await ServiceCategory.findOne({
+      where: {
+        slug: slug.toLowerCase(),
+        id: { [require("sequelize").Op.ne]: categoryId },
+      },
+    });
+
+    if (existingCategory) {
+      req.flash("error", "Category with this slug already exists");
+      return res.redirect(`/admin/categories/${categoryId}/edit`);
+    }
+
+    await ServiceCategory.update(
+      {
+        name,
+        slug: slug.toLowerCase(),
+        description,
+        icon,
+      },
+      { where: { id: categoryId } },
+    );
+
+    req.flash("success", "Category updated successfully");
+    res.redirect("/admin/categories");
+  } catch (error) {
+    console.error("Update category error:", error);
+    req.flash("error", "Error updating category");
+    res.redirect(`/admin/categories/${req.params.id}/edit`);
+  }
+};
+
+// POST /admin/categories/:id/delete - Delete category
+const deleteCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    // Check for associated services
+    const servicesCount = await Service.count({ where: { categoryId } });
+    if (servicesCount > 0) {
+      req.flash("error", "Cannot delete category with associated services");
+      return res.redirect("/admin/categories");
+    }
+
+    await ServiceCategory.destroy({ where: { id: categoryId } });
+    req.flash("success", "Category deleted successfully");
+    res.redirect("/admin/categories");
+  } catch (error) {
+    console.error("Delete category error:", error);
+    req.flash("error", "Error deleting category");
+    res.redirect("/admin/categories");
+  }
+};
+
+// GET /admin/services - Render service list
+const getServiceList = async (req, res) => {
+  try {
+    const services = await Service.findAll({
+      include: [{ model: ServiceCategory, as: "category" }],
+      order: [["name", "ASC"]],
+    });
+
+    res.render("admin/services/list", {
+      title: "Service Management",
+      userName: req.session.userName,
+      services: services.map((s) => s.toJSON()),
+    });
+  } catch (error) {
+    console.error("Service list error:", error);
+    req.flash("error", "Error loading service list");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+// GET /admin/services/create - Render create service form
+const getCreateService = async (req, res) => {
+  try {
+    const categories = await ServiceCategory.findAll({
+      order: [["name", "ASC"]],
+    });
+    res.render("admin/services/create", {
+      title: "Add New Service",
+      userName: req.session.userName,
+      categories: categories.map((c) => c.toJSON()),
+    });
+  } catch (error) {
+    console.error("Create service view error:", error);
+    req.flash("error", "Error loading create service view");
+    res.redirect("/admin/services");
+  }
+};
+
+// POST /admin/services - Create new service
+const postCreateService = async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      categoryId,
+      shortDescription,
+      longDescription,
+      icon,
+      basePrice,
+      status,
+      whyChooseUs,
+    } = req.body;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect("/admin/services/create");
+    }
+
+    const whyChooseUsArray = whyChooseUs
+      ? whyChooseUs
+          .split("\n")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+
+    const existingService = await Service.findOne({ where: { slug } });
+    if (existingService) {
+      req.flash("error", "Service with this slug already exists");
+      return res.redirect("/admin/services/create");
+    }
+
+    let featuredImageUrl = req.body.featuredImageUrl;
+    if (req.file) {
+      featuredImageUrl = `/uploads/services/${req.file.filename}`;
+    }
+
+    await Service.create({
+      name,
+      slug: slug.toLowerCase(),
+      categoryId: categoryId || null,
+      shortDescription,
+      longDescription,
+      icon,
+      basePrice: basePrice || null,
+      status: status || "draft",
+      featuredImageUrl,
+      whyChooseUs: whyChooseUsArray,
+    });
+
+    req.flash("success", "Service created successfully");
+    res.redirect("/admin/services");
+  } catch (error) {
+    console.error("Create service error:", error);
+    req.flash("error", "Error creating service");
+    res.redirect("/admin/services/create");
+  }
+};
+
+// GET /admin/services/:id/edit - Render edit service form
+const getEditService = async (req, res) => {
+  try {
+    const service = await Service.findByPk(req.params.id);
+    const categories = await ServiceCategory.findAll({
+      order: [["name", "ASC"]],
+    });
+
+    if (!service) {
+      req.flash("error", "Service not found");
+      return res.redirect("/admin/services");
+    }
+
+    res.render("admin/services/edit", {
+      title: "Edit Service",
+      userName: req.session.userName,
+      service: service.toJSON(),
+      categories: categories.map((c) => c.toJSON()),
+    });
+  } catch (error) {
+    console.error("Edit service error:", error);
+    req.flash("error", "Error loading service");
+    res.redirect("/admin/services");
+  }
+};
+
+// POST /admin/services/:id - Update service
+const postUpdateService = async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      categoryId,
+      shortDescription,
+      longDescription,
+      icon,
+      basePrice,
+      status,
+      whyChooseUs,
+    } = req.body;
+    const serviceId = req.params.id;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect(`/admin/services/${serviceId}/edit`);
+    }
+
+    const whyChooseUsArray = whyChooseUs
+      ? whyChooseUs
+          .split("\n")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+
+    const service = await Service.findByPk(serviceId);
+    if (!service) {
+      req.flash("error", "Service not found");
+      return res.redirect("/admin/services");
+    }
+
+    const existingService = await Service.findOne({
+      where: {
+        slug: slug.toLowerCase(),
+        id: { [require("sequelize").Op.ne]: serviceId },
+      },
+    });
+
+    if (existingService) {
+      req.flash("error", "Service with this slug already exists");
+      return res.redirect(`/admin/services/${serviceId}/edit`);
+    }
+
+    let featuredImageUrl = req.body.featuredImageUrl; // Keep existing if not updating, or use hidden input value
+    if (req.file) {
+      featuredImageUrl = `/uploads/services/${req.file.filename}`;
+    } else if (!featuredImageUrl && service.featuredImageUrl) {
+      // If no file and no URL provided, keep the old one?
+      // The form should populate the URL field with existing URL.
+      // If the user cleared it, they might want to remove the image.
+      // But usually "Edit" means "Modify if provided".
+      // Let's rely on req.body.featuredImageUrl which should be populated by the form if not changed.
+      // EXCEPT: The user might have not touched the file input.
+      featuredImageUrl = req.body.featuredImageUrl || service.featuredImageUrl;
+    }
+
+    await Service.update(
+      {
+        name,
+        slug: slug.toLowerCase(),
+        categoryId: categoryId || null,
+        shortDescription,
+        longDescription,
+        icon,
+        basePrice: basePrice || null,
+        status: status || "draft",
+        featuredImageUrl,
+        whyChooseUs: whyChooseUsArray,
+      },
+      { where: { id: serviceId } },
+    );
+
+    req.flash("success", "Service updated successfully");
+    res.redirect("/admin/services");
+  } catch (error) {
+    console.error("Update service error:", error);
+    req.flash("error", "Error updating service");
+    res.redirect(`/admin/services/${req.params.id}/edit`);
+  }
+};
+
+// POST /admin/services/:id/delete - Delete service
+const deleteService = async (req, res) => {
+  try {
+    const serviceId = req.params.id;
+    await Service.destroy({ where: { id: serviceId } });
+    req.flash("success", "Service deleted successfully");
+    res.redirect("/admin/services");
+  } catch (error) {
+    console.error("Delete service error:", error);
+    req.flash("error", "Error deleting service");
+    res.redirect("/admin/services");
+  }
+};
+
 module.exports = {
   getLogin,
   postLogin,
@@ -742,4 +1116,16 @@ module.exports = {
   getEditSeo,
   postUpdateSeo,
   deleteSeo,
+  getCategoryList,
+  getCreateCategory,
+  postCreateCategory,
+  getEditCategory,
+  postUpdateCategory,
+  deleteCategory,
+  getServiceList,
+  getCreateService,
+  postCreateService,
+  getEditService,
+  postUpdateService,
+  deleteService,
 };

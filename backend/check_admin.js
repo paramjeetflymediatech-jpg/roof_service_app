@@ -39,6 +39,7 @@ const checkAdmin = async () => {
         email: email,
         password: password,
         role: "admin",
+        role: "admin",
         isActive: true,
       });
       console.log("Admin user created.");

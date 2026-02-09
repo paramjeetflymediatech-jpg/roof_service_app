@@ -146,4 +146,85 @@ router.post(
   blogController.delete,
 );
 
+// Category management routes
+router.get(
+  "/categories",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCategoryList,
+);
+router.get(
+  "/categories/create",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCreateCategory,
+);
+router.post(
+  "/categories",
+  isAuthenticated,
+  isAdmin,
+  adminController.postCreateCategory,
+);
+router.get(
+  "/categories/:id/edit",
+  isAuthenticated,
+  isAdmin,
+  adminController.getEditCategory,
+);
+router.post(
+  "/categories/:id",
+  isAuthenticated,
+  isAdmin,
+  adminController.postUpdateCategory,
+);
+router.post(
+  "/categories/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteCategory,
+);
+
+// Service management routes
+const upload = require("../middlewares/upload.middleware");
+
+// Service management routes
+router.get(
+  "/services",
+  isAuthenticated,
+  isAdmin,
+  adminController.getServiceList,
+);
+router.get(
+  "/services/create",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCreateService,
+);
+router.post(
+  "/services",
+  isAuthenticated,
+  isAdmin,
+  upload.single("image"),
+  adminController.postCreateService,
+);
+router.get(
+  "/services/:id/edit",
+  isAuthenticated,
+  isAdmin,
+  adminController.getEditService,
+);
+router.post(
+  "/services/:id",
+  isAuthenticated,
+  isAdmin,
+  upload.single("image"),
+  adminController.postUpdateService,
+);
+router.post(
+  "/services/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteService,
+);
+
 module.exports = router;

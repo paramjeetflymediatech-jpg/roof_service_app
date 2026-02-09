@@ -1,27 +1,60 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from 'react-icons/hi';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp } from 'react-icons/fa';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from "react-icons/hi";
+import {
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedin,
+  FaWhatsapp,
+} from "react-icons/fa";
+import { usePathname } from "next/navigation";
 
-import { COMPANY_INFO, NAV_LINKS, SERVICES_DROPDOWN, SOCIAL_LINKS } from '@/lib/constants';
-import Logo from '@/components/Logo';
+import {
+  COMPANY_INFO,
+  NAV_LINKS,
+  SERVICES_DROPDOWN,
+  SOCIAL_LINKS,
+} from "@/lib/constants";
+import apiClient from "@/lib/apiClient";
+import Logo from "@/components/Logo";
 
 export default function LayoutShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [desktopServicesOpen, setDesktopServicesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [navServices, setNavServices] = useState(SERVICES_DROPDOWN);
   const pathname = usePathname();
 
   /* Detect scroll */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* Fetch Services for Menu */
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await apiClient.get("/services?limit=20");
+        if (response.data && response.data.items) {
+          const services = response.data.items.map((s) => ({
+            label: s.name,
+            href: `/services/${s.slug}`,
+            icon: s.icon || "🛠️",
+          }));
+          setNavServices(services);
+        }
+      } catch (error) {
+        console.error("Failed to fetch menu services", error);
+      }
+    };
+    fetchServices();
   }, []);
 
   /* Close menu on route change */
@@ -32,10 +65,9 @@ export default function LayoutShell({ children }) {
 
   /* Lock body scroll */
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
-    return () => (document.body.style.overflow = '');
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => (document.body.style.overflow = "");
   }, [mobileMenuOpen]);
-
 
   return (
     <div className="min-h-screen flex flex-col max-w-full">
@@ -65,8 +97,11 @@ export default function LayoutShell({ children }) {
 
         {/* Header */}
         <header
-          className={`transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-2' : 'bg-white py-4'
-            }`}
+          className={`transition-all duration-300 ${
+            scrolled
+              ? "bg-white/95 backdrop-blur-md shadow-md py-2"
+              : "bg-white py-4"
+          }`}
         >
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
@@ -75,26 +110,34 @@ export default function LayoutShell({ children }) {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex gap-8 items-center">
-              {NAV_LINKS.map(link => {
-                if (link.label === 'Services') {
+              {NAV_LINKS.map((link) => {
+                if (link.label === "Services") {
                   return (
                     <div key={link.href} className="relative">
                       <button
-                        onClick={() => setDesktopServicesOpen(!desktopServicesOpen)}
+                        onClick={() =>
+                          setDesktopServicesOpen(!desktopServicesOpen)
+                        }
                         className="text-gray-700 hover:text-primary-600 font-medium flex items-center gap-1"
                       >
                         {link.label}
                       </button>
-                      <div className={`absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl transition-all duration-200 z-50 p-4 ${desktopServicesOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                      <div
+                        className={`absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl transition-all duration-200 z-50 p-4 ${desktopServicesOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                      >
                         <div className="grid grid-cols-2 gap-2">
-                          {SERVICES_DROPDOWN.map(service => (
+                          {navServices.map((service) => (
                             <Link
                               key={service.href}
                               href={service.href}
                               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors rounded-md"
                             >
-                              <span className="text-xl flex-shrink-0">{service.icon}</span>
-                              <span className="text-sm font-medium">{service.label}</span>
+                              <span className="text-xl flex-shrink-0">
+                                {service.icon}
+                              </span>
+                              <span className="text-sm font-medium">
+                                {service.label}
+                              </span>
                             </Link>
                           ))}
                         </div>
@@ -113,7 +156,6 @@ export default function LayoutShell({ children }) {
                 );
               })}
             </nav>
-
 
             {/* Phone & CTA Group */}
             <div className="hidden lg:flex items-center gap-2">
@@ -134,7 +176,7 @@ export default function LayoutShell({ children }) {
 
             {/* Mobile Button */}
             <button
-              onClick={() => setMobileMenuOpen(prev => !prev)}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
               className="lg:hidden"
               aria-label="Toggle menu"
             >
@@ -154,19 +196,21 @@ export default function LayoutShell({ children }) {
               className="lg:hidden bg-white shadow-lg border-t max-h-[85vh] overflow-y-auto"
             >
               <nav className="container-custom py-6 flex flex-col gap-4">
-                {NAV_LINKS.map(link => {
-                  if (link.label === 'Services') {
+                {NAV_LINKS.map((link) => {
+                  if (link.label === "Services") {
                     return (
                       <div key={link.href}>
                         <button
-                          onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                          onClick={() =>
+                            setServicesDropdownOpen(!servicesDropdownOpen)
+                          }
                           className="w-full border-b py-2 text-gray-700 flex justify-between items-center"
                         >
                           {link.label}
                         </button>
                         {servicesDropdownOpen && (
                           <div className="bg-gray-50 py-2">
-                            {SERVICES_DROPDOWN.map(service => (
+                            {navServices.map((service) => (
                               <Link
                                 key={service.href}
                                 href={service.href}
@@ -191,12 +235,11 @@ export default function LayoutShell({ children }) {
                     </Link>
                   );
                 })}
-
               </nav>
 
               <div className="p-6 border-t border-gray-100 bg-gray-50/50">
                 <p className="text-gray-500 text-sm text-center">
-                  Design and Developed by{' '}
+                  Design and Developed by{" "}
                   <a
                     href="https://flymediatech.com/"
                     target="_blank"
@@ -213,9 +256,7 @@ export default function LayoutShell({ children }) {
       </div>
 
       {/* Content */}
-      <main className="flex-1 pt-[102px] lg:pt-[138px]">
-        {children}
-      </main>
+      <main className="flex-1 pt-[102px] lg:pt-[138px]">{children}</main>
 
       {/* Footer */}
       <footer className="bg-dark-900 text-gray-300 pt-16 pb-40 lg:pb-8">
@@ -223,11 +264,15 @@ export default function LayoutShell({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
-              <Link href="/" className="flex items-center justify-center md:justify-start group w-full">
+              <Link
+                href="/"
+                className="flex items-center justify-center md:justify-start group w-full"
+              >
                 <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105 brightness-0 invert" />
               </Link>
               <p className="text-white leading-relaxed text-center md:text-left">
-                {COMPANY_INFO.tagline || 'Quality materials designed to protect your investment for decades.'}
+                {COMPANY_INFO.tagline ||
+                  "Quality materials designed to protect your investment for decades."}
               </p>
             </div>
 
@@ -330,7 +375,6 @@ export default function LayoutShell({ children }) {
               </div>
             </div> */}
 
-
             {/* Quick Links */}
             <div className="text-center md:text-left">
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">
@@ -360,40 +404,52 @@ export default function LayoutShell({ children }) {
 
               <ul className="space-y-4">
                 <li>
-                  <Link href="/services/new-construction" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                  <Link
+                    href="/services/new-construction"
+                    className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
                     New construction
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services/wall-metals" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                  <Link
+                    href="/services/wall-metals"
+                    className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
                     Wall Metals
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services/solar-panels" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                  <Link
+                    href="/services/solar-panels"
+                    className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
                     Solar panels
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services/leak-repair" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                  <Link
+                    href="/services/leak-repair"
+                    className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
                     Leak repair
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services/torch-on" className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2">
+                  <Link
+                    href="/services/torch-on"
+                    className="hover:text-primary-400 transition-colors flex justify-center md:justify-start items-center gap-2"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
                     Torch on
                   </Link>
                 </li>
               </ul>
             </div>
-
-
-
 
             <div className="text-center md:text-left">
               <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">
@@ -480,18 +536,17 @@ export default function LayoutShell({ children }) {
                 </a>
               </div>
             </div>
-
-
           </div>
 
           {/* Bottom Bar */}
           <div className="border-t border-gray-800 pt-8 mt-12">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm">
               <p className="text-gray-500">
-                © {new Date().getFullYear()} {COMPANY_INFO.name}. All rights reserved.
+                © {new Date().getFullYear()} {COMPANY_INFO.name}. All rights
+                reserved.
               </p>
               <p className="text-gray-500">
-                Design and Developed by{' '}
+                Design and Developed by{" "}
                 <a
                   href="https://flymediatech.com/"
                   target="_blank"
@@ -504,7 +559,7 @@ export default function LayoutShell({ children }) {
             </div>
           </div>
         </div>
-      </footer >
+      </footer>
 
       <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-between gap-3 px-4 lg:hidden">
         {/* Phone Number */}
@@ -541,6 +596,5 @@ export default function LayoutShell({ children }) {
         </span>
       </a>
     </div>
-
   );
 }

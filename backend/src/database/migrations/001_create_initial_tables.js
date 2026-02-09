@@ -231,7 +231,6 @@ async function runMigration() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-
     console.log("✅ Migration completed successfully!");
     console.log("Created tables: users, services, leads, seo_metas, sessions");
   } catch (error) {

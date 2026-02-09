@@ -1,51 +1,44 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { SERVICES_DROPDOWN } from '@/lib/constants';
-import LayoutShell from '@/components/LayoutShell';
-import { useSeo } from '@/hooks/useSeo';
+import { motion } from "framer-motion";
+import Link from "next/link";
+import LayoutShell from "@/components/LayoutShell";
+import { useSeo } from "@/hooks/useSeo";
+import apiClient from "@/lib/apiClient";
 
 // Service descriptions matching your content
-const SERVICE_DETAILS = {
-  'New Construction': 'Mainstreet Roofing is a premier roofing company specializing in new construction projects. With years of experience in the industry, we deliver exceptional quality and craftsmanship.',
-  'Reroofs': 'Mainstreet Roofing is a trusted and reliable company specializing in Re-roofs. With years of experience in the roofing industry, we provide top-quality services.',
-  'Metal Roofing': 'Mainstreet Roofing is a premier company specializing in metal roofing services, offering unparalleled expertise and quality workmanship.',
-  'Wall Metals': 'Mainstreet Roofing is a trusted name in the industry, specializing in Wall metals for commercial and residential properties.',
-  'Torch On': 'Mainstreet Roofing is a trusted name in the industry, specializing in Torch on roofing services. Our team of experienced professionals is dedicated to providing top-quality workmanship.',
-  'EPDM': 'Mainstreet Roofing is a leading provider of high-quality roofing services, specializing in EPDM rubber roofing systems.',
-  'Metal Gutters and Downspouts': 'Mainstreet Roofing takes pride in offering top-notch metal gutters and downspouts services to our valued customers.',
-  'Leak Repair': 'Mainstreet Roofing is a trusted name in the industry when it comes to leak repair services. Our team of experienced professionals is dedicated to providing efficient solutions.',
-  'Rain and Storm Damage': 'Mainstreet Roofing is a trusted name in the industry when it comes to repairing rain and storm damage on roofs.',
-  'Tile and Slate Roofing': 'Mainstreet Roofing is a reputable company specializing in top-quality tile and slate roofing services.',
-  'Insulation': 'Mainstreet Roofing is a leading provider of roof insulation services, dedicated to enhancing the energy efficiency and comfort of your property.',
-  'Restorations Servicing': 'Mainstreet Roofing is a premier provider of roof Restorations servicing in the industry. With years of experience, we restore and rejuvenate your roof.',
-  'Solar Panels': 'Mainstreet Roofing is a leading provider of solar panel installation and repair services, dedicated to helping you harness renewable energy.',
-};
+// const SERVICE_DETAILS = { ... }
 
-import SeoHead from '@/components/SeoHead';
-import { getSeoData } from '@/lib/api/seo';
+import SeoHead from "@/components/SeoHead";
+import { getSeoData } from "@/lib/api/seo";
 
 export async function getServerSideProps() {
   try {
-    const data = await getSeoData('services');
+    const [seoResponse, servicesResponse] = await Promise.all([
+      getSeoData("services"),
+      apiClient.get("/services?limit=100"), // Fetch all services
+    ]);
+
+    const services = servicesResponse.data?.items || [];
+
     return {
       props: {
-        seoData: data.success ? data.data : null,
+        seoData: seoResponse.success ? seoResponse.data : null,
+        services,
       },
     };
   } catch (error) {
-    console.error('Error fetching Services SEO data:', error);
+    console.error("Error fetching Services data:", error);
     return {
       props: {
         seoData: null,
+        services: [],
       },
     };
   }
 }
 
-export default function ServicesPage({ seoData }) {
-
+export default function ServicesPage({ seoData, services = [] }) {
   return (
     <LayoutShell>
       <SeoHead pageName="services" initialSeoData={seoData} />
@@ -53,8 +46,9 @@ export default function ServicesPage({ seoData }) {
       <div
         className="relative h-64 bg-cover bg-center flex items-center justify-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=1200&h=400&fit=crop')",
-          backgroundPosition: 'center'
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=1200&h=400&fit=crop')",
+          backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-black/50"></div>
@@ -73,7 +67,9 @@ export default function ServicesPage({ seoData }) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-amber-400 transition-colors">
+              Home
+            </Link>
             <span>›</span>
             <span>Services</span>
           </motion.div>
@@ -89,31 +85,42 @@ export default function ServicesPage({ seoData }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Our Services
+            </h2>
           </motion.div>
 
           {/* Services Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {SERVICES_DROPDOWN.map((service, index) => (
+            {services.map((service, index) => (
               <motion.div
-                key={service.href}
+                key={service.slug}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Link href={service.href}>
+                <Link href={`/services/${service.slug}`}>
                   <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-6 h-full hover:scale-105 cursor-pointer">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="text-4xl flex-shrink-0">{service.icon}</div>
-                      <h3 className="text-xl font-bold text-gray-900">{service.label}</h3>
+                      <div className="text-4xl flex-shrink-0">
+                        {service.icon}
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {service.name}
+                      </h3>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      {SERVICE_DETAILS[service.label] || `Professional ${service.label.toLowerCase()} services for your property.`}
+                      {service.shortDescription}
                     </p>
                   </div>
                 </Link>
               </motion.div>
             ))}
+            {services.length === 0 && (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-gray-500 text-lg">No services found.</p>
+              </div>
+            )}
           </div>
 
           {/* CTA Section */}
@@ -128,7 +135,10 @@ export default function ServicesPage({ seoData }) {
               Ready to Get Started?
             </h2>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Mainstreet Roofing offers expert roofing solutions with top-quality materials and craftsmanship. From installations to repairs, we ensure durability and customer satisfaction for residential and commercial projects.
+              Mainstreet Roofing offers expert roofing solutions with
+              top-quality materials and craftsmanship. From installations to
+              repairs, we ensure durability and customer satisfaction for
+              residential and commercial projects.
             </p>
             <Link href="/contact">
               <motion.button

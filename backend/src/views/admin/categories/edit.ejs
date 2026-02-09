@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body <% if (error && error.length > 0) { %>data-flash-error="<%= error %>"<% } %> <% if (success && success.length > 0) { %>data-flash-success="<%= success %>"<% } %>>
+    <div id="toast-container"></div>
+    <div class="admin-wrapper">
+        <%- include('../../partials/sidebar') %>
+        <main class="main-content">
+            <header class="top-header">
+                <h1><%= title %></h1>
+                <div class="user-info"><span>Welcome, <%= userName %></span></div>
+            </header>
+            <div class="content">
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1>Edit Category</h1>
+                        <p>Edit service category details</p>
+                    </div>
+                </div>
+                <div class="form-card">
+                    <form action="/admin/categories/<%= category.id %>" method="POST" class="form-grid">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required class="form-input" value="<%= category.name %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="slug" class="form-label">Slug <span class="text-red-500">*</span></label>
+                            <input type="text" id="slug" name="slug" required class="form-input" value="<%= category.slug %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="icon" class="form-label">Icon (Emoji or URL)</label>
+                            <input type="text" id="icon" name="icon" class="form-input" value="<%= category.icon %>">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" rows="3" class="form-input"><%= category.description %></textarea>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary">Update Category</button>
+                            <a href="/admin/categories" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/toast.js"></script>
+</body>
+</html>

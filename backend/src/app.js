@@ -87,6 +87,7 @@ app.use("/admin", require("./routes/admin.routes"));
 
 // API routes
 app.use("/api", routes);
+app.use("/api/categories", require("./routes/category.routes"));
 
 app.use(notFound);
 app.use(errorHandler);
