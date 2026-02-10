@@ -56,7 +56,7 @@ exports.createLead = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/public/leads/${file.filename}`,
+        url: `/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -121,7 +121,7 @@ exports.createLeadByApp = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/public/leads/${file.filename}`,
+        url: `/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -621,7 +621,7 @@ exports.updateMyLead = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/public/leads/${file.filename}`,
+        url: `/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
