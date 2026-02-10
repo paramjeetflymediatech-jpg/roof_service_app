@@ -99,7 +99,10 @@ const AdminDashboardScreen = () => {
         <View style={styles.headerOverlay}>
           <View style={styles.topBar}>
             <BrandLogo
-              imageStyle={{ width: 30, height: 30 }}
+              imageStyle={{
+                width: moderateScale(30),
+                height: moderateScale(30),
+              }}
               tintColor={COLORS.white}
               resizeMode="contain"
             />
@@ -364,6 +367,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: moderateScale(20),
     paddingBottom: verticalScale(100),
+    marginTop: verticalScale(10),
   },
   sectionTitle: {
     fontSize: moderateScale(18),

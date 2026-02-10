@@ -113,7 +113,7 @@ const ClientServicesScreen = () => {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Our Services</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: moderateScale(40) }} />
       </View>
 
       <FlatList

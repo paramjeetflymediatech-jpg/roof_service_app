@@ -185,6 +185,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: moderateScale(24),
+    marginTop: verticalScale(20),
   },
   logoContainer: {
     alignItems: 'center',
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     backgroundColor: 'transparent', // Removed card bg
-    padding: moderateScale(10),
+    paddingHorizontal: moderateScale(24),
   },
   title: {
     fontSize: moderateScale(32),
@@ -257,11 +258,11 @@ const styles = StyleSheet.create({
   // Decorative
   circle1: {
     position: 'absolute',
-    top: -100,
-    right: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    top: scale(-100),
+    right: scale(-100),
+    width: scale(300),
+    height: scale(300),
+    borderRadius: scale(150),
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
   feedbackContainer: {

@@ -543,7 +543,7 @@ const ClientQuoteScreen = () => {
           <Text style={styles.inputLabel}>Current Photos:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {existingImages.map((img, index) => {
-              console.log( `${SERVER_URL}${img.url}`, 'img');
+              console.log(`${SERVER_URL}${img.url}`, 'img');
               const imageUrl = img.url.startsWith('http')
                 ? img.url
                 : `${SERVER_URL}${img.url}`;
@@ -585,7 +585,7 @@ const ClientQuoteScreen = () => {
           <Text style={styles.headerTitle}>
             {isEditing ? 'Edit Quote' : 'Request a Quote'}
           </Text>
-          <View style={{ width: 30 }} />
+          <View style={{ width: moderateScale(30) }} />
         </View>
 
         <ProgressSteps />

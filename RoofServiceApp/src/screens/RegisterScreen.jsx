@@ -16,7 +16,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import { COLORS, FONTS, SHADOWS } from '../utils/constants';
-import { moderateScale, verticalScale } from '../utils/responsive';
+import { moderateScale, verticalScale, scale } from '../utils/responsive';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: moderateScale(24),
+    marginTop: verticalScale(20),
   },
   logoContainer: {
     alignItems: 'center',
@@ -338,11 +339,11 @@ const styles = StyleSheet.create({
   },
   circle1: {
     position: 'absolute',
-    top: -100,
-    left: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    top: scale(-100),
+    left: scale(-100),
+    width: scale(300),
+    height: scale(300),
+    borderRadius: scale(150),
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
 });

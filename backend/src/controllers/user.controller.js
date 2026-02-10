@@ -90,9 +90,10 @@ exports.updateUser = async (req, res, next) => {
       updates.role = "user";
     }
 
-    await user.update(updates);
+    // await user.update(updates);
+    await updates.save()
 
-    const safeUser = user.toJSON();
+    const safeUser = updates.toJSON();
     delete safeUser.password;
 
     res.json({ success: true, data: safeUser, message: "User updated" });

@@ -106,13 +106,14 @@ const styles = StyleSheet.create({
     // Removed card styling for immersive feel
     paddingVertical: verticalScale(50),
     paddingHorizontal: moderateScale(10),
+    marginTop: verticalScale(20),
   },
   logoContainer: {
     alignItems: 'center',
     marginBottom: verticalScale(40),
   },
   appName: {
-    fontSize: moderateScale(40),
+    fontSize: moderateScale(32),
     fontWeight: '900',
     color: COLORS.white,
     marginTop: verticalScale(20),
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tagline: {
-    fontSize: moderateScale(16),
+    fontSize: moderateScale(14),
     color: '#e0e0e0', // Slightly off-white for subtitle
     marginTop: verticalScale(12),
     textAlign: 'center',
@@ -132,18 +133,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: moderateScale(28),
+    fontSize: moderateScale(22),
     fontWeight: '700',
     color: COLORS.white,
     textAlign: 'center',
     marginBottom: verticalScale(16),
-    lineHeight: verticalScale(36),
+    lineHeight: verticalScale(30),
   },
   description: {
-    fontSize: moderateScale(16),
+    fontSize: moderateScale(14),
     color: '#cccccc', // Light gray for description
     textAlign: 'center',
-    lineHeight: verticalScale(26),
+    lineHeight: verticalScale(22),
     paddingHorizontal: moderateScale(10),
   },
   button: {
@@ -172,20 +173,20 @@ const styles = StyleSheet.create({
   // Decorative circles
   circle1: {
     position: 'absolute',
-    top: -100,
-    left: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    top: scale(-100),
+    left: scale(-50),
+    width: scale(200),
+    height: scale(200),
+    borderRadius: scale(100),
     backgroundColor: 'rgba(255,255,255,0.05)',
   },
   circle2: {
     position: 'absolute',
-    bottom: -50,
-    right: -50,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    bottom: scale(-50),
+    right: scale(-50),
+    width: scale(300),
+    height: scale(300),
+    borderRadius: scale(150),
     backgroundColor: 'rgba(255,255,255,0.03)',
   },
 });

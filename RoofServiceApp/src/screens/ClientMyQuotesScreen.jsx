@@ -215,7 +215,7 @@ const ClientMyQuotesScreen = () => {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Quotes</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: moderateScale(40) }} />
       </View>
 
       {/* Search Bar */}

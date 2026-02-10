@@ -16,7 +16,11 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, FONTS, SHADOWS, LEAD_STATUS } from '../utils/constants';
-import { moderateScale, verticalScale, width } from '../utils/responsive';
+import {
+  moderateScale,
+  verticalScale,
+  getMenuWidth,
+} from '../utils/responsive';
 
 // Use a local image for Hero background if available, or a nice placeholder
 const HERO_IMAGE = require('../../assets/roofing-background.jpg'); // Ensure this exists or use a fallback
@@ -40,17 +44,25 @@ const ClientHomeScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       loadStats();
-    }, [user?.id])
+    }, [user?.id]),
   );
 
   const loadStats = async () => {
     try {
       const response = await api.getLeads({ userId: user?.id });
       const leads = response.data?.items || [];
-      
-      const pending = leads.filter(l => l.status === LEAD_STATUS.PENDING).length;
-      const approved = leads.filter(l => l.status === LEAD_STATUS.APPROVED || l.status === LEAD_STATUS.ASSIGNED).length;
-      const completed = leads.filter(l => l.status === LEAD_STATUS.COMPLETED).length;
+
+      const pending = leads.filter(
+        l => l.status === LEAD_STATUS.PENDING,
+      ).length;
+      const approved = leads.filter(
+        l =>
+          l.status === LEAD_STATUS.APPROVED ||
+          l.status === LEAD_STATUS.ASSIGNED,
+      ).length;
+      const completed = leads.filter(
+        l => l.status === LEAD_STATUS.COMPLETED,
+      ).length;
 
       setStats({
         activeQuotes: leads.length,
@@ -79,7 +91,9 @@ const ClientHomeScreen = () => {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <View style={[styles.actionIconContainer, { backgroundColor: color + '20' }]}>
+      <View
+        style={[styles.actionIconContainer, { backgroundColor: color + '20' }]}
+      >
         <Text style={styles.actionIcon}>{icon}</Text>
       </View>
       <View>
@@ -92,11 +106,21 @@ const ClientHomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.white} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.white}
+          />
+        }
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Section */}
@@ -106,29 +130,37 @@ const ClientHomeScreen = () => {
           imageStyle={styles.heroImage}
         >
           <View style={styles.heroOverlay}>
-             {/* Header */}
+            {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <TouchableOpacity onPress={() => setIsMenuOpen(true)}>
                   <Text style={styles.menuIcon}>≡</Text>
                 </TouchableOpacity>
                 <BrandLogo
-                    imageStyle={{ width: moderateScale(35), height: moderateScale(35), marginLeft: moderateScale(10) }}
-                    resizeMode="contain"
-                    tintColor={COLORS.white}
+                  imageStyle={{
+                    width: moderateScale(35),
+                    height: moderateScale(35),
+                    marginLeft: moderateScale(10),
+                  }}
+                  resizeMode="contain"
+                  tintColor={COLORS.white}
                 />
               </View>
-              <TouchableOpacity onPress={() => navigation.navigate('ClientProfile')}>
-                 <View style={styles.profileIcon}>
-                    <Text style={styles.profileInitials}>
-                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </Text>
-                 </View>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ClientProfile')}
+              >
+                <View style={styles.profileIcon}>
+                  <Text style={styles.profileInitials}>
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </Text>
+                </View>
               </TouchableOpacity>
             </View>
 
             <View style={styles.heroContent}>
-              <Text style={styles.greeting}>Welcome, {user?.name?.split(' ')[0] || 'Client'}!</Text>
+              <Text style={styles.greeting}>
+                Welcome, {user?.name?.split(' ')[0] || 'Client'}!
+              </Text>
               <Text style={styles.heroTitle}>Premium Roofing Services</Text>
               <Text style={styles.heroSubtitle}>
                 Quality you can trust, right over your head.
@@ -145,20 +177,24 @@ const ClientHomeScreen = () => {
 
         {/* Dashboard Stats */}
         <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{stats.activeQuotes}</Text>
-                <Text style={styles.statLabel}>Total Quotes</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: COLORS.warning }]}>{stats.pending}</Text>
-                <Text style={styles.statLabel}>Pending</Text>
-            </View>
-            <View style={styles.statDivider} />
-             <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: COLORS.success }]}>{stats.approved}</Text>
-                <Text style={styles.statLabel}>Active</Text>
-            </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.activeQuotes}</Text>
+            <Text style={styles.statLabel}>Total Quotes</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: COLORS.warning }]}>
+              {stats.pending}
+            </Text>
+            <Text style={styles.statLabel}>Pending</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: COLORS.success }]}>
+              {stats.approved}
+            </Text>
+            <Text style={styles.statLabel}>Active</Text>
+          </View>
         </View>
 
         {/* Quick Actions Grid */}
@@ -186,7 +222,7 @@ const ClientHomeScreen = () => {
               color="#4CAF50"
               onPress={() => navigation.navigate('ClientGallery')}
             />
-             <QuickActionCard
+            <QuickActionCard
               title="Profile"
               subtitle="Manage account"
               icon="👤"
@@ -198,22 +234,23 @@ const ClientHomeScreen = () => {
 
         {/* Promo / Info Card */}
         <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Why Choose Us?</Text>
-            <View style={styles.promoCard}>
-                <Image 
-                    source={require('../../assets/roofing-logo.png')} 
-                    style={styles.promoImage} 
-                    resizeMode="contain"
-                />
-                <View style={styles.promoContent}>
-                    <Text style={styles.promoTitle}>Certified Experts</Text>
-                    <Text style={styles.promoText}>
-                        Over 20 years of experience in residential and commercial roofing. We guarantee satisfaction.
-                    </Text>
-                </View>
+          <Text style={styles.sectionTitle}>Why Choose Us?</Text>
+          <View style={styles.promoCard}>
+            <Image
+              source={require('../../assets/roofing-logo.png')}
+              style={styles.promoImage}
+              resizeMode="contain"
+            />
+            <View style={styles.promoContent}>
+              <Text style={styles.promoTitle}>Certified Experts</Text>
+              <Text style={styles.promoText}>
+                Over 20 years of experience in residential and commercial
+                roofing. We guarantee satisfaction.
+              </Text>
             </View>
+          </View>
         </View>
-        
+
         <View style={{ height: 100 }} />
       </ScrollView>
 
@@ -231,21 +268,47 @@ const ClientHomeScreen = () => {
                 <Text style={styles.closeMenuText}>✕</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientMyQuotes'); }} style={styles.menuItem}>
-                <Text style={styles.menuItemText}>My Quotes</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuOpen(false);
+                navigation.navigate('ClientMyQuotes');
+              }}
+              style={styles.menuItem}
+            >
+              <Text style={styles.menuItemText}>My Quotes</Text>
             </TouchableOpacity>
-             <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientServices'); }} style={styles.menuItem}>
-                <Text style={styles.menuItemText}>Services</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuOpen(false);
+                navigation.navigate('ClientServices');
+              }}
+              style={styles.menuItem}
+            >
+              <Text style={styles.menuItemText}>Services</Text>
             </TouchableOpacity>
-             <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientGallery'); }} style={styles.menuItem}>
-                <Text style={styles.menuItemText}>Gallery</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuOpen(false);
+                navigation.navigate('ClientGallery');
+              }}
+              style={styles.menuItem}
+            >
+              <Text style={styles.menuItemText}>Gallery</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setIsMenuOpen(false); navigation.navigate('ClientProfile'); }} style={styles.menuItem}>
-                <Text style={styles.menuItemText}>Profile</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuOpen(false);
+                navigation.navigate('ClientProfile');
+              }}
+              style={styles.menuItem}
+            >
+              <Text style={styles.menuItemText}>Profile</Text>
             </TouchableOpacity>
             <View style={styles.menuDivider} />
             <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
-                <Text style={[styles.menuItemText, { color: COLORS.error }]}>Logout</Text>
+              <Text style={[styles.menuItemText, { color: COLORS.error }]}>
+                Logout
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -261,6 +324,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 0,
+    marginTop: verticalScale(10),
   },
   heroSection: {
     height: verticalScale(300),
@@ -286,8 +350,8 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(20),
   },
   headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   menuIcon: {
     fontSize: moderateScale(30),
@@ -295,167 +359,168 @@ const styles = StyleSheet.create({
     marginRight: moderateScale(10),
   },
   profileIcon: {
-      width: moderateScale(40),
-      height: moderateScale(40),
-      borderRadius: moderateScale(20),
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.5)',
+    width: moderateScale(40),
+    height: moderateScale(40),
+    borderRadius: moderateScale(20),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   profileInitials: {
-      color: COLORS.white,
-      fontWeight: '700',
-      fontSize: moderateScale(16),
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: moderateScale(16),
   },
   heroContent: {
-      paddingHorizontal: moderateScale(20),
-      justifyContent: 'flex-end',
-      flex: 1,
-      paddingBottom: verticalScale(50), // Increased bottom padding to make room for stats
+    paddingHorizontal: moderateScale(20),
+    justifyContent: 'flex-end',
+    flex: 1,
+    paddingBottom: verticalScale(50), // Increased bottom padding to make room for stats
   },
   greeting: {
-      color: 'rgba(255,255,255,0.9)',
-      fontSize: moderateScale(16),
-      marginBottom: verticalScale(4),
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(4),
   },
   heroTitle: {
-      color: COLORS.white,
-      fontSize: moderateScale(28),
-      fontWeight: '800',
-      marginBottom: verticalScale(8),
-      letterSpacing: 0.5,
+    color: COLORS.white,
+    fontSize: moderateScale(28),
+    fontWeight: '800',
+    marginBottom: verticalScale(8),
+    letterSpacing: 0.5,
   },
   heroSubtitle: {
-      color: 'rgba(255,255,255,0.8)',
-      fontSize: moderateScale(14),
-      marginBottom: verticalScale(20),
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: moderateScale(14),
+    marginBottom: verticalScale(20),
   },
   ctaButton: {
-      backgroundColor: COLORS.primary,
-      paddingHorizontal: moderateScale(24),
-      paddingVertical: verticalScale(12),
-      borderRadius: moderateScale(30),
-      alignSelf: 'flex-start',
-      ...SHADOWS.medium,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: moderateScale(24),
+    paddingVertical: verticalScale(12),
+    borderRadius: moderateScale(30),
+    alignSelf: 'flex-start',
+    ...SHADOWS.medium,
   },
   ctaButtonText: {
-      color: COLORS.white,
-      fontWeight: '700',
-      fontSize: moderateScale(16),
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: moderateScale(16),
   },
   statsContainer: {
-      flexDirection: 'row',
-      backgroundColor: COLORS.white,
-      marginHorizontal: moderateScale(20),
-      marginTop: -verticalScale(40), // Negative margin to overlap hero
-      borderRadius: moderateScale(16),
-      paddingVertical: verticalScale(20),
-      paddingHorizontal: moderateScale(10),
-      ...SHADOWS.medium,
-      justifyContent: 'space-around',
-      alignItems: 'center',
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    marginHorizontal: moderateScale(20),
+    marginTop: -verticalScale(40), // Negative margin to overlap hero
+    borderRadius: moderateScale(16),
+    paddingVertical: verticalScale(20),
+    paddingHorizontal: moderateScale(10),
+    ...SHADOWS.medium,
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   statItem: {
-      alignItems: 'center',
-      flex: 1,
+    alignItems: 'center',
+    flex: 1,
   },
   statNumber: {
-      fontSize: moderateScale(24),
-      fontWeight: '700',
-      color: COLORS.text,
+    fontSize: moderateScale(24),
+    fontWeight: '700',
+    color: COLORS.text,
   },
   statLabel: {
-      fontSize: moderateScale(12),
-      color: COLORS.textLight,
-      marginTop: verticalScale(4),
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
+    marginTop: verticalScale(4),
   },
   statDivider: {
-      width: 1,
-      height: '60%',
-      backgroundColor: COLORS.border,
+    width: 1,
+    height: '60%',
+    backgroundColor: COLORS.border,
   },
   sectionContainer: {
-      marginTop: verticalScale(24),
-      paddingHorizontal: moderateScale(20),
+    marginTop: verticalScale(24),
+    paddingHorizontal: moderateScale(20),
   },
   sectionTitle: {
-      fontSize: moderateScale(20),
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: verticalScale(16),
+    fontSize: moderateScale(20),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: verticalScale(16),
   },
   gridContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      gap: moderateScale(16),
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: moderateScale(16),
   },
-  actionCard: { // Updated Grid Card Style
-      width: '47%', // slightly less than 50% for gap
-      backgroundColor: COLORS.white,
-      borderRadius: moderateScale(16),
-      padding: moderateScale(16),
-      ...SHADOWS.small,
-      marginBottom: verticalScale(8),
-      minHeight: verticalScale(130),
-      justifyContent: 'space-between',
+  actionCard: {
+    // Updated Grid Card Style
+    width: '47%', // slightly less than 50% for gap
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    ...SHADOWS.small,
+    marginBottom: verticalScale(8),
+    minHeight: verticalScale(130),
+    justifyContent: 'space-between',
   },
   actionIconContainer: {
-      width: moderateScale(44),
-      height: moderateScale(44),
-      borderRadius: moderateScale(12),
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: verticalScale(12),
+    width: moderateScale(44),
+    height: moderateScale(44),
+    borderRadius: moderateScale(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(12),
   },
   actionIcon: {
-      fontSize: moderateScale(22),
+    fontSize: moderateScale(22),
   },
   actionTitle: {
-      fontSize: moderateScale(16),
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: verticalScale(2),
+    fontSize: moderateScale(16),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: verticalScale(2),
   },
   actionSubtitle: {
-      fontSize: moderateScale(12),
-      color: COLORS.textLight,
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
   },
   arrowIcon: {
-      position: 'absolute',
-      right: moderateScale(12),
-      top: moderateScale(12),
-      fontSize: moderateScale(20),
-      fontWeight: 'bold',
+    position: 'absolute',
+    right: moderateScale(12),
+    top: moderateScale(12),
+    fontSize: moderateScale(20),
+    fontWeight: 'bold',
   },
   promoCard: {
-      backgroundColor: COLORS.surface,
-      borderRadius: moderateScale(16),
-      padding: moderateScale(16),
-      flexDirection: 'row',
-      alignItems: 'center',
-      ...SHADOWS.small,
+    backgroundColor: COLORS.surface,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    ...SHADOWS.small,
   },
   promoImage: {
-      width: moderateScale(60),
-      height: moderateScale(60),
-      marginRight: moderateScale(16),
+    width: moderateScale(60),
+    height: moderateScale(60),
+    marginRight: moderateScale(16),
   },
   promoContent: {
-      flex: 1,
+    flex: 1,
   },
   promoTitle: {
-      fontSize: moderateScale(16),
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: verticalScale(4),
+    fontSize: moderateScale(16),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: verticalScale(4),
   },
   promoText: {
-      fontSize: moderateScale(12),
-      color: COLORS.textLight,
-      lineHeight: verticalScale(18),
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
+    lineHeight: verticalScale(18),
   },
   menuOverlay: {
     position: 'absolute',
@@ -471,7 +536,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   menuContainer: {
-    width: '75%',
+    width: getMenuWidth(),
     backgroundColor: COLORS.white,
     paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
     paddingHorizontal: moderateScale(20),
@@ -495,14 +560,14 @@ const styles = StyleSheet.create({
     padding: moderateScale(4),
   },
   menuItem: {
-      paddingVertical: verticalScale(16),
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+    paddingVertical: verticalScale(16),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   menuItemText: {
-      fontSize: moderateScale(16),
-      color: COLORS.text,
-      fontWeight: '500',
+    fontSize: moderateScale(16),
+    color: COLORS.text,
+    fontWeight: '500',
   },
   menuDivider: {
     height: 1,

@@ -462,20 +462,18 @@ const postUpdateUser = async (req, res) => {
       return res.redirect("/admin/users");
     }
 
-    const updateData = {
-      name,
-      email,
-      role: role || "user",
-      isActive: isActive === "on" ? true : false,
-      phone,
-    };
+    user.name = name;
+    user.email = email;
+    user.role = role || "user";
+    user.isActive = isActive === "on" ? true : false;
+    user.phone = phone;
 
     // Only update password if provided
     if (password && password.trim() !== "") {
-      updateData.password = password; // Will be hashed by pre-save hook
+      user.password = password; // Will be hashed by beforeUpdate hook
     }
 
-    await User.update(updateData, { where: { id: userId } });
+    await user.save();
 
     req.flash("success", "User updated successfully");
     res.redirect("/admin/users");
