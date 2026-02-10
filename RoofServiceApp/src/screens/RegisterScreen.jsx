@@ -106,10 +106,11 @@ const RegisterScreen = () => {
         // Navigation handled by AuthContext state change or:
         // navigation.navigate('Login'); // if login doesn't auto-redirect
       } else {
+        console.log('Registration error:',response, response.data.message);
         Alert.alert('Error', response.data.message || 'Registration failed');
       }
     } catch (error) {
-      console.log('Registration error:', error);
+      console.log('Registration error:', error.message);
       const message =
         error.response?.data?.message ||
         'Registration failed. Please try again.';

@@ -1,5 +1,11 @@
 import React, { forwardRef } from 'react';
-import { TextInput, Text, StyleSheet, View } from 'react-native';
+import {
+  TextInput,
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import { COLORS, FONTS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -20,6 +26,10 @@ const Input = forwardRef(
     },
     ref,
   ) => {
+    const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+
+    const isPassword = secureTextEntry;
+
     return (
       <View style={[styles.container, style]}>
         {label && (
@@ -27,25 +37,43 @@ const Input = forwardRef(
             {label}
           </Text>
         )}
-        <TextInput
-          ref={ref}
-          style={[
-            styles.input,
-            variant === 'dark' && styles.inputDark,
-            multiline && styles.multiline,
-            error && styles.inputError,
-          ]}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={
-            variant === 'dark' ? '#cccccc' : COLORS.textLight
-          }
-          keyboardType={keyboardType}
-          secureTextEntry={secureTextEntry}
-          multiline={multiline}
-          {...props}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            ref={ref}
+            style={[
+              styles.input,
+              variant === 'dark' && styles.inputDark,
+              multiline && styles.multiline,
+              error && styles.inputError,
+              isPassword && { paddingRight: moderateScale(40) },
+            ]}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={
+              variant === 'dark' ? '#cccccc' : COLORS.textLight
+            }
+            keyboardType={keyboardType}
+            secureTextEntry={isPassword && !isPasswordVisible}
+            multiline={isPassword ? false : multiline}
+            {...props}
+          />
+          {isPassword && (
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+            >
+              <Text
+                style={{
+                  fontSize: moderateScale(18),
+                  color: variant === 'dark' ? COLORS.white : COLORS.textLight,
+                }}
+              >
+                {isPasswordVisible ? '👁️' : '👁️‍🗨️'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
     );
@@ -97,6 +125,15 @@ const styles = StyleSheet.create({
     color: COLORS.error,
     marginTop: verticalScale(4),
     marginLeft: moderateScale(2),
+  },
+  inputContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: moderateScale(10),
+    padding: moderateScale(4),
   },
 });
 

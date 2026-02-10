@@ -111,8 +111,12 @@ exports.register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Registration failed" });
+    console.error("Registration error:", error.errors[0].message);
+    res.status(500).json({
+      success: false,
+      message:
+        error.errors[0].message || error.message || "Registration failed",
+    });
   }
 };
 

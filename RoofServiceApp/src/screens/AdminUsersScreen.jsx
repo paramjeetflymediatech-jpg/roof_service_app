@@ -32,6 +32,7 @@ const AdminUsersScreen = () => {
   const [saving, setSaving] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
@@ -83,6 +84,7 @@ const AdminUsersScreen = () => {
     setPhone('');
     setPassword('');
     setRole(ROLES.CLIENT);
+    setShowPassword(false);
   };
 
   const openCreateForm = () => {
@@ -377,14 +379,32 @@ const AdminUsersScreen = () => {
                   <Text style={styles.label}>
                     {editingUser ? 'New Password (Optional)' : 'Password'}
                   </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor={COLORS.textLight}
-                    secureTextEntry
-                  />
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        { paddingRight: moderateScale(40) },
+                      ]}
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="••••••••"
+                      placeholderTextColor={COLORS.textLight}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Text
+                        style={{
+                          fontSize: moderateScale(16),
+                          color: COLORS.textLight,
+                        }}
+                      >
+                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 <View style={styles.inputGroup}>
@@ -761,6 +781,15 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(10),
     color: COLORS.textLight,
     fontWeight: '600',
+  },
+  passwordContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: moderateScale(10),
+    padding: moderateScale(4),
   },
 });
 
