@@ -7,6 +7,7 @@ const authRoutes = require("./auth.routes");
 const userRoutes = require("./users.routes");
 const jobRoutes = require("./job.routes");
 const galleryRoutes = require("./gallery.routes");
+const categoryRoutes = require("./category.routes");
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use("/services", serviceRoutes);
 router.use("/users", userRoutes);
 router.use("/jobs", jobRoutes);
 router.use("/gallery", galleryRoutes);
+router.use("/categories", categoryRoutes);
 
 module.exports = router;
