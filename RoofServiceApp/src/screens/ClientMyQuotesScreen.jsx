@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
+  Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../App';
@@ -57,7 +58,7 @@ const ClientMyQuotesScreen = () => {
         address: lead.address || lead.city || 'N/A',
         status: lead.status,
         date: formatDateLocal(lead.createdAt),
-        description: lead.message || lead.description || '',
+        message: lead.message || lead.description || '',
         preferedDate: lead.preferredDate
           ? formatDateLocal(lead.preferredDate)
           : null,
@@ -67,6 +68,8 @@ const ClientMyQuotesScreen = () => {
           lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
         employeeStartTime: lead.employeeStartTime || null,
         employeeEndTime: lead.employeeEndTime || null,
+        // Keep raw data for editing
+        raw: lead,
       }));
       setQuotes(mapped);
     } catch (error) {
@@ -102,12 +105,48 @@ const ClientMyQuotesScreen = () => {
     navigation.navigate('ClientLeadDetail', { lead: item });
   };
 
+  const handleEdit = item => {
+    navigation.navigate('ClientQuote', { lead: item.raw, isEditing: true });
+  };
+
+  const handleDelete = item => {
+    Alert.alert(
+      'Delete Quote',
+      'Are you sure you want to delete this quote request?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.deleteLead(item.id);
+              Alert.alert('Success', 'Quote deleted successfully');
+              onRefresh();
+            } catch (error) {
+              const msg =
+                error.response?.data?.message || 'Failed to delete quote';
+              Alert.alert('Error', msg);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const filteredQuotes = quotes.filter(quote => {
     // 1. Status Filter
     if (activeTab !== 'All') {
-      if (activeTab === 'Pending' && quote.status !== LEAD_STATUS.PENDING) return false;
-      if (activeTab === 'Approved' && (quote.status !== LEAD_STATUS.APPROVED && quote.status !== LEAD_STATUS.ASSIGNED)) return false;
-      if (activeTab === 'Completed' && quote.status !== LEAD_STATUS.COMPLETED) return false;
+      if (activeTab === 'Pending' && quote.status !== LEAD_STATUS.PENDING)
+        return false;
+      if (
+        activeTab === 'Approved' &&
+        quote.status !== LEAD_STATUS.APPROVED &&
+        quote.status !== LEAD_STATUS.ASSIGNED
+      )
+        return false;
+      if (activeTab === 'Completed' && quote.status !== LEAD_STATUS.COMPLETED)
+        return false;
     }
 
     // 2. Search Filter
@@ -116,7 +155,7 @@ const ClientMyQuotesScreen = () => {
     return (
       quote.service?.toLowerCase().includes(query) ||
       quote.address?.toLowerCase().includes(query) ||
-      quote.description?.toLowerCase().includes(query) ||
+      quote.message?.toLowerCase().includes(query) ||
       quote.status?.toLowerCase().includes(query) ||
       quote.assignedEmployeeName?.toLowerCase().includes(query) ||
       quote.date?.toLowerCase().includes(query) ||
@@ -135,13 +174,31 @@ const ClientMyQuotesScreen = () => {
       onPress={() => handleOpenDetails(item)}
     >
       <Text style={styles.description} numberOfLines={2}>
-        {item.description}
+        {item.message}
       </Text>
       {item.assignedEmployeeName && (
         <View style={styles.assignedInfo}>
           <Text style={styles.assignedText}>
             👷 Assigned: {item.assignedEmployeeName}
           </Text>
+        </View>
+      )}
+
+      {/* Edit/Delete Actions for Pending Quotes */}
+      {item.status === LEAD_STATUS.PENDING && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => handleEdit(item)}
+          >
+            <Text style={styles.editBtnText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={() => handleDelete(item)}
+          >
+            <Text style={styles.deleteBtnText}>Delete</Text>
+          </TouchableOpacity>
         </View>
       )}
     </Card>
@@ -185,29 +242,29 @@ const ClientMyQuotesScreen = () => {
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <FlatList
-            data={TABS}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    style={[
-                        styles.tabItem,
-                        activeTab === item && styles.tabItemActive,
-                    ]}
-                    onPress={() => setActiveTab(item)}
-                >
-                    <Text
-                        style={[
-                            styles.tabText,
-                            activeTab === item && styles.tabTextActive,
-                        ]}
-                    >
-                        {item}
-                    </Text>
-                </TouchableOpacity>
-            )}
-            contentContainerStyle={styles.tabsContent}
+          data={TABS}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={item => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.tabItem,
+                activeTab === item && styles.tabItemActive,
+              ]}
+              onPress={() => setActiveTab(item)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === item && styles.tabTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.tabsContent}
         />
       </View>
 
@@ -224,27 +281,27 @@ const ClientMyQuotesScreen = () => {
             <Text style={styles.emptyIcon}>📋</Text>
             <Text style={styles.emptyText}>No quotes found</Text>
             <Text style={styles.emptySubtext}>
-              {activeTab !== 'All' 
-                ? `No ${activeTab.toLowerCase()} quotes found` 
+              {activeTab !== 'All'
+                ? `No ${activeTab.toLowerCase()} quotes found`
                 : 'Request a quote to get started'}
             </Text>
-             <Button
-                title="Request New Quote"
-                onPress={() => navigation.navigate('ClientQuote')}
-                style={styles.emptyButton}
-                size="small"
-             />
+            <Button
+              title="Request New Quote"
+              onPress={() => navigation.navigate('ClientQuote')}
+              style={styles.emptyButton}
+              size="small"
+            />
           </View>
         }
       />
 
-       {/* FAB */}
-       <TouchableOpacity
-          style={styles.fab}
-          onPress={() => navigation.navigate('ClientQuote')}
-        >
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('ClientQuote')}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -360,6 +417,38 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
   },
+  // Action Buttons
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: verticalScale(12),
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingTop: verticalScale(8),
+  },
+  editBtn: {
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(6),
+    marginRight: moderateScale(8),
+    backgroundColor: '#E3F2FD',
+    borderRadius: moderateScale(6),
+  },
+  editBtnText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: moderateScale(12),
+  },
+  deleteBtn: {
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(6),
+    backgroundColor: '#FFEBEE',
+    borderRadius: moderateScale(6),
+  },
+  deleteBtnText: {
+    color: COLORS.error,
+    fontWeight: '600',
+    fontSize: moderateScale(12),
+  },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -382,7 +471,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(20),
   },
   emptyButton: {
-      minWidth: moderateScale(150),
+    minWidth: moderateScale(150),
   },
   fab: {
     position: 'absolute',

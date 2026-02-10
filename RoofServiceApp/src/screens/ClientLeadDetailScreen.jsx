@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
@@ -20,7 +28,10 @@ const ClientLeadDetailScreen = () => {
   const { lead: initialLead } = useRoute().params || {};
 
   const [lead, setLead] = useState(initialLead || null);
-  const [employee, setEmployee] = useState({ name: initialLead?.assignedEmployeeName, phone: initialLead?.assignedEmployeePhone });
+  const [employee, setEmployee] = useState({
+    name: initialLead?.assignedEmployeeName,
+    phone: initialLead?.assignedEmployeePhone,
+  });
   const [loading, setLoading] = useState(!initialLead);
 
   useEffect(() => {
@@ -36,12 +47,18 @@ const ClientLeadDetailScreen = () => {
         const mergedLead = {
           ...(initialLead || {}),
           status: apiLead.status || initialLead.status,
-          description: apiLead.message || apiLead.description || initialLead.description,
-          employeeStartTime: apiLead.employeeStartTime || initialLead.employeeStartTime,
-          employeeEndTime: apiLead.employeeEndTime || initialLead.employeeEndTime,
-          completionImages: apiLead.completionImages || initialLead.completionImages,
+          message:
+            apiLead.message || apiLead.description || initialLead.message,
+          employeeStartTime:
+            apiLead.employeeStartTime || initialLead.employeeStartTime,
+          employeeEndTime:
+            apiLead.employeeEndTime || initialLead.employeeEndTime,
+          completionImages:
+            apiLead.completionImages || initialLead.completionImages,
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
-          preferedDate: apiLead.preferredDate ? formatDateLocal(apiLead.preferredDate) : initialLead.preferedDate,
+          preferedDate: apiLead.preferredDate
+            ? formatDateLocal(apiLead.preferredDate)
+            : initialLead.preferedDate,
         };
 
         setLead(mergedLead);
@@ -52,7 +69,10 @@ const ClientLeadDetailScreen = () => {
           try {
             const uRes = await api.getUserById(assignedToId);
             const u = uRes.data || {};
-            setEmployee({ name: u.name || employee.name, phone: u.phone || employee.phone });
+            setEmployee({
+              name: u.name || employee.name,
+              phone: u.phone || employee.phone,
+            });
           } catch (e) {
             // keep existing employee state on error
           }
@@ -71,11 +91,19 @@ const ClientLeadDetailScreen = () => {
     return (
       <View style={styles.container}>
         {loading ? (
-          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: verticalScale(40) }} />
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+            style={{ marginTop: verticalScale(40) }}
+          />
         ) : (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>No lead selected</Text>
-            <Button title="Back" onPress={() => navigation.goBack()} size="small" />
+            <Button
+              title="Back"
+              onPress={() => navigation.goBack()}
+              size="small"
+            />
           </View>
         )}
       </View>
@@ -88,12 +116,11 @@ const ClientLeadDetailScreen = () => {
     status,
     date,
     preferedDate,
-    description,
+    message,
     employeeStartTime,
     employeeEndTime,
     completionImages,
   } = lead;
-  
 
   const assignedEmployeeName = employee?.name || lead.assignedEmployeeName;
   const assignedEmployeePhone = employee?.phone || lead.assignedEmployeePhone;
@@ -101,31 +128,37 @@ const ClientLeadDetailScreen = () => {
   const statusLabel = status ? status.toString().replace(/_/g, ' ') : '';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.header}>
         <View style={styles.headerInfo}>
           <Text style={styles.title}>{service}</Text>
           <Text style={styles.subtitle}>{address}</Text>
         </View>
-        <BrandLogo imageStyle={{ width: moderateScale(40), height: moderateScale(40) }} resizeMode="contain" />
+        <BrandLogo
+          imageStyle={{ width: moderateScale(40), height: moderateScale(40) }}
+          resizeMode="contain"
+        />
       </View>
 
       <Card title="Lead Details" style={styles.card}>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Status:</Text>
           <View style={[styles.statusBadge, { backgroundColor: COLORS.info }]}>
-             <Text style={styles.statusText}>{statusLabel}</Text>
+            <Text style={styles.statusText}>{statusLabel}</Text>
           </View>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Date:</Text>
           <Text style={styles.detailValue}>{preferedDate || 'N/A'}</Text>
         </View>
-        
-        {!!description && (
+
+        {!!message && (
           <View style={styles.detailRowColumn}>
-            <Text style={styles.detailLabel}>Description</Text>
-            <Text style={styles.descriptionValue}>{description}</Text>
+            <Text style={styles.detailLabel}>Message</Text>
+            <Text style={styles.descriptionValue}>{message}</Text>
           </View>
         )}
       </Card>

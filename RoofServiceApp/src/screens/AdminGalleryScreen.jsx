@@ -1,0 +1,418 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Alert,
+  TextInput,
+  Platform,
+  TouchableOpacity,
+  StatusBar,
+  RefreshControl,
+  Modal,
+  KeyboardAvoidingView,
+  ScrollView,
+  Image,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { useAuth } from '../../App';
+import Button from '../components/Button';
+import { api } from '../config/api';
+import { COLORS, SHADOWS } from '../utils/constants';
+import { moderateScale, verticalScale } from '../utils/responsive';
+
+const AdminGalleryScreen = () => {
+  const navigation = useNavigation();
+  const { user } = useAuth();
+
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  // Form State
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null); // { uri, type, fileName }
+
+  useEffect(() => {
+    loadGallery();
+  }, []);
+
+  const loadGallery = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getGallery();
+      const raw = res.data?.items || res.data || [];
+      setItems(Array.isArray(raw) ? raw : []);
+    } catch (error) {
+      console.log('Load gallery error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setEditingItem(null);
+    setTitle('');
+    setCategory('');
+    setSelectedImage(null);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const startEdit = item => {
+    setEditingItem(item);
+    setTitle(item.title || '');
+    setCategory(item.category || '');
+    setSelectedImage(null); // Reset new image selection
+    setShowForm(true);
+  };
+
+  const handleChooseImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 1,
+    });
+
+    if (result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setSelectedImage({
+        uri: asset.uri,
+        type: asset.type,
+        name: asset.fileName || 'upload.jpg',
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!title.trim()) {
+      Alert.alert('Validation', 'Title is required');
+      return;
+    }
+
+    if (!editingItem && !selectedImage) {
+      Alert.alert('Validation', 'Image is required for new items');
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('category', category.trim());
+
+      if (selectedImage) {
+        formData.append('image', {
+          uri: selectedImage.uri,
+          type: selectedImage.type,
+          name: selectedImage.name,
+        });
+      }
+
+      if (editingItem) {
+        await api.updateGalleryItem(editingItem.id, formData);
+      } else {
+        await api.createGalleryItem(formData);
+      }
+
+      await loadGallery();
+      resetForm();
+      setShowForm(false);
+      Alert.alert('Success', 'Gallery item saved successfully');
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to save item';
+      console.log('Save gallery error:', error);
+      Alert.alert('Error', msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = itemToDelete => {
+    Alert.alert(
+      'Delete Item',
+      `Are you sure you want to delete ${itemToDelete.title}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.deleteGalleryItem(itemToDelete.id);
+              await loadGallery();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete item');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const renderItem = ({ item }) => {
+    // Handle image URL (prepend backend URL if needed, assume backend returns absolute or relative)
+    // If relative, we need base URL. For now assume full URL or handle in component.
+    // Actually, my api.js has BASE_URL. I might need to construct full URL if it's relative.
+    // Usually backend returns /uploads/..., creating a full URL helper would be good.
+    // For now, I'll rely on the backend returning a full URL or the Image component handling it if I prepend.
+    // Let's assume the API returns a relative path like /uploads/gallery/xyz.jpg
+
+    // Helper to get full URL
+    const getImageUrl = path => {
+      if (!path) return null;
+      if (path.startsWith('http')) return path;
+      return `${SERVER_URL}${path}`;
+    };
+
+    return (
+      <View style={styles.card}>
+        <Image
+          source={{ uri: getImageUrl(item.imageUrl) }}
+          style={styles.cardImage}
+          resizeMode="cover"
+        />
+        <View style={styles.cardContent}>
+          <View style={styles.info}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.category}>{item.category}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => startEdit(item)}
+          >
+            <Text style={styles.editIcon}>✎</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item)}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+        >
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage Gallery</Text>
+        <TouchableOpacity onPress={openCreateForm} style={styles.addBtn}>
+          <Text style={styles.addText}>+</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={items}
+        keyExtractor={item => String(item.id)}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={loadGallery}
+            tintColor={COLORS.primary}
+          />
+        }
+        ListEmptyComponent={
+          !loading && <Text style={styles.emptyText}>No items found.</Text>
+        }
+      />
+
+      <Modal
+        visible={showForm}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowForm(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardView}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingItem ? 'Edit Item' : 'New Item'}
+                </Text>
+                <TouchableOpacity onPress={() => setShowForm(false)}>
+                  <Text style={styles.closeText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView>
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Title</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholder="Project Title"
+                  />
+                </View>
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Category</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={category}
+                    onChangeText={setCategory}
+                    placeholder="e.g. Shingle, Metal..."
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Image</Text>
+                  <TouchableOpacity
+                    style={styles.imagePicker}
+                    onPress={handleChooseImage}
+                  >
+                    {selectedImage ? (
+                      <Image
+                        source={{ uri: selectedImage.uri }}
+                        style={styles.previewImage}
+                      />
+                    ) : editingItem ? (
+                      <Image
+                        source={{
+                          uri: `https://api.mainstreet-roofing.ca${editingItem.imageUrl}`,
+                        }}
+                        style={styles.previewImage}
+                      />
+                    ) : (
+                      <Text style={styles.imagePlaceholder}>Select Image</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <Button
+                  title="Save Item"
+                  onPress={handleSave}
+                  loading={saving}
+                  style={{ marginTop: 20 }}
+                />
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: moderateScale(20),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(16),
+    backgroundColor: COLORS.white,
+    ...SHADOWS.small,
+  },
+  headerTitle: {
+    fontSize: moderateScale(18),
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  backBtn: { padding: 10 },
+  backText: { fontSize: 24, color: COLORS.text },
+  addBtn: {
+    backgroundColor: COLORS.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addText: { color: COLORS.white, fontSize: 24, marginTop: -2 },
+  listContent: { padding: moderateScale(20) },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
+    ...SHADOWS.small,
+  },
+  cardImage: { width: '100%', height: 150 },
+  cardContent: { flexDirection: 'row', padding: 16, alignItems: 'center' },
+  info: { flex: 1 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  category: { fontSize: 12, color: COLORS.textLight, marginTop: 4 },
+  editBtn: { padding: 8 },
+  editIcon: { fontSize: 18, color: COLORS.textLight },
+  deleteBtn: {
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff0f0',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  deleteText: { color: COLORS.error, fontWeight: '600' },
+  emptyText: { textAlign: 'center', marginTop: 50, color: COLORS.textLight },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  keyboardView: { flex: 1, justifyContent: 'center' },
+  modalContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: { fontSize: 20, fontWeight: '700' },
+  closeText: { fontSize: 24, color: COLORS.textLight },
+  formGroup: { marginBottom: 16 },
+  label: {
+    marginBottom: 6,
+    fontWeight: '600',
+    color: COLORS.textLight,
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
+  input: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  imagePicker: {
+    height: 150,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  imagePlaceholder: { color: COLORS.textLight },
+  previewImage: { width: '100%', height: '100%' },
+});
+
+export default AdminGalleryScreen;

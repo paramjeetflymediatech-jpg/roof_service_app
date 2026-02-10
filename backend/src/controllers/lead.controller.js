@@ -6,8 +6,9 @@ const {
   sendAssignmentEmail,
 } = require("../../services/emailService");
 
-// Create new lead (contact / quote)
+// ... existing createLead ...
 exports.createLead = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const payload = { ...req.body };
 
@@ -55,7 +56,7 @@ exports.createLead = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/public/leads_images/${file.filename}`,
+        url: `/public/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -93,7 +94,9 @@ exports.createLead = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.createLeadByApp = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const payload = { ...req.body };
 
@@ -118,7 +121,7 @@ exports.createLeadByApp = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/public/leads_images/${file.filename}`,
+        url: `/public/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -157,8 +160,9 @@ exports.createLeadByApp = async (req, res, next) => {
   }
 };
 
-// Get leads (basic pagination + optional filters + search)
+// ... existing getLeads ...
 exports.getLeads = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
@@ -170,7 +174,7 @@ exports.getLeads = async (req, res, next) => {
     if (req.query.assignedToId) where.assignedToId = req.query.assignedToId;
     if (req.query.userId) where.userId = req.query.userId;
 
-    // Filter by date (createdAt)
+    // Filter by date (createdAt) - kept from original
     if (req.query.date) {
       const filterDate = new Date(req.query.date);
       if (!Number.isNaN(filterDate.getTime())) {
@@ -182,7 +186,7 @@ exports.getLeads = async (req, res, next) => {
       }
     }
 
-    // Filter by preferredDate
+    // Filter by preferredDate - kept from original
     if (req.query.preferredDate) {
       const prefDate = new Date(req.query.preferredDate);
       if (!Number.isNaN(prefDate.getTime())) {
@@ -194,7 +198,7 @@ exports.getLeads = async (req, res, next) => {
       }
     }
 
-    // Filter by inTime and outTime
+    // Filter by inTime and outTime - kept from original
     if (req.query.inTime) {
       const inTimeDate = new Date(req.query.inTime);
       if (!Number.isNaN(inTimeDate.getTime())) {
@@ -208,7 +212,7 @@ exports.getLeads = async (req, res, next) => {
       }
     }
 
-    // Filter by date range (createdAt)
+    // Filter by date range (createdAt) - kept from original
     if (req.query.startDate && req.query.endDate) {
       const startDate = new Date(req.query.startDate);
       startDate.setHours(0, 0, 0, 0);
@@ -222,7 +226,7 @@ exports.getLeads = async (req, res, next) => {
       }
     }
 
-    // Search functionality - search by name, email, phone, address, city, serviceType, and dates
+    // Search functionality - kept from original
     if (req.query.search) {
       const searchTerm = req.query.search.trim();
       const searchConditions = [
@@ -277,7 +281,6 @@ exports.getLeads = async (req, res, next) => {
 
     const items = leads.map((lead) => {
       const json = lead.toJSON();
-      // Expose assigned employee basic info if available
       if (json.assignedTo) {
         json.assignedEmployee = {
           id: json.assignedTo.id,
@@ -307,8 +310,9 @@ exports.getLeads = async (req, res, next) => {
   }
 };
 
-// Get single lead by id
+// ... existing getLeadById ...
 exports.getLeadById = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
@@ -318,8 +322,9 @@ exports.getLeadById = async (req, res, next) => {
   }
 };
 
-// Update lead (admin review, approve, reject)
+// ... existing updateLead ...
 exports.updateLead = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
@@ -335,8 +340,9 @@ exports.updateLead = async (req, res, next) => {
   }
 };
 
-// Assign lead to employee
+// ... existing assignLead ...
 exports.assignLead = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const { employeeId, status, adminid, scheduledDate } = req.body;
 
@@ -415,11 +421,6 @@ exports.assignLead = async (req, res, next) => {
       scheduledDate: scheduled,
     });
 
-    // Send email notification to employee
-    // sendAssignmentEmail(employee, lead).catch((err) =>
-    //   console.error("Assignment email error:", err),
-    // );
-
     res.json({
       success: true,
       message: "Lead assigned successfully",
@@ -430,8 +431,9 @@ exports.assignLead = async (req, res, next) => {
   }
 };
 
-// Get leads assigned to employee
+// ... existing getEmployeeLeads ...
 exports.getEmployeeLeads = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const { employeeId } = req.params;
 
@@ -450,8 +452,9 @@ exports.getEmployeeLeads = async (req, res, next) => {
   }
 };
 
-// Get available employees for a specific date and time slot
+// ... existing getAvailableEmployees ...
 exports.getAvailableEmployees = async (req, res, next) => {
+  // ... (keep existing implementation)
   try {
     const { date, slot } = req.query;
 
@@ -506,15 +509,6 @@ exports.getAvailableEmployees = async (req, res, next) => {
     const jobs = await Job.findAll({
       where: {
         scheduledDate: { [Op.between]: [startOfDay, endOfDay] },
-        status: { [Op.notIn]: ["cancelled", "completed"] }, // Exclude cancelled/completed jobs? Maybe completed jobs block the slot too? Logic: if they have a job that day in that slot, they are busy.
-        // Let's assume completed jobs don't block FUTURE assignments, but for a specific past date they would.
-        // For planning upcoming jobs, we care about 'pending', 'accepted', 'in_progress'.
-        // 'completed' might physically block the time if we are looking at historic data, but usually we schedule for future.
-        // Let's stick to active statuses for now to be safe: pending, accepted, in_progress.
-        // Actually, if a job is completed, that time slot WAS occupied. But if we are scheduling for today/later, we might care.
-        // Let's include completed to be safe against double booking even if job is done?
-        // No, if it's done, they might be free? But usually slots are fixed blocks.
-        // Let's user the same logic as assignLead: ['pending', 'accepted', 'in_progress']
         status: { [Op.in]: ["pending", "accepted", "in_progress"] },
       },
       raw: true,
@@ -529,11 +523,6 @@ exports.getAvailableEmployees = async (req, res, next) => {
 
         const jobDate = new Date(job.scheduledDate);
         const jobHour = jobDate.getHours();
-
-        // Simple slot logic:
-        // Morning: < 12
-        // Afternoon: 12 <= h < 17
-        // Evening: >= 17
 
         let jobSlot = "";
         if (jobHour < 12) jobSlot = "morning";
@@ -550,5 +539,105 @@ exports.getAvailableEmployees = async (req, res, next) => {
   } catch (error) {
     console.error("Get available employees error:", error);
     next(error);
+  }
+};
+
+// NEW: Delete lead by client (only if pending)
+exports.deleteLead = async (req, res, next) => {
+  try {
+    const lead = await Lead.findByPk(req.params.id);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // Check ownership
+    if (lead.userId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this lead" });
+    }
+
+    // Check status
+    if (lead.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete a lead that is not pending" });
+    }
+
+    await lead.destroy();
+    res.json({ success: true, message: "Quote deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// NEW: Update lead by client (only if pending)
+exports.updateMyLead = async (req, res, next) => {
+  try {
+    const lead = await Lead.findByPk(req.params.id);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // Check ownership
+    if (lead.userId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this lead" });
+    }
+
+    // Check status
+    if (lead.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Cannot update a lead that is not pending" });
+    }
+
+    const updateData = { ...req.body };
+    delete updateData.status; // Prevent status update by client
+    delete updateData.userId; // Prevent transferring ownership
+
+    // Handle kept images (for deletion/retention)
+    let finalImages = [];
+    if (Object.prototype.hasOwnProperty.call(updateData, "keptImages")) {
+      try {
+        finalImages =
+          typeof updateData.keptImages === "string"
+            ? JSON.parse(updateData.keptImages)
+            : updateData.keptImages;
+        if (!Array.isArray(finalImages)) finalImages = [];
+      } catch (e) {
+        finalImages = [];
+      }
+      delete updateData.keptImages; // Don't save this field directly
+    } else {
+      // Fallback: keep existing if not specified
+      finalImages = lead.clientImages || [];
+    }
+
+    // Handle new images if any
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => ({
+        filename: file.filename,
+        url: `/public/leads/${file.filename}`,
+        mimeType: file.mimetype,
+        size: file.size,
+      }));
+
+      finalImages = [...finalImages, ...newImages];
+    }
+
+    updateData.clientImages = finalImages;
+
+    await lead.update(updateData);
+    res.json({
+      success: true,
+      message: "Quote updated successfully",
+      lead: lead,
+    });
+  } catch (err) {
+    next(err);
   }
 };

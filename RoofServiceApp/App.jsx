@@ -156,6 +156,8 @@ import ClientProfileScreen from './src/screens/ClientProfileScreen';
 import AdminProfileScreen from './src/screens/AdminProfileScreen';
 import AdminLeadsScreen from './src/screens/AdminLeadsScreen';
 import AdminUsersScreen from './src/screens/AdminUsersScreen';
+import AdminServicesScreen from './src/screens/AdminServicesScreen';
+import AdminGalleryScreen from './src/screens/AdminGalleryScreen';
 import ClientServicesScreen from './src/screens/ClientServicesScreen';
 import ClientGalleryScreen from './src/screens/ClientGalleryScreen';
 import ClientMyQuotesScreen from './src/screens/ClientMyQuotesScreen';
@@ -211,6 +213,8 @@ const RootNavigator = () => {
           <Stack.Screen name="AdminUsers" component={AdminUsersScreen} />
           <Stack.Screen name="AdminProfile" component={AdminProfileScreen} />
           <Stack.Screen name="AdminLeads" component={AdminLeadsScreen} />
+          <Stack.Screen name="AdminServices" component={AdminServicesScreen} />
+          <Stack.Screen name="AdminGallery" component={AdminGalleryScreen} />
         </>
       )}
 

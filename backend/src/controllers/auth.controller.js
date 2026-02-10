@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User"); 
+const User = require("../models/User");
 const {
   sendAssignmentEmail,
   sendPasswordResetEmail,
@@ -131,16 +131,10 @@ exports.getMe = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-
+    delete user.password;
     res.json({
       success: true,
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phone: user.phone,
-      },
+      data: user,
     });
   } catch (error) {
     console.error("Get me error:", error);

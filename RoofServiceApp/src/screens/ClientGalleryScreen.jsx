@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,76 +9,13 @@ import {
   Platform,
   Dimensions,
   Modal,
+  StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
-
-// Local assets - make sure these exist in your assets folder or adjust paths
-const GALLERY_ITEMS = [
-  {
-    id: '1',
-    category: 'Shingle',
-    title: 'Project 1: New Setup',
-    image: require('../../assets/project-1.jpg'),
-  },
-  {
-    id: '2',
-    category: 'Metal',
-    title: 'Project 2: Metal Works',
-    image: require('../../assets/project-2.jpg'),
-  },
-  {
-    id: '3',
-    category: 'Repair',
-    title: 'Project 3: Detailed Repair',
-    image: require('../../assets/project-3.jpg'),
-  },
-  {
-    id: '4',
-    category: 'Flat',
-    title: 'Project 4: Commercial',
-    image: require('../../assets/project-4.jpg'),
-  },
-  {
-    id: '5',
-    category: 'Shingle',
-    title: 'Project 5: Restoration',
-    image: require('../../assets/project-5.jpg'),
-  },
-  {
-    id: '6',
-    category: 'Gutters',
-    title: 'Project 6: Gutter System',
-    image: require('../../assets/project-6.jpg'),
-  },
-   {
-    id: '7',
-    category: 'Shingle',
-    title: 'Asphalt Shingle View',
-    image: require('../../assets/asphalt-shingles.jpg'),
-  },
-  {
-    id: '8',
-    category: 'Metal',
-    title: 'Metal Roofing Finish',
-    image: require('../../assets/Metal-Roofing-New.jpg'),
-  },
-  {
-    id: '9',
-    category: 'Flat',
-    title: 'Flat Roof Installation',
-    image: require('../../assets/flat-roofing.jpg'),
-  },
-  {
-    id: '10',
-    category: 'Repair',
-    title: 'Roof Repair Job',
-    image: require('../../assets/Repai.jpg'),
-  },
-];
-
-const CATEGORIES = ['All', 'Shingle', 'Metal', 'Flat', 'Repair', 'Gutters'];
+import { api, SERVER_URL } from '../config/api';
 
 const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 2;
@@ -86,13 +23,52 @@ const ITEM_WIDTH = (width - moderateScale(60)) / COLUMN_COUNT;
 
 const ClientGalleryScreen = () => {
   const navigation = useNavigation();
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [categories, setCategories] = useState(['All']);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const filteredItems =
-    selectedCategory === 'All'
-      ? GALLERY_ITEMS
-      : GALLERY_ITEMS.filter(item => item.category === selectedCategory);
+  useEffect(() => {
+    loadGallery();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory === 'All') {
+      setFilteredItems(galleryItems);
+    } else {
+      setFilteredItems(
+        galleryItems.filter(item => item.category === selectedCategory),
+      );
+    }
+  }, [selectedCategory, galleryItems]);
+
+  const loadGallery = async () => {
+    try {
+      const res = await api.getGallery();
+      const raw = res.data?.items || res.data || [];
+      const items = Array.isArray(raw) ? raw : [];
+      setGalleryItems(items);
+
+      // Extract unique categories
+      const cats = new Set(['All']);
+      items.forEach(item => {
+        if (item.category) cats.add(item.category);
+      });
+      setCategories(Array.from(cats));
+    } catch (error) {
+      console.log('Error fetching gallery:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImageUrl = path => {
+    if (!path) return 'https://via.placeholder.com/300';
+    if (path.startsWith('http')) return path;
+    return `${SERVER_URL}${path}`;
+  };
 
   const renderGalleryItem = ({ item }) => (
     <TouchableOpacity
@@ -100,7 +76,7 @@ const ClientGalleryScreen = () => {
       onPress={() => setSelectedImage(item)}
     >
       <Image
-        source={item.image}
+        source={{ uri: getImageUrl(item.imageUrl) }}
         style={styles.itemImage}
         resizeMode="cover"
       />
@@ -132,8 +108,22 @@ const ClientGalleryScreen = () => {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center' },
+        ]}
+      >
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -148,7 +138,7 @@ const ClientGalleryScreen = () => {
       <View style={styles.categoryContainer}>
         <FlatList
           horizontal
-          data={CATEGORIES}
+          data={categories}
           keyExtractor={item => item}
           renderItem={renderCategoryItem}
           showsHorizontalScrollIndicator={false}
@@ -158,12 +148,17 @@ const ClientGalleryScreen = () => {
 
       <FlatList
         data={filteredItems}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={renderGalleryItem}
         numColumns={COLUMN_COUNT}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center', marginTop: 20 }}>
+            No items found.
+          </Text>
+        }
       />
 
       {/* Image Modal */}
@@ -183,13 +178,15 @@ const ClientGalleryScreen = () => {
           {selectedImage && (
             <View style={styles.modalContent}>
               <Image
-                source={selectedImage.image}
+                source={{ uri: getImageUrl(selectedImage.imageUrl) }}
                 style={styles.modalImage}
                 resizeMode="contain"
               />
               <View style={styles.modalFooter}>
                 <Text style={styles.modalTitle}>{selectedImage.title}</Text>
-                <Text style={styles.modalCategory}>{selectedImage.category}</Text>
+                <Text style={styles.modalCategory}>
+                  {selectedImage.category}
+                </Text>
               </View>
             </View>
           )}

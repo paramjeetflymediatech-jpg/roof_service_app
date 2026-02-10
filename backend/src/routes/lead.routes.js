@@ -14,7 +14,18 @@ router.post(
 );
 router.get("/", jwtAuth, leadController.getLeads);
 router.get("/:id", jwtAuth, leadController.getLeadById);
+
+// Admin Routes
 router.put("/:id", jwtAuth, isAdmin, leadController.updateLead);
 router.put("/:id/assign", jwtAuth, isAdmin, leadController.assignLead);
+
+// Client Routes (pending leads only)
+router.delete("/:id", jwtAuth, leadController.deleteLead);
+router.put(
+  "/my/:id",
+  jwtAuth,
+  upload.array("images", 5),
+  leadController.updateMyLead,
+);
 
 module.exports = router;

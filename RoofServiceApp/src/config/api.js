@@ -2,9 +2,13 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this to your backend server IP/URL
-// const API_BASE_URL = 'http://10.0.2.2:5000/api'; // For Android emulator
-// const API_BASE_URL = 'http://localhost:5000/api'; // For iOS simulator
-const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
+// const API_BASE_URL_LOCAL = 'http://10.0.2.2:5000/api'; // For Android emulator
+// const API_BASE_URL_IOS = 'http://localhost:5000/api'; // For iOS simulator
+
+export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
+export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
+// export const API_BASE_URL = 'http://10.0.2.2:5000/api';
+// export const SERVER_URL = 'http://10.0.2.2:5000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -73,6 +77,9 @@ export const api = {
     apiClient.post('/leads/create', data, config),
   updateLead: (id, data) => apiClient.put(`/leads/${id}`, data),
   assignLead: (id, data) => apiClient.put(`/leads/${id}/assign`, data),
+  deleteLead: id => apiClient.delete(`/leads/${id}`),
+  updateMyLead: (id, data, config = {}) =>
+    apiClient.put(`/leads/my/${id}`, data, config),
 
   // Users
   getUsers: role => apiClient.get(`/users${role ? `?role=${role}` : ''}`),
@@ -104,6 +111,23 @@ export const api = {
   // Services
   getServices: () => apiClient.get('/services'),
   getServiceById: id => apiClient.get(`/services/${id}`),
+  createService: (data, config = {}) =>
+    apiClient.post('/services', data, config),
+  updateService: (id, data, config = {}) =>
+    apiClient.put(`/services/${id}`, data, config),
+  deleteService: id => apiClient.delete(`/services/${id}`),
+
+  // Gallery
+  getGallery: () => apiClient.get('/gallery'),
+  createGalleryItem: data =>
+    apiClient.post('/gallery', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  updateGalleryItem: (id, data) =>
+    apiClient.put(`/gallery/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  deleteGalleryItem: id => apiClient.delete(`/gallery/${id}`),
 
   // Image upload
   uploadImage: formData =>

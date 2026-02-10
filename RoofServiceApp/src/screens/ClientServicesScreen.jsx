@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,95 +8,99 @@ import {
   ImageBackground,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
-import Button from '../components/Button';
-
-// Local assets for services
-// Using existing assets from the project
-const SERVICES = [
-  {
-    id: '1',
-    title: 'Roof Repair',
-    quoteLabel: 'Roof Repair',
-    description:
-      'Leak fixes, shingle replacement, and extending your roof’s lifespan.',
-    image: require('../../assets/Repai.jpg'), // Ensure this exists
-  },
-  {
-    id: '2',
-    title: 'Full Replacement',
-    quoteLabel: 'Replacement', 
-    description:
-      'Complete removal and installation of high-quality new roofing systems.',
-    image: require('../../assets/Reroofs-New.jpg'), // Ensure this exists
-  },
-  {
-    id: '3',
-    title: 'Professional Inspection',
-    quoteLabel: 'Inspection',
-    description:
-      'Detailed assessment to catch issues before they become costly.',
-    image: require('../../assets/ab-roof-chimney.jpg'), // Using chimney/roof detail
-  },
-  {
-    id: '4',
-    title: 'Gutter Services',
-    quoteLabel: 'Gutter Cleaning',
-    description:
-      'Cleaning, repair, and seamless installation for perfect drainage.',
-    image: require('../../assets/Rain.jpg'), // Using rain/gutter related image
-  },
-  {
-    id: '5',
-    title: 'Skylight Installation',
-    quoteLabel: 'Skylight Installation',
-    description:
-      'Bring natural light into your home with energy-efficient skylights.',
-    image: require('../../assets/ab-roof-window.jpg'), // Using window image
-  },
-  {
-    id: '6',
-    title: '24/7 Emergency',
-    quoteLabel: 'Emergency Repair',
-    description:
-      'Rapid response for storm damage, fallen trees, and urgent leaks.',
-    image: require('../../assets/flat-roofing.jpg'),
-  },
-];
+import { api, SERVER_URL } from '../config/api';
 
 const ClientServicesScreen = () => {
   const navigation = useNavigation();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleGetQuote = (quoteLabel) => {
+  useEffect(() => {
+    loadServices();
+  }, []);
+
+  const loadServices = async () => {
+    try {
+      const res = await api.getServices();
+      const raw = res.data?.items || res.data || [];
+      setServices(Array.isArray(raw) ? raw : []);
+    } catch (error) {
+      console.log('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetQuote = quoteLabel => {
     navigation.navigate('ClientQuote', { serviceType: quoteLabel });
+  };
+  const getImageSource = item => {
+    // If item has a featured image from backend
+    if (item.featuredImageUrl) {
+      return {
+        uri: item.featuredImageUrl.startsWith('http')
+          ? item.featuredImageUrl
+          : `${SERVER_URL}${item.featuredImageUrl}`,
+      };
+    }
+    // Fallback images based on slug or name
+    if (item.slug?.includes('repair')) return require('../../assets/Repai.jpg');
+    if (item.slug?.includes('metal'))
+      return require('../../assets/Reroofs-New.jpg');
+
+    // Default fallback
+    return require('../../assets/roofing-background.jpg');
   };
 
   const renderServiceItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.9}
       style={styles.cardContainer}
-      onPress={() => handleGetQuote(item.quoteLabel)}
+      onPress={() => handleGetQuote(item.name)}
     >
       <ImageBackground
-        source={item.image}
+        source={getImageSource(item)}
         style={styles.cardImage}
         imageStyle={{ borderRadius: moderateScale(20) }}
       >
         <View style={styles.cardOverlay}>
           <View style={styles.textContainer}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardDescription}>{item.description}</Text>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            >
+              <Text style={{ fontSize: 24 }}>{item.icon}</Text>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+            </View>
+            <Text style={styles.cardDescription}>{item.shortDescription}</Text>
+            {item.basePrice && (
+              <Text style={styles.priceTag}>Starting at ${item.basePrice}</Text>
+            )}
           </View>
           <View style={styles.buttonContainer}>
-             <Text style={styles.ctaText}>Get Quote →</Text>
+            <Text style={styles.ctaText}>Get Quote →</Text>
           </View>
         </View>
       </ImageBackground>
     </TouchableOpacity>
   );
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center' },
+        ]}
+      >
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -113,11 +117,16 @@ const ClientServicesScreen = () => {
       </View>
 
       <FlatList
-        data={SERVICES}
-        keyExtractor={item => item.id}
+        data={services}
+        keyExtractor={item => String(item.id)}
         renderItem={renderServiceItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center', marginTop: 20 }}>
+            No services available.
+          </Text>
+        }
       />
     </View>
   );
@@ -168,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   cardOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.45)', // Darker overlay for better text contrast
+    backgroundColor: 'rgba(0,0,0,0.5)', // Darker overlay for better text contrast
     borderRadius: moderateScale(20),
     padding: moderateScale(20),
     height: '100%',
@@ -181,7 +190,7 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(24),
     fontWeight: '700',
     color: COLORS.white,
-    marginBottom: verticalScale(4),
+    // marginBottom: verticalScale(4),
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
@@ -192,16 +201,22 @@ const styles = StyleSheet.create({
     lineHeight: verticalScale(20),
     paddingRight: moderateScale(20),
     fontWeight: '500',
+    marginTop: 4,
+  },
+  priceTag: {
+    color: COLORS.primary,
+    fontWeight: 'bold',
+    marginTop: 4,
   },
   buttonContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   ctaText: {
-      color: COLORS.white, // Use a bright accent if possible, or white
-      fontWeight: '700',
-      fontSize: moderateScale(16),
-      textDecorationLine: 'underline',
+    color: COLORS.white, // Use a bright accent if possible, or white
+    fontWeight: '700',
+    fontSize: moderateScale(16),
+    textDecorationLine: 'underline',
   },
 });
 

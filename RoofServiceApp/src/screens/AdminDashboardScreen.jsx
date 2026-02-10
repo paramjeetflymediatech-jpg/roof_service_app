@@ -212,6 +212,46 @@ const AdminDashboardScreen = () => {
             <Text style={styles.actionSubtext}>Add or remove staff</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Row 2 Quick Actions */}
+        <View
+          style={[
+            styles.quickActionsContainer,
+            { marginTop: verticalScale(16) },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('AdminServices')}
+          >
+            <View
+              style={[
+                styles.actionIconContainer,
+                { backgroundColor: '#fdf4ff' },
+              ]}
+            >
+              <Text style={styles.actionIcon}>🛠️</Text>
+            </View>
+            <Text style={styles.actionText}>Services</Text>
+            <Text style={styles.actionSubtext}>Manage offerings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('AdminGallery')}
+          >
+            <View
+              style={[
+                styles.actionIconContainer,
+                { backgroundColor: '#fff7ed' },
+              ]}
+            >
+              <Text style={styles.actionIcon}>🖼️</Text>
+            </View>
+            <Text style={styles.actionText}>Gallery</Text>
+            <Text style={styles.actionSubtext}>Update portfolio</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Footer navigation */}
