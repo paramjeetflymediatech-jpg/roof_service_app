@@ -11,6 +11,7 @@ const Job = require("./Job");
 const JobLog = require("./JobLog");
 const Blog = require("./Blog");
 const ServiceCategory = require("./ServiceCategory");
+const Gallery = require("./Gallery");
 
 // Define associations
 // Lead associations
@@ -58,4 +59,5 @@ module.exports = {
   JobLog,
   Blog,
   ServiceCategory,
+  Gallery,
 };

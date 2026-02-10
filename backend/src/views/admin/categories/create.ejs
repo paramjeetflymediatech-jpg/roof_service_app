@@ -1,21 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - Admin Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/admin.css">
-</head>
+  <%- include('../../partials/header') %>
 <body <% if (error && error.length > 0) { %>data-flash-error="<%= error %>"<% } %> <% if (success && success.length > 0) { %>data-flash-success="<%= success %>"<% } %>>
     <div id="toast-container"></div>
     <div class="admin-wrapper">
         <%- include('../../partials/sidebar') %>
         <main class="main-content">
-            <header class="top-header">
-                <h1><%= title %></h1>
-                <div class="user-info"><span>Welcome, <%= userName %></span></div>
-            </header>
+<%- include('../../partials/top-header') %>
             <div class="content">
                 <div class="page-header">
                     <div class="header-content">

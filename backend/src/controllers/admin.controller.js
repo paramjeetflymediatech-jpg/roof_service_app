@@ -1091,12 +1091,102 @@ const deleteService = async (req, res) => {
   }
 };
 
+// GET /admin/gallery - Render gallery list
+const getGalleryList = async (req, res) => {
+  try {
+    const { Gallery } = require("../models");
+    const items = await Gallery.findAll({
+      order: [["createdAt", "DESC"]],
+      raw: true,
+    });
+
+    res.render("admin/gallery/index", {
+      title: "Gallery Management",
+      userName: req.session.userName,
+      items,
+    });
+  } catch (error) {
+    console.error("Gallery list error:", error);
+    req.flash("error", "Error loading gallery");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+// GET /admin/gallery/create - Render create gallery form
+const getCreateGallery = (req, res) => {
+  res.render("admin/gallery/create", {
+    title: "Add New Image",
+    userName: req.session.userName,
+  });
+};
+
+// POST /admin/gallery - Create new gallery item
+const postCreateGallery = async (req, res) => {
+  try {
+    const { Gallery } = require("../models");
+    const { title, category } = req.body;
+
+    if (!title) {
+      req.flash("error", "Title is required");
+      return res.redirect("/admin/gallery/create");
+    }
+
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = `/uploads/gallery/${req.file.filename}`;
+    } else {
+      req.flash("error", "Image is required");
+      return res.redirect("/admin/gallery/create");
+    }
+
+    await Gallery.create({
+      title,
+      category,
+      imageUrl,
+    });
+
+    req.flash("success", "Image uploaded successfully");
+    res.redirect("/admin/gallery");
+  } catch (error) {
+    console.error("Create gallery error:", error);
+    req.flash("error", "Error uploading image");
+    res.redirect("/admin/gallery/create");
+  }
+};
+
+// POST /admin/gallery/:id/delete - Delete gallery item
+const deleteGallery = async (req, res) => {
+  try {
+    const { Gallery } = require("../models");
+    const item = await Gallery.findByPk(req.params.id);
+
+    if (!item) {
+      req.flash("error", "Item not found");
+      return res.redirect("/admin/gallery");
+    }
+
+    await item.destroy();
+    req.flash("success", "Item deleted successfully");
+    res.redirect("/admin/gallery");
+  } catch (error) {
+    console.error("Delete gallery error:", error);
+    req.flash("error", "Error deleting item");
+    res.redirect("/admin/gallery");
+  }
+};
+
 module.exports = {
   getLogin,
   postLogin,
   getDashboard,
   getLogout,
   getUserList,
+  getCreateUser,
+  postCreateUser,
+  getEditUser,
+  postUpdateUser,
+  deleteUser,
+  deleteAllUsers,
   getLeadList,
   getCreateLead,
   postCreateLead,
@@ -1104,12 +1194,6 @@ module.exports = {
   postUpdateLead,
   deleteLead,
   deleteAllLeads,
-  getCreateUser,
-  postCreateUser,
-  getEditUser,
-  postUpdateUser,
-  deleteUser,
-  deleteAllUsers,
   getSeoList,
   getCreateSeo,
   postCreateSeo,
@@ -1128,4 +1212,8 @@ module.exports = {
   getEditService,
   postUpdateService,
   deleteService,
+  getGalleryList,
+  getCreateGallery,
+  postCreateGallery,
+  deleteGallery,
 };

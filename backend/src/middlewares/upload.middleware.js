@@ -4,10 +4,17 @@ const path = require("path");
 // Set storage engine
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/uploads/services/");
+    if (req.originalUrl.includes("gallery")) {
+      cb(null, "public/uploads/gallery/");
+    } else {
+      cb(null, "public/uploads/services/");
+    }
   },
   filename: function (req, file, cb) {
-    cb(null, "service-" + Date.now() + path.extname(file.originalname));
+    const prefix = req.originalUrl.includes("gallery")
+      ? "gallery-"
+      : "service-";
+    cb(null, prefix + Date.now() + path.extname(file.originalname));
   },
 });
 

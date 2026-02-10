@@ -6,6 +6,7 @@ const apiRoutes = require("./api.routes");
 const authRoutes = require("./auth.routes");
 const userRoutes = require("./users.routes");
 const jobRoutes = require("./job.routes");
+const galleryRoutes = require("./gallery.routes");
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use("/leads", leadRoutes);
 router.use("/services", serviceRoutes);
 router.use("/users", userRoutes);
 router.use("/jobs", jobRoutes);
+router.use("/gallery", galleryRoutes);
 
 module.exports = router;

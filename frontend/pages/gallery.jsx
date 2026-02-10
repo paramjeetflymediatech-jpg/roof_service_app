@@ -1,25 +1,25 @@
-'use client';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { HiPhone, HiChevronRight, HiX, HiChevronLeft } from 'react-icons/hi';
-import { COMPANY_INFO, PROJECTS } from '@/lib/constants';
-import LayoutShell from '@/components/LayoutShell';
-import { useState, useCallback, useEffect } from 'react';
-import { useSeo } from '@/hooks/useSeo';
+"use client";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { HiPhone, HiChevronRight, HiX, HiChevronLeft } from "react-icons/hi";
+import { COMPANY_INFO, PROJECTS } from "@/lib/constants";
+import LayoutShell from "@/components/LayoutShell";
+import { useState, useCallback, useEffect } from "react";
+import { useSeo } from "@/hooks/useSeo";
 
-import SeoHead from '@/components/SeoHead';
-import { getSeoData } from '@/lib/api/seo';
+import SeoHead from "@/components/SeoHead";
+import { getSeoData } from "@/lib/api/seo";
 
 export async function getServerSideProps() {
   try {
-    const data = await getSeoData('gallery');
+    const data = await getSeoData("gallery");
     return {
       props: {
         seoData: data.success ? data.data : null,
       },
     };
   } catch (error) {
-    console.error('Error fetching Gallery SEO data:', error);
+    console.error("Error fetching Gallery SEO data:", error);
     return {
       props: {
         seoData: null,
@@ -29,18 +29,51 @@ export async function getServerSideProps() {
 }
 
 export default function GalleryPage({ seoData }) {
-
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [galleryItems, setGalleryItems] = useState(PROJECTS); // Initialize with static data
+  const [loading, setLoading] = useState(true);
 
-  const nextImage = useCallback((e) => {
-    e?.stopPropagation();
-    setSelectedIndex((prev) => (prev + 1) % PROJECTS.length);
+  useEffect(() => {
+    import("@/lib/api/gallery").then(({ getGalleryItems }) => {
+      getGalleryItems().then((items) => {
+        if (items && items.length > 0) {
+          // Map backend items to frontend structure
+          const mappedItems = items.map((item) => ({
+            id: item.id,
+            title: item.title,
+            category: item.category,
+            // Handle image URL (prepend backend URL if needed)
+            image: item.imageUrl.startsWith("http")
+              ? item.imageUrl
+              : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"}${item.imageUrl}`,
+          }));
+          // Combine with static projects or replace? User asked for dynamic.
+          // Let's prepend dynamic items to static ones, or just use dynamic if available.
+          // For now, I'll prepend so user sees their uploads first.
+          setGalleryItems([...mappedItems, ...PROJECTS]);
+        }
+        setLoading(false);
+      });
+    });
   }, []);
 
-  const prevImage = useCallback((e) => {
-    e?.stopPropagation();
-    setSelectedIndex((prev) => (prev - 1 + PROJECTS.length) % PROJECTS.length);
-  }, []);
+  const nextImage = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      setSelectedIndex((prev) => (prev + 1) % galleryItems.length);
+    },
+    [galleryItems.length],
+  );
+
+  const prevImage = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      setSelectedIndex(
+        (prev) => (prev - 1 + galleryItems.length) % galleryItems.length,
+      );
+    },
+    [galleryItems.length],
+  );
 
   const closeLightbox = useCallback(() => {
     setSelectedIndex(null);
@@ -50,19 +83,25 @@ export default function GalleryPage({ seoData }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (selectedIndex === null) return;
-      if (e.key === 'ArrowRight') nextImage();
-      if (e.key === 'ArrowLeft') prevImage();
-      if (e.key === 'Escape') closeLightbox();
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "ArrowLeft") prevImage();
+      if (e.key === "Escape") closeLightbox();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex, nextImage, prevImage, closeLightbox]);
 
   return (
     <LayoutShell>
       <SeoHead pageName="gallery" initialSeoData={seoData} />
       {/* Hero Section */}
-      <div className="relative h-80 bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/assets/project-1.jpg')", backgroundPosition: 'center' }}>
+      <div
+        className="relative h-80 bg-cover bg-center flex items-center justify-center"
+        style={{
+          backgroundImage: "url('/assets/project-1.jpg')",
+          backgroundPosition: "center",
+        }}
+      >
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="relative z-10 text-center text-white px-4">
           <motion.h1
@@ -87,15 +126,16 @@ export default function GalleryPage({ seoData }) {
       {/* Main Gallery Content */}
       <div className="min-h-screen bg-white py-20">
         <div className="container-custom">
-
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Recently Completed Projects</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Recently Completed Projects
+            </h2>
             <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
           {/* Gallery Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
-            {PROJECTS.map((project, index) => (
+            {galleryItems.map((project, index) => (
               <motion.div
                 key={project.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -112,8 +152,12 @@ export default function GalleryPage({ seoData }) {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <p className="text-primary font-bold text-sm mb-1 uppercase tracking-wider">{project.category}</p>
-                    <h3 className="text-white font-bold text-xl">{project.title}</h3>
+                    <p className="text-primary font-bold text-sm mb-1 uppercase tracking-wider">
+                      {project.category}
+                    </p>
+                    <h3 className="text-white font-bold text-xl">
+                      {project.title}
+                    </h3>
                   </div>
                 </div>
               </motion.div>
@@ -159,13 +203,17 @@ export default function GalleryPage({ seoData }) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <img
-                    src={PROJECTS[selectedIndex].image}
-                    alt={PROJECTS[selectedIndex].title}
+                    src={galleryItems[selectedIndex].image}
+                    alt={galleryItems[selectedIndex].title}
                     className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                   />
                   <div className="absolute bottom-[-40px] left-0 right-0 text-center">
-                    <h3 className="text-white text-2xl font-bold">{PROJECTS[selectedIndex].title}</h3>
-                    <p className="text-primary font-semibold">{PROJECTS[selectedIndex].category}</p>
+                    <h3 className="text-white text-2xl font-bold">
+                      {galleryItems[selectedIndex].title}
+                    </h3>
+                    <p className="text-primary font-semibold">
+                      {galleryItems[selectedIndex].category}
+                    </p>
                   </div>
                 </motion.div>
               </motion.div>
@@ -175,10 +223,10 @@ export default function GalleryPage({ seoData }) {
           {/* Stats Section */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-20">
             {[
-              { number: '500+', label: 'Projects Completed' },
-              { number: '5+', label: 'Years of Experience' },
-              { number: '100+', label: 'Satisfied Customers' },
-              { number: '100%', label: 'Satisfaction Guarantee' },
+              { number: "500+", label: "Projects Completed" },
+              { number: "5+", label: "Years of Experience" },
+              { number: "100+", label: "Satisfied Customers" },
+              { number: "100%", label: "Satisfaction Guarantee" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -188,8 +236,12 @@ export default function GalleryPage({ seoData }) {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <p className="text-4xl md:text-5xl font-extrabold text-primary mb-2 tracking-tight">{stat.number}</p>
-                <p className="text-gray-600 font-bold uppercase text-sm tracking-widest">{stat.label}</p>
+                <p className="text-4xl md:text-5xl font-extrabold text-primary mb-2 tracking-tight">
+                  {stat.number}
+                </p>
+                <p className="text-gray-600 font-bold uppercase text-sm tracking-widest">
+                  {stat.label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -206,9 +258,13 @@ export default function GalleryPage({ seoData }) {
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
 
             <div className="relative z-10">
-              <h3 className="text-3xl md:text-5xl font-bold mb-6">Let Us Protect Your Property</h3>
+              <h3 className="text-3xl md:text-5xl font-bold mb-6">
+                Let Us Protect Your Property
+              </h3>
               <p className="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
-                Whether you need a new roof installation, repairs, or maintenance, our experienced team is ready to deliver quality results.
+                Whether you need a new roof installation, repairs, or
+                maintenance, our experienced team is ready to deliver quality
+                results.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <a

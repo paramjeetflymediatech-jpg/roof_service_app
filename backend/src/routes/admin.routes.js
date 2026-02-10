@@ -227,4 +227,31 @@ router.post(
   adminController.deleteService,
 );
 
+// Gallery management routes
+router.get(
+  "/gallery",
+  isAuthenticated,
+  isAdmin,
+  adminController.getGalleryList,
+);
+router.get(
+  "/gallery/create",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCreateGallery,
+);
+router.post(
+  "/gallery",
+  isAuthenticated,
+  isAdmin,
+  upload.single("image"),
+  adminController.postCreateGallery,
+);
+router.post(
+  "/gallery/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteGallery,
+);
+
 module.exports = router;
