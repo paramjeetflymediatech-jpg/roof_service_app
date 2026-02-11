@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { api,SERVER_URL } from '../config/api';
 import { COLORS, SHADOWS } from '../utils/constants';
@@ -25,8 +24,6 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AdminGalleryScreen = () => {
   const navigation = useNavigation();
-  const { user } = useAuth();
-
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);

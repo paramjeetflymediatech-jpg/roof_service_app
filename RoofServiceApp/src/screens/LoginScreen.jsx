@@ -5,7 +5,6 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
@@ -15,7 +14,7 @@ import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
-import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS,  SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale, scale } from '../utils/responsive';
 
 const LoginScreen = () => {

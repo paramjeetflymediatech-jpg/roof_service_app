@@ -2,11 +2,11 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this to your backend server IP/URL
-// export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
-// export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
+export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
+export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
 
-export const API_BASE_URL = 'http://10.0.2.2:5000/api';
-export const SERVER_URL = 'http://10.0.2.2:5000';
+// export const API_BASE_URL = 'http://10.0.2.2:5000/api';
+// export const SERVER_URL = 'http://10.0.2.2:5000';
 
 // export const API_BASE_URL_IOS = 'http://localhost:5000/api'; // For iOS simulator
 

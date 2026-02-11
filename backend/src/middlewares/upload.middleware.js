@@ -8,16 +8,26 @@ const storage = multer.diskStorage({
       cb(null, "public/uploads/gallery/");
     } else if (req.originalUrl.includes("leads")) {
       cb(null, "public/uploads/leads/");
+    } else if (
+      req.originalUrl.includes("upload") ||
+      req.originalUrl.includes("jobs")
+    ) {
+      // Generic upload or jobs
+      cb(null, "public/uploads/jobs/");
     } else {
       cb(null, "public/uploads/services/");
     }
   },
   filename: function (req, file, cb) {
-    const prefix = req.originalUrl.includes("gallery")
-      ? "gallery-"
-      : req.originalUrl.includes("leads")
-        ? "lead-"
-        : "service-";
+    let prefix = "service-";
+    if (req.originalUrl.includes("gallery")) prefix = "gallery-";
+    else if (req.originalUrl.includes("leads")) prefix = "lead-";
+    else if (
+      req.originalUrl.includes("upload") ||
+      req.originalUrl.includes("jobs")
+    )
+      prefix = "job-";
+
     cb(null, prefix + Date.now() + path.extname(file.originalname));
   },
 });

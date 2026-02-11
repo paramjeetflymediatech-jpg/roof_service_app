@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import ImagePickerComponent from '../components/ImagePicker';
-import { COLORS, JOB_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -131,15 +131,45 @@ const EmployeeJobDetailScreen = () => {
 
     setLoading(true);
     try {
-      const afterImages = images.map(img => ({
-        uri: img.uri,
-        fileName: img.fileName,
-        type: img.type,
-      }));
+      const completionImages = [];
+
+      // Upload images first
+      for (const img of images) {
+        if (img.uri.startsWith('http')) {
+          completionImages.push({
+            uri: img.uri,
+            fileName: img.fileName,
+            type: img.type,
+          });
+        } else {
+          const formData = new FormData();
+          formData.append('image', {
+            uri: img.uri,
+            type: img.type || 'image/jpeg',
+            name: img.fileName || `upload-${Date.now()}.jpg`,
+          });
+
+          try {
+            const uploadRes = await api.uploadImage(formData);
+            if (uploadRes.data?.success) {
+              completionImages.push({
+                uri: uploadRes.data.data.url,
+                fileName: uploadRes.data.data.fileName,
+                type: img.type,
+              });
+            }
+          } catch (uploadError) {
+            console.error('Failed to upload image:', uploadError);
+            Alert.alert('Error', 'Failed to upload one or more images.');
+            setLoading(false);
+            return;
+          }
+        }
+      }
 
       await api.completeJob(currentJob.id, {
         completionNotes: notes,
-        afterImages,
+        afterImages: completionImages,
       });
 
       setCurrentJob(prev => ({ ...prev, status: JOB_STATUS.COMPLETED }));
@@ -147,6 +177,7 @@ const EmployeeJobDetailScreen = () => {
         { text: 'Back', onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
+      console.error(error);
       Alert.alert('Error', 'Failed to complete job.');
     } finally {
       setLoading(false);

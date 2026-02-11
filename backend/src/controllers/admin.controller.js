@@ -228,7 +228,6 @@ const postCreateLead = async (req, res) => {
       roofType,
       hearAboutUs,
       userId,
-      status: status || "new",
       message,
       preferredDate: preferredDate || null,
       employeeStartTime,

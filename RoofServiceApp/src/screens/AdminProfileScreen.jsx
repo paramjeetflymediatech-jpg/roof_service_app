@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
-import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -40,12 +40,8 @@ const AdminProfileScreen = () => {
 
   const loadProfileStats = async () => {
     try {
-      // Mock stats or fetch real ones if endpoints exist
-      // For now, we'll try to get basic counts if possible, or just mock for visual appeal
-      // In a real app, this would come from a tailored endpoint
       const leadsRes = await api.getLeads({});
       const usersRes = await api.getUsers('employee');
-
       const leads = leadsRes.data?.items?.length || 0;
       const employees = usersRes.data?.items?.length || 0;
 

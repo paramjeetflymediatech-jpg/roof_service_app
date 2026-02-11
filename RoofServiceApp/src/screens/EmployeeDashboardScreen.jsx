@@ -15,7 +15,7 @@ import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
-import { COLORS, JOB_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 // Reuse existing hero image or a new one if available

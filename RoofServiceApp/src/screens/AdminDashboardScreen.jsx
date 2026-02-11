@@ -22,7 +22,7 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 
 const AdminDashboardScreen = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({

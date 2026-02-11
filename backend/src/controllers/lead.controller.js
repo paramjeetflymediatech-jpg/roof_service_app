@@ -56,7 +56,7 @@ exports.createLead = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/leads/${file.filename}`,
+        url: `uploads/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -121,7 +121,7 @@ exports.createLeadByApp = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       clientImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/leads/${file.filename}`,
+        url: `uploads/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
@@ -328,6 +328,22 @@ exports.updateLead = async (req, res, next) => {
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
+    console.log(req.body);
+    // 1️⃣ Prepare image metadata
+    let completionImages = [];
+
+    if (req.files && req.files.length > 0) {
+      completionImages = req.files.map((file) => ({
+        filename: file.filename,
+        url: `uploads/leads/${file.filename}`,
+        mimeType: file.mimetype,
+        size: file.size,
+      }));
+    }
+
+    // 2️⃣ Attach images to payload
+    req.body.completion_images =
+      completionImages.length > 0 ? completionImages : null;
     await lead.update(req.body);
 
     res.json({

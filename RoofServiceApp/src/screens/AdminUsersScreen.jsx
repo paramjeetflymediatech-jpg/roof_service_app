@@ -23,8 +23,6 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AdminUsersScreen = () => {
   const navigation = useNavigation();
-  const { user } = useAuth();
-
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);

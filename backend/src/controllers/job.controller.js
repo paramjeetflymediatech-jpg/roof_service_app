@@ -186,6 +186,7 @@ exports.updateJob = async (req, res) => {
     if (!job) {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
+    console.log(req.body);
 
     await job.update(req.body);
 

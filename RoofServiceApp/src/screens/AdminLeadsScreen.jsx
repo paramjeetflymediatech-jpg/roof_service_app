@@ -75,18 +75,6 @@ const AdminLeadsScreen = () => {
       const params = { page: pageNum, limit: 10 };
       if (search) params.search = search;
       if (date) params.date = date;
-      // Add existing filters if needed, though statusFilter is local filtering currently?
-      // Wait, statusFilter is applied on `filteredQuotes` in frontend.
-      // The backend has `req.query.status`.
-      // The current frontend uses `filteredQuotes = quotes.filter(...)` which means it fetches ALL and filters locally?
-      // Looking at `loadQuotes`, it calls `api.getLeads(params)`.
-      // The backend `getLeads` uses `req.query.status`.
-      // BUT `AdminLeadsScreen` logic: `const filteredQuotes = quotes.filter(...)`.
-      // This means we are fetching paginated data and filtering locally? That's bad for pagination.
-      // If we paginate, we must filter on backend.
-      // Current `loadQuotes` does NOT send `status` to backend.
-      // I should update `loadQuotes` to send `status` if `statusFilter !== 'all'`.
-
       if (statusFilter !== 'all') params.status = statusFilter;
 
       const response = await api.getLeads(params);
@@ -94,7 +82,6 @@ const AdminLeadsScreen = () => {
         response.data?.items ||
         response.data?.data ||
         (Array.isArray(response.data) ? response.data : []);
-console.log(rawItems, 'rawItems');
       const normalizedItems = rawItems.map(item => ({
         id: item.id || item._id || item.lead_id,
         clientName: item.clientName || item.client_name || item.name || 'N/A',
@@ -104,6 +91,7 @@ console.log(rawItems, 'rawItems');
         status: item.status || LEAD_STATUS.PENDING,
         date: formatDateLocal(item.date || item.created_at || item.createdAt),
         email: item.email || 'N/A',
+        client_images: item.clientImages || 'N/A',
         preferedDate: formatDateLocal(
           item.preferredDate || item.prefered_date || item.preferedDate,
         ),
@@ -149,6 +137,8 @@ console.log(rawItems, 'rawItems');
       setLoadingMore(false);
     }
   };
+
+  console.log('quotes', quotes);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -202,16 +192,6 @@ console.log(rawItems, 'rawItems');
         return COLORS.textLight;
     }
   };
-
-  const filteredQuotes = quotes.filter(quote => {
-    if (statusFilter === 'all') return true;
-    if (statusFilter === 'pending') return quote.status === LEAD_STATUS.PENDING;
-    if (statusFilter === 'assigned')
-      return quote.status === LEAD_STATUS.ASSIGNED;
-    if (statusFilter === 'completed')
-      return quote.status === LEAD_STATUS.COMPLETED;
-    return true;
-  });
 
   const renderQuoteItem = ({ item }) => (
     <TouchableOpacity

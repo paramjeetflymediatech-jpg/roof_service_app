@@ -20,9 +20,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Input from '../components/Input';
 import Button from '../components/Button';
-import BrandLogo from '../components/BrandLogo';
 import ImagePicker from '../components/ImagePicker';
-import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, SHADOWS } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 

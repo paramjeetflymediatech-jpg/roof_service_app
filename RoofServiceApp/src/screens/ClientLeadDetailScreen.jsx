@@ -6,13 +6,12 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  TouchableOpacity,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, FONTS} from '../utils/constants';
 import { api } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -114,7 +113,6 @@ const ClientLeadDetailScreen = () => {
     service,
     address,
     status,
-    date,
     preferedDate,
     message,
     employeeStartTime,

@@ -15,7 +15,7 @@ import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
-import { COLORS, FONTS, SHADOWS, LEAD_STATUS } from '../utils/constants';
+import { COLORS, SHADOWS, LEAD_STATUS } from '../utils/constants';
 import {
   moderateScale,
   verticalScale,

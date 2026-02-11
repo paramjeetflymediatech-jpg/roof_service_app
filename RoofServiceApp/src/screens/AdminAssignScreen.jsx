@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Alert,
   TouchableOpacity,
   Image,
@@ -15,10 +14,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
-import Card from '../components/Card';
-import BrandLogo from '../components/BrandLogo';
-import { api } from '../config/api';
-import { COLORS, LEAD_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { api, SERVER_URL } from '../config/api';
+import { COLORS, LEAD_STATUS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AdminAssignScreen = ({ route }) => {
@@ -103,6 +100,7 @@ const AdminAssignScreen = ({ route }) => {
     updateAvailability();
   }, [scheduledDate, selectedSlot]);
 
+  console.log('selectedQuote', selectedQuote);
   const loadEmployees = async () => {
     try {
       const response = await api.getUsers('employee');
@@ -211,7 +209,6 @@ const AdminAssignScreen = ({ route }) => {
       </View>
     );
   }
-
   const hasCompletionDetails =
     selectedQuote.status === LEAD_STATUS.COMPLETED &&
     (selectedQuote.employeeNotes ||
@@ -438,6 +435,34 @@ const AdminAssignScreen = ({ route }) => {
             </View>
           </>
         )}
+
+        {/* before completion details */}
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Photos</Text>
+          <View style={styles.divider} />
+
+          {Array.isArray(selectedQuote.client_images) &&
+            selectedQuote.client_images.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imageScroll}
+              >
+                {selectedQuote.client_images.map((img, index) => (
+                  <Image
+                    key={index}
+                    source={{
+                      uri:
+                        `${SERVER_URL}/${img.url}` ||
+                        `${SERVER_URL}/${img.uri}`,
+                    }}
+                    style={styles.completionImage}
+                  />
+                ))}
+              </ScrollView>
+            )}
+        </View>
 
         {/* Completion Details */}
         {hasCompletionDetails && (

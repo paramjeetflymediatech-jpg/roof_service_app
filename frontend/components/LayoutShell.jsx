@@ -7,8 +7,8 @@ import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from "react-icons/hi";
 import {
   FaFacebook,
   FaTwitter,
-  FaInstagram,
-  FaLinkedin,
+  FaInstagram, 
+  FaPinterest,
   FaWhatsapp,
 } from "react-icons/fa";
 import { usePathname } from "next/navigation";
@@ -87,10 +87,18 @@ export default function LayoutShell({ children }) {
               </a>
             </div>
             <div className="flex gap-4">
-              <FaFacebook />
-              <FaTwitter />
-              <FaInstagram />
-              <FaLinkedin />
+              <a href={`${SOCIAL_LINKS.facebook}`} className="flex gap-2">
+                <FaFacebook />
+              </a>
+              <a href={`${SOCIAL_LINKS.twitter}`} className="flex gap-2">
+                <FaTwitter />
+              </a>
+              <a href={`${SOCIAL_LINKS.instagram}`} className="flex gap-2">
+                <FaInstagram />
+              </a>
+              <a href={`${SOCIAL_LINKS.pinterest}`} className="flex gap-2">
+                <FaPinterest />
+              </a>
             </div>
           </div>
         </div>
@@ -527,12 +535,12 @@ export default function LayoutShell({ children }) {
                   <FaInstagram />
                 </a>
                 <a
-                  href={SOCIAL_LINKS.linkedin}
+                  href={SOCIAL_LINKS.pinterest}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
                 >
-                  <FaLinkedin />
+                  <FaPinterest />
                 </a>
               </div>
             </div>

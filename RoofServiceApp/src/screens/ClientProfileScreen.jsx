@@ -4,20 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   TextInput,
   Alert,
   Platform,
   TouchableOpacity,
   ImageBackground,
-  Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
-import BrandLogo from '../components/BrandLogo';
-import { COLORS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, SHADOWS } from '../utils/constants';
 import { api } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 

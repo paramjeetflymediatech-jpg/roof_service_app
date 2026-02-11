@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(20),
     paddingVertical: verticalScale(16),
     backgroundColor: COLORS.white,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(16),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },

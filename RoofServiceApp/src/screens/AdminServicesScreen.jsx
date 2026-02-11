@@ -25,8 +25,6 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AdminServicesScreen = () => {
   const navigation = useNavigation();
-  const { user } = useAuth();
-
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -171,9 +169,8 @@ const AdminServicesScreen = () => {
 
   const getImageUrl = path => {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
-    const BASE_URL = 'https://api.mainstreet-roofing.ca';
-    return `${BASE_URL}${path}`;
+    if (path.startsWith('http')) return path; 
+    return `${SERVER_URL}${path}`;
   };
 
   const renderServiceItem = ({ item }) => (

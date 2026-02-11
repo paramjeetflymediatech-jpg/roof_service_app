@@ -16,7 +16,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view cache", false); // Disable view caching for development
 
 // Static files
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../public"))); 
 
 const allowedOrigins = [
   process.env.HOST_URL || "http://localhost:3000",

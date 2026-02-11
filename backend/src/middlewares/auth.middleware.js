@@ -34,7 +34,13 @@ const jwtAuth = async (req, res, next) => {
 
 // Session-based auth for admin panel (uses req.session)
 const isAuthenticated = (req, res, next) => {
+  console.log(req.session, "req.session");
   if (req.session && req.session.userId) {
+    req.user = {
+      id: req.session.userId,
+      role: req.session.userRole,
+      name: req.session.userName,
+    };
     return next();
   }
 

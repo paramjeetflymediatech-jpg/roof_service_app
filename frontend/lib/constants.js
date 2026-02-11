@@ -11,10 +11,10 @@ export const COMPANY_INFO = {
 
 // Social Media Links
 export const SOCIAL_LINKS = {
-    facebook: 'https://facebook.com',
-    twitter: 'https://twitter.com',
-    instagram: 'https://instagram.com',
-    linkedin: 'https://linkedin.com',
+    facebook: 'https://www.facebook.com/profile.php?id=61587990270526',
+    twitter: 'https://x.com/mainstreet54102',
+    instagram: 'https://www.instagram.com/mainstreetroofting/',
+    pinterest: 'https://in.pinterest.com/mainstreetroofting/',
 };
 
 // Service Categories
