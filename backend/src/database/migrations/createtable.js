@@ -46,6 +46,8 @@ async function runMigration() {
         password VARCHAR(255) NOT NULL,
         role ENUM('admin', 'user','employee') DEFAULT 'user',
         is_active BOOLEAN DEFAULT TRUE,
+        reset_password_token VARCHAR(255),
+        reset_password_expires DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
