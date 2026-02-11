@@ -50,7 +50,7 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    reset_password_expires: {
+    reset_password_expire: {
       type: DataTypes.DATE,
       allowNull: true,
     },
