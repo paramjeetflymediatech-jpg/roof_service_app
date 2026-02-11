@@ -15,6 +15,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
+import Card from '../components/Card';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS, FONTS, SHADOWS } from '../utils/constants';
@@ -297,13 +298,19 @@ const AdminAssignScreen = ({ route }) => {
                   icon="📥"
                   label="Start Work Time"
                   value={
-                    selectedQuote.inTime !== null ? selectedQuote.inTime : 'Not Started'
+                    selectedQuote.inTime !== null
+                      ? selectedQuote.inTime
+                      : 'Not Started'
                   }
                 />
                 <InfoItem
                   icon="📥"
                   label="End Work Time"
-                  value={selectedQuote.outTime!==null?selectedQuote.outTime:'Not Completed'}
+                  value={
+                    selectedQuote.outTime !== null
+                      ? selectedQuote.outTime
+                      : 'Not Completed'
+                  }
                 />
               </View>
             </View>

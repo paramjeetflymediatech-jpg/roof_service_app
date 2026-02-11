@@ -19,7 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
-import { api } from '../config/api';
+import { api,SERVER_URL } from '../config/api';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(16),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
     backgroundColor: COLORS.white,
     ...SHADOWS.small,
   },

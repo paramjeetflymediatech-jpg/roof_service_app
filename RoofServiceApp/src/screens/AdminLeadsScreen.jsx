@@ -94,7 +94,7 @@ const AdminLeadsScreen = () => {
         response.data?.items ||
         response.data?.data ||
         (Array.isArray(response.data) ? response.data : []);
-
+console.log(rawItems, 'rawItems');
       const normalizedItems = rawItems.map(item => ({
         id: item.id || item._id || item.lead_id,
         clientName: item.clientName || item.client_name || item.name || 'N/A',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: COLORS.white,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(16),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(35),
     paddingBottom: verticalScale(16),
     paddingHorizontal: moderateScale(20),
     borderBottomWidth: 1,

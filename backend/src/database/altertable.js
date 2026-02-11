@@ -20,18 +20,11 @@ async function runAlterMigration() {
   console.log("Connected to MySQL database");
 
   try {
-    console.log("Altering leads table to add missing columns...");
-
     // Add columns only if they do not exist
-    const alterQueries = [
-      `ALTER TABLE users ADD COLUMN reset_password_token TEXT NULL`,
-      `ALTER TABLE users ADD COLUMN reset_password_expire DATETIME NULL`,
-    ];
-
+    const alterQueries = [];
     for (const query of alterQueries) {
       await connection.query(query);
     }
-
     console.log("✅   tables updated successfully!");
   } catch (error) {
     console.error("❌ Alter table migration failed:", error.message);

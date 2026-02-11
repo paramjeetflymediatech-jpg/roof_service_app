@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "roof-service-jwt-secret-123";
 
@@ -14,6 +15,14 @@ const jwtAuth = async (req, res, next) => {
     }
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.id) {
+      const user = await User.findByPk(decoded.id);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "User not found" });
+      }
+    }
 
     req.user = decoded;
     next();

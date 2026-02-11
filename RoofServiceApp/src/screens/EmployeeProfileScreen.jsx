@@ -9,8 +9,8 @@ import {
   Platform,
   TouchableOpacity,
   ImageBackground,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
@@ -259,6 +259,7 @@ const EmployeeProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: verticalScale(10),
     backgroundColor: '#F8F9FA',
   },
   scrollContent: {
@@ -439,10 +440,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: COLORS.white,
     paddingVertical: 12,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+    paddingBottom:
+      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     ...SHADOWS.large,
+    zIndex: 1000,
   },
   navItem: {
     alignItems: 'center',

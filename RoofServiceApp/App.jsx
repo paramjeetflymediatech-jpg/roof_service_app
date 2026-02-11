@@ -1,49 +1,3 @@
-// /**
-//  * Sample React Native App
-//  * https://github.com/facebook/react-native
-//  *
-//  * @format
-//  */
-
-// import { NewAppScreen } from '@react-native/new-app-screen';
-// import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-// import {
-//   SafeAreaProvider,
-//   useSafeAreaInsets,
-// } from 'react-native-safe-area-context';
-
-// function App() {
-//   const isDarkMode = useColorScheme() === 'dark';
-
-//   return (
-//     <SafeAreaProvider>
-//       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-//       <AppContent />
-//     </SafeAreaProvider>
-//   );
-// }
-
-// function AppContent() {
-//   const safeAreaInsets = useSafeAreaInsets();
-
-//   return (
-//     <View style={styles.container}>
-//       <NewAppScreen
-//         templateFileName="App.tsx"
-//         safeAreaInsets={safeAreaInsets}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-// });
-
-// export default App;
-
 import React, {
   useState,
   useEffect,
@@ -51,12 +5,13 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, setOnUnauthorized } from './src/config/api';
 import { COLORS } from './src/utils/constants';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -83,13 +38,14 @@ const AuthProvider = ({ children }) => {
         const parsedUser = JSON.parse(userData);
         // Validate user still exists in backend
         const response = await api.getUserById(parsedUser._id || parsedUser.id);
-        if (response.data && response.data.user) {
+        if (response.data && response.data?.data) {
           // User exists, update with latest data
-          const updatedUser = { ...parsedUser, ...response.data.user };
+          const updatedUser = { ...parsedUser, ...response.data.data };
           setUser(updatedUser);
         } else {
           // User not found, logout
           await AsyncStorage.removeItem('user');
+          Alert.alert('User not found');
           setUser(null);
         }
       }
@@ -266,11 +222,13 @@ const RootNavigator = () => {
 // Main App Component
 const App = () => {
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 };
 

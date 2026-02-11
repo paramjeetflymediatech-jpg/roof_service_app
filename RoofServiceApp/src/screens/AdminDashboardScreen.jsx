@@ -331,8 +331,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
-    padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+    padding: moderateScale(22),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
   },
   topBar: {
     flexDirection: 'row',

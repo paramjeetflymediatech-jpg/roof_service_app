@@ -57,7 +57,9 @@ exports.getUserById = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const safeUser = user.toJSON();
@@ -74,26 +76,34 @@ exports.updateUser = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    const allowedFields = ["name", "email", "phone", "role", "isActive", "password"];
-    const updates = {};
-    allowedFields.forEach(field => {
+    const allowedFields = [
+      "name",
+      "email",
+      "phone",
+      "role",
+      "isActive",
+      "password",
+    ];
+
+    allowedFields.forEach((field) => {
       if (typeof req.body[field] !== "undefined") {
-        updates[field] = req.body[field];
+        user[field] = req.body[field];
       }
     });
 
     // Normalize any legacy "client" role to "user" to match enum
-    if (updates.role === "client") {
-      updates.role = "user";
+    if (user.role === "client") {
+      user.role = "user";
     }
 
-    // await user.update(updates);
-    await updates.save()
+    await user.save();
 
-    const safeUser = updates.toJSON();
+    const safeUser = user.toJSON();
     delete safeUser.password;
 
     res.json({ success: true, data: safeUser, message: "User updated" });
@@ -107,7 +117,9 @@ exports.deleteUser = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     await user.destroy();
@@ -122,17 +134,21 @@ exports.updateMe = async (req, res, next) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
     }
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const allowedFields = ["name", "phone"]; // extend if you add more columns
     const updates = {};
-    allowedFields.forEach(field => {
+    allowedFields.forEach((field) => {
       if (typeof req.body[field] !== "undefined") {
         updates[field] = req.body[field];
       }

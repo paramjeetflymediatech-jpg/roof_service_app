@@ -10,7 +10,7 @@ router.post("/", jwtAuth, isAdmin, userController.createUser);
 // Authenticated user profile update (must be before /:id)
 router.put("/me", jwtAuth, userController.updateMe);
 
-router.get("/:id", jwtAuth, isAdmin, userController.getUserById);
+router.get("/:id", jwtAuth, userController.getUserById);
 router.put("/:id", jwtAuth, isAdmin, userController.updateUser);
 router.delete("/:id", jwtAuth, isAdmin, userController.deleteUser);
 

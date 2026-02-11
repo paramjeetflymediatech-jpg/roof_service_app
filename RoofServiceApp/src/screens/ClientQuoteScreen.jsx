@@ -8,13 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  SafeAreaView,
   Modal,
-  ImageBackground,
   Image,
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import DateTimePicker from '@react-native-community/datetimepicker';

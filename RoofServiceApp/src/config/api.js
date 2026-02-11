@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Update this to your backend server IP/URL 
+// Update this to your backend server IP/URL
 // export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
 // export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
 

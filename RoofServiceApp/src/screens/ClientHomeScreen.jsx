@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 0,
-    marginTop: verticalScale(10),
+    // paddingTop: verticalScale(10),
   },
   heroSection: {
     height: verticalScale(300),
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)', // Dark overlay for text readability
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
   },
   header: {
     flexDirection: 'row',
@@ -375,18 +375,18 @@ const styles = StyleSheet.create({
   },
   heroContent: {
     paddingHorizontal: moderateScale(20),
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     flex: 1,
-    paddingBottom: verticalScale(50), // Increased bottom padding to make room for stats
+    // paddingBottom: verticalScale(50), // Increased bottom padding to make room for stats
   },
   greeting: {
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255, 255, 255, 1)',
     fontSize: moderateScale(16),
     marginBottom: verticalScale(4),
   },
   heroTitle: {
     color: COLORS.white,
-    fontSize: moderateScale(28),
+    fontSize: moderateScale(24),
     fontWeight: '800',
     marginBottom: verticalScale(8),
     letterSpacing: 0.5,
