@@ -36,12 +36,6 @@ async function runMigration() {
       await queryInterface.renameTable("categories", "service_categories");
     }
 
-    // 2. Rename 'gallery' -> 'galleries'
-    if (await checkTableExists("gallery")) {
-      console.log("Renaming table 'gallery' to 'galleries'...");
-      await queryInterface.renameTable("gallery", "galleries");
-    }
-
     // 3. Sync 'services' table
     if (await checkTableExists("services")) {
       // is_featured
