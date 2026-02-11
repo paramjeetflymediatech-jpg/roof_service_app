@@ -34,6 +34,9 @@ async function runMigration() {
     await connection.query("DROP TABLE IF EXISTS services");
     await connection.query("DROP TABLE IF EXISTS users");
     await connection.query("DROP TABLE IF EXISTS blogs");
+    await connection.query("DROP TABLE IF EXISTS galleries");
+    await connection.query("DROP TABLE IF EXISTS service_categories");
+    await connection.query("DROP TABLE IF EXISTS gallery");
 
     // Create users table
     console.log("Creating users table...");
