@@ -164,11 +164,19 @@ const getLeadList = async (req, res) => {
 };
 
 // GET /admin/leads/create - Render create lead form
-const getCreateLead = (req, res) => {
-  res.render("admin/leads/create", {
-    title: "Add New Lead",
-    userName: req.session.userName,
-  });
+const getCreateLead = async (req, res) => {
+  try {
+    const services = await Service.findAll({ order: [["name", "ASC"]] });
+    res.render("admin/leads/create", {
+      title: "Add New Lead",
+      userName: req.session.userName,
+      services: services.map((s) => s.toJSON()),
+    });
+  } catch (error) {
+    console.error("Create lead view error:", error);
+    req.flash("error", "Error loading create lead view");
+    res.redirect("/admin/leads");
+  }
 };
 
 // POST /admin/leads - Create new lead
@@ -182,14 +190,30 @@ const postCreateLead = async (req, res) => {
       leadType,
       address,
       city,
+      province,
       serviceType,
+      roofType,
+      hearAboutUs,
       status,
       message,
+      preferredDate,
+      employeeStartTime,
+      employeeEndTime,
     } = req.body;
 
     if (!name) {
       req.flash("error", "Name is required");
       return res.redirect("/admin/leads/create");
+    }
+
+    // Handle images
+    let clientImages = [];
+    if (req.files && req.files.length > 0) {
+      clientImages = req.files.map((file) => ({
+        url: `/uploads/leads/${file.filename}`,
+        name: file.originalname,
+        type: file.mimetype,
+      }));
     }
 
     await Lead.create({
@@ -199,10 +223,17 @@ const postCreateLead = async (req, res) => {
       leadType,
       address,
       city,
+      province,
       serviceType,
+      roofType,
+      hearAboutUs,
       userId,
       status: status || "new",
       message,
+      preferredDate: preferredDate || null,
+      employeeStartTime,
+      employeeEndTime,
+      clientImages,
       source: "other", // Manual entry
     });
     req.flash("success", "Lead created successfully");
@@ -218,6 +249,7 @@ const postCreateLead = async (req, res) => {
 const getEditLead = async (req, res) => {
   try {
     const lead = await Lead.findByPk(req.params.id);
+    const services = await Service.findAll({ order: [["name", "ASC"]] });
 
     if (!lead) {
       req.flash("error", "Lead not found");
@@ -228,6 +260,7 @@ const getEditLead = async (req, res) => {
       title: "Edit Lead",
       userName: req.session.userName,
       lead: lead.dataValues || lead,
+      services: services.map((s) => s.toJSON()),
     });
   } catch (error) {
     console.error("Edit lead error:", error);
@@ -246,9 +279,15 @@ const postUpdateLead = async (req, res) => {
       leadType,
       address,
       city,
+      province,
       serviceType,
+      roofType,
+      hearAboutUs,
       status,
       message,
+      preferredDate,
+      employeeStartTime,
+      employeeEndTime,
     } = req.body;
     const leadId = req.params.id;
 
@@ -256,6 +295,29 @@ const postUpdateLead = async (req, res) => {
     if (!lead) {
       req.flash("error", "Lead not found");
       return res.redirect("/admin/leads");
+    }
+
+    // Handle new images
+    let clientImages = lead.clientImages || [];
+    // Ensure clientImages is an array
+    if (typeof clientImages === "string") {
+      try {
+        clientImages = JSON.parse(clientImages);
+      } catch (e) {
+        clientImages = [];
+      }
+    }
+    if (!Array.isArray(clientImages)) {
+      clientImages = [];
+    }
+
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => ({
+        url: `/uploads/leads/${file.filename}`,
+        name: file.originalname,
+        type: file.mimetype,
+      }));
+      clientImages = [...clientImages, ...newImages];
     }
 
     await Lead.update(
@@ -266,9 +328,16 @@ const postUpdateLead = async (req, res) => {
         leadType,
         address,
         city,
+        province,
         serviceType,
+        roofType,
+        hearAboutUs,
         status,
         message,
+        preferredDate: preferredDate || null,
+        employeeStartTime,
+        employeeEndTime,
+        clientImages,
       },
       { where: { id: leadId } },
     );

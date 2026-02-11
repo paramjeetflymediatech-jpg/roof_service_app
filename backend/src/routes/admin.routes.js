@@ -4,6 +4,7 @@ const adminController = require("../controllers/admin.controller");
 const blogController = require("../controllers/blog.controller");
 const leadController = require("../controllers/lead.controller");
 const { isAuthenticated, isAdmin } = require("../middlewares/auth.middleware");
+const upload = require("../middlewares/upload.middleware");
 
 // Public routes
 router.get("/login", adminController.getLogin);
@@ -72,7 +73,13 @@ router.post(
   isAdmin,
   adminController.deleteAllLeads,
 ); // Must be before /:id
-router.post("/leads", isAuthenticated, isAdmin, adminController.postCreateLead);
+router.post(
+  "/leads",
+  isAuthenticated,
+  isAdmin,
+  upload.array("clientImages", 5),
+  adminController.postCreateLead,
+);
 router.get(
   "/available-employees",
   isAuthenticated,
@@ -90,6 +97,7 @@ router.post(
   "/leads/:id",
   isAuthenticated,
   isAdmin,
+  upload.array("clientImages", 5),
   adminController.postUpdateLead,
 );
 router.post(
@@ -183,9 +191,6 @@ router.post(
   isAdmin,
   adminController.deleteCategory,
 );
-
-// Service management routes
-const upload = require("../middlewares/upload.middleware");
 
 // Service management routes
 router.get(

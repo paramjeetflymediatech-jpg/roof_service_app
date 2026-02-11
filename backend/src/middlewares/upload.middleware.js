@@ -6,6 +6,8 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     if (req.originalUrl.includes("gallery")) {
       cb(null, "public/uploads/gallery/");
+    } else if (req.originalUrl.includes("leads")) {
+      cb(null, "public/uploads/leads/");
     } else {
       cb(null, "public/uploads/services/");
     }
@@ -13,7 +15,9 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const prefix = req.originalUrl.includes("gallery")
       ? "gallery-"
-      : "service-";
+      : req.originalUrl.includes("leads")
+        ? "lead-"
+        : "service-";
     cb(null, prefix + Date.now() + path.extname(file.originalname));
   },
 });
