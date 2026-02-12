@@ -246,6 +246,7 @@ export const NAV_LINKS = [
     { label: 'Gallery', href: '/gallery' },
     { label: 'Contact Us', href: '/contact' },
     { label: 'Blogs', href: '/blogs' },
+    { label: 'Privacy Policy', href: '/privacy_policy' },
 ];
 
 // Services Dropdown Links

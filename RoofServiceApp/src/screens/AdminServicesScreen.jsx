@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { api, SERVER_URL } from '../config/api';
 import { COLORS, SHADOWS } from '../utils/constants';

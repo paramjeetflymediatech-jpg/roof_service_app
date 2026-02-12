@@ -387,8 +387,9 @@ const styles = StyleSheet.create({
   },
   headerBackground: {
     width: '100%',
-    height: verticalScale(280),
+    height: verticalScale(200),
     position: 'absolute',
+    zIndex: 10,
     top: 0,
   },
   headerImage: {
@@ -465,7 +466,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: COLORS.white,
-    zIndex: 10,
+    zIndex: 5,
     elevation: 5,
   },
   cameraIcon: {
@@ -497,7 +498,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: moderateScale(20),
     paddingBottom: verticalScale(100),
-    paddingTop: verticalScale(240), // Push content down to overlapping position
+    paddingTop: verticalScale(220), // Push content down to overlapping position
   },
   statsRow: {
     flexDirection: 'row',

@@ -338,11 +338,6 @@ const AdminLeadsScreen = ({ route }) => {
               onPress={() => {
                 setStatusFilter(f);
                 setPage(1);
-                // Trigger reload with new status
-                // Since loadQuotes depends on state, and state update is async,
-                // we might need useEffect to trigger reload or pass directly.
-                // The existing useEffect handles search and date, but not status?
-                // Let's add statusFilter to the dependency array of the useEffect.
               }}
             >
               <Text
@@ -359,7 +354,7 @@ const AdminLeadsScreen = ({ route }) => {
 
         {/* List */}
         <FlatList
-          data={quotes} // No longer filtering locally
+          data={quotes}
           renderItem={renderQuoteItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}

@@ -15,7 +15,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { api } from '../config/api';
 import { COLORS, ROLES, SHADOWS } from '../utils/constants';
@@ -31,8 +30,6 @@ const AdminUsersScreen = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');

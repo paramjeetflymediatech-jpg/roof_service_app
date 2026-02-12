@@ -29,13 +29,10 @@ const AdminGalleryScreen = () => {
   const [saving, setSaving] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [showForm, setShowForm] = useState(false);
-
-  // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null); // { uri, type, fileName }
+  const [selectedImage, setSelectedImage] = useState(null); 
 
-  // Helper to get full URL
   const getImageUrl = path => {
     if (!path) return null;
     if (path.startsWith('http')) return path;

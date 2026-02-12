@@ -34,7 +34,6 @@ const AdminAssignScreen = ({ route }) => {
     loadEmployees();
   }, []);
 
-  // Whenever scheduled date or slot changes, recompute which employees are busy
   useEffect(() => {
     const updateAvailability = async () => {
       if (!scheduledDate || !selectedSlot) {
@@ -100,7 +99,6 @@ const AdminAssignScreen = ({ route }) => {
     updateAvailability();
   }, [scheduledDate, selectedSlot]);
 
-  console.log('selectedQuote', selectedQuote);
   const loadEmployees = async () => {
     try {
       const response = await api.getAllUsers({ role: 'employee' });
@@ -201,7 +199,7 @@ const AdminAssignScreen = ({ route }) => {
       setLoading(false);
     }
   };
-  console.log('selectedQuote', selectedQuote);
+
   if (!selectedQuote) {
     return (
       <View style={styles.container}>

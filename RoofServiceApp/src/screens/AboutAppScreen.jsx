@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { version } from 'react';
 import {
   View,
   Text,
@@ -9,19 +9,14 @@ import {
   Image,
   Platform,
 } from 'react-native';
+import { version } from '../../package.json';
 import { useNavigation } from '@react-navigation/native';
-import { COLORS, SHADOWS, FONTS } from '../utils/constants';
+import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
-
-// Determine if we need to require the logo or if it's already available
-// Assuming a logo exists in assets, otherwise we can use a placeholder text
-// import Logo from '../assets/logo.png';
 
 const AboutAppScreen = () => {
   const navigation = useNavigation();
-
-  const appVersion = '1.0.0'; // You can fetch this from package.json or constants if preferred
-
+  const appVersion = version;
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
