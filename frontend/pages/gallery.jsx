@@ -30,7 +30,7 @@ export async function getServerSideProps() {
 
 export default function GalleryPage({ seoData }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [galleryItems, setGalleryItems] = useState(PROJECTS); // Initialize with static data
+  const [galleryItems, setGalleryItems] = useState([]); // Initialize with static data
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
