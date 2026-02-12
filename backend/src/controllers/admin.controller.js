@@ -624,7 +624,15 @@ const deleteUser = async (req, res) => {
       req.flash("error", "User not found");
       return res.redirect("/admin/users");
     }
-
+    if (user.profilePicture) {
+      let oldimage = user.profilePicture;
+      try {
+        const imagePath = path.join(__dirname, "..", "..", "public", oldimage);
+        fs.unlinkSync(imagePath);
+      } catch (error) {
+        console.log(error);
+      }
+    }
     await User.destroy({ where: { id: userId } });
 
     req.flash("success", "User deleted successfully");
@@ -641,6 +649,26 @@ const deleteAllUsers = async (req, res) => {
   try {
     const currentUserId = req.session.userId;
 
+    const users = await User.findAll({
+      where: { id: { [require("sequelize").Op.ne]: currentUserId } },
+    });
+
+    users.forEach((user) => {
+      if (user.profilePicture) {
+        try {
+          const imagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "public",
+            user.profilePicture,
+          );
+          fs.unlinkSync(imagePath);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
     // Delete all users except the current admin
     await User.destroy({
       where: { id: { [require("sequelize").Op.ne]: currentUserId } },

@@ -23,6 +23,16 @@ const formatDateLocal = value => {
   if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
   return d.toLocaleDateString();
 };
+const formatTime = time => {
+  if (!time) return '';
+
+  const date = new Date(time);
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${hours}:${minutes}`;
+};
 
 const TABS = ['All', 'New', 'Active', 'Completed'];
 
@@ -54,11 +64,12 @@ const EmployeeMyJobsScreen = () => {
         response.data?.data ||
         (Array.isArray(response.data) ? response.data : []);
 
+        console.log(raw,'raw')
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
         const scheduledDate = job.scheduledDate || lead.preferredDate || '';
         const createdDate = lead.createdAt || job.createdAt || '';
-
+        const completedDate = lead.updatedAt || job.updatedAt || '';
         return {
           id: String(job.id ?? lead.id ?? Math.random()),
           leadId: lead.id,
@@ -69,12 +80,16 @@ const EmployeeMyJobsScreen = () => {
           status: job.status,
           date: createdDate ? formatDateLocal(createdDate) : '',
           preferredDate: scheduledDate ? formatDateLocal(scheduledDate) : '',
-          inTime: job.startTime || lead.inTime || null,
-          outTime: job.endTime || lead.outTime || null,
+          inTime: formatTime(job.startTime) || formatTime(lead.inTime) || null,
+          outTime: formatTime(job.endTime) || formatTime(lead.outTime) || null,
           notes: lead.message || job.notes || '',
+          employeeNotes: lead.employee_notes || job.employeeNotes || '',
+          lead: lead,
+          afterImages: job.afterImages,
+          completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });
-
+      console.log(mappedJobs)
       setJobs(mappedJobs);
     } catch (error) {
       console.log('Load jobs error:', error);

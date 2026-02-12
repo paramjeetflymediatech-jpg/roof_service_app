@@ -1,4 +1,6 @@
 const { Service } = require("../models");
+const fs = require("fs");
+const path = require("path");
 
 // Create new service
 // Create new service
@@ -82,6 +84,18 @@ exports.updateService = async (req, res, next) => {
     let updateData = { ...req.body };
     if (req.file) {
       updateData.featuredImageUrl = `/uploads/services/${req.file.filename}`;
+      if (service.featuredImageUrl) {
+        const oldImagePath = path.join(
+          __dirname,
+          "..",
+          "..",
+          "public",
+          service.featuredImageUrl,
+        );
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
     }
 
     await Service.update(updateData, { where: { id: req.params.id } });
@@ -98,6 +112,19 @@ exports.deleteService = async (req, res, next) => {
   try {
     const service = await Service.findByPk(req.params.id);
     if (!service) return res.status(404).json({ message: "Service not found" });
+
+    if (service.featuredImageUrl) {
+      const oldImagePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        service.featuredImageUrl,
+      );
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
 
     await Service.destroy({ where: { id: req.params.id } });
     res.json({ message: "Service deleted" });

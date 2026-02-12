@@ -8,13 +8,14 @@ import {
   TextInput,
   TouchableOpacity,
   StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import ImagePickerComponent from '../components/ImagePicker';
 import { COLORS, JOB_STATUS, SHADOWS } from '../utils/constants';
-import { api } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -27,12 +28,8 @@ const EmployeeJobDetailScreen = () => {
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inTime, setInTime] = useState(
-    job?.inTime || job?.employeeStartTime || '',
-  );
-  const [outTime, setOutTime] = useState(
-    job?.outTime || job?.employeeEndTime || '',
-  );
+  const [inTime, setInTime] = useState(job?.inTime || job?.employeeStartTime);
+  const [outTime, setOutTime] = useState(job?.outTime || job?.employeeEndTime);
 
   // Status Checkers
   const jobStatus = currentJob?.status;
@@ -294,6 +291,65 @@ const EmployeeJobDetailScreen = () => {
           </View>
         </View>
 
+        {/* Client Images Section */}
+        {currentJob?.lead?.clientImages &&
+          currentJob.lead.clientImages.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Client Photos</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imageScroll}
+              >
+                {currentJob.lead.clientImages.map((img, index) => {
+                  const url = img.url || img.uri;
+                  const imageUrl = url.startsWith('http')
+                    ? url
+                    : `${SERVER_URL}/${url}`;
+                  return (
+                    <Image
+                      key={index}
+                      source={{ uri: imageUrl }}
+                      style={styles.detailImage}
+                    />
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+        {/* Completion Images Section */}
+        {((currentJob?.afterImages && currentJob.afterImages.length > 0) ||
+          (currentJob?.lead?.completionImages &&
+            currentJob.lead.completionImages.length > 0)) && (
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Work Photos</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.imageScroll}
+            >
+              {(
+                currentJob.afterImages ||
+                currentJob.lead.completionImages ||
+                []
+              ).map((img, index) => {
+                const url = img.url || img.uri;
+                const imageUrl = url.startsWith('http')
+                  ? url
+                  : `${SERVER_URL}/${url}`;
+                return (
+                  <Image
+                    key={index}
+                    source={{ uri: imageUrl }}
+                    style={styles.detailImage}
+                  />
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         {/* Timeline / Progress */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Progress</Text>
@@ -390,13 +446,6 @@ const EmployeeJobDetailScreen = () => {
 
               <View style={styles.actionButtons}>
                 <Button
-                  title="Save Progress"
-                  onPress={handleSaveLeadDetails}
-                  variant="outline"
-                  style={{ flex: 1, marginRight: 8 }}
-                  loading={loading}
-                />
-                <Button
                   title="Complete Job"
                   onPress={handleCompleteJob}
                   style={{ flex: 1, marginLeft: 8 }}
@@ -410,7 +459,14 @@ const EmployeeJobDetailScreen = () => {
             <View style={styles.completedBanner}>
               <Text style={styles.completedBannerText}>✓ Job Completed</Text>
               <Text style={styles.completedTimeText}>
-                Time: {inTime} - {outTime}
+                Notes: {job.employeeNotes}
+              </Text>
+              <Text style={styles.completedTimeText}>
+                Work Time: {inTime} - {outTime}
+              </Text>
+              <Text style={styles.completedTimeText}>Job Date: {job.date}</Text>
+              <Text style={styles.completedTimeText}>
+                Completed Date: {job.completedDate}
               </Text>
             </View>
           )}
@@ -604,22 +660,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   completedBanner: {
-    backgroundColor: '#e6f4ea',
+    backgroundColor: '#e7e5e7ff',
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ceead6',
+    borderColor: '#000000ff',
   },
   completedBannerText: {
-    color: COLORS.success,
+    color: COLORS.textLight,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
   },
   completedTimeText: {
-    color: COLORS.success,
+    color: COLORS.textLight,
     fontSize: 14,
+  },
+  imageScroll: {
+    paddingBottom: 10,
+  },
+  detailImage: {
+    width: moderateScale(120),
+    height: verticalScale(120),
+    borderRadius: 8,
+    marginRight: 10,
+    backgroundColor: '#eee',
   },
 });
 

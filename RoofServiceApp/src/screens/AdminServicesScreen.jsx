@@ -39,10 +39,11 @@ const AdminServicesScreen = () => {
   const [icon, setIcon] = useState(''); // Emoji or text icon
   const [selectedImage, setSelectedImage] = useState(null); // { uri, type, fileName }
 
+  const [viewingItem, setViewingItem] = useState(null);
+
   useEffect(() => {
     loadServices();
   }, []);
-
   const loadServices = async () => {
     setLoading(true);
     try {
@@ -66,7 +67,7 @@ const AdminServicesScreen = () => {
     setSelectedImage(null);
   };
 
-  const openCreateForm = () => {
+  const handleOpenCreateForm = () => {
     resetForm();
     setShowForm(true);
   };
@@ -169,13 +170,16 @@ const AdminServicesScreen = () => {
 
   const getImageUrl = path => {
     if (!path) return null;
-    if (path.startsWith('http')) return path; 
+    if (path.startsWith('http')) return path;
     return `${SERVER_URL}${path}`;
   };
 
   const renderServiceItem = ({ item }) => (
     <View style={styles.card}>
-      <View style={styles.cardMain}>
+      <TouchableOpacity
+        style={styles.cardMain}
+        onPress={() => setViewingItem(item)}
+      >
         <View style={styles.iconContainer}>
           {item.featuredImageUrl ? (
             <Image
@@ -199,7 +203,7 @@ const AdminServicesScreen = () => {
         >
           <Text style={styles.editIcon}>✎</Text>
         </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.deleteBtn}
@@ -213,6 +217,7 @@ const AdminServicesScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* ... existing header and list ... */}
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={styles.header}>
@@ -223,7 +228,7 @@ const AdminServicesScreen = () => {
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Services</Text>
-        <TouchableOpacity onPress={openCreateForm} style={styles.addBtn}>
+        <TouchableOpacity onPress={handleOpenCreateForm} style={styles.addBtn}>
           <Text style={styles.addText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -245,12 +250,70 @@ const AdminServicesScreen = () => {
         }
       />
 
+      {/* Detail Modal */}
+      <Modal
+        visible={!!viewingItem}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setViewingItem(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailContainer}>
+            <TouchableOpacity
+              onPress={() => setViewingItem(null)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeText}>✕</Text>
+            </TouchableOpacity>
+            {viewingItem && (
+              <>
+                {viewingItem.featuredImageUrl ? (
+                  <Image
+                    source={{ uri: getImageUrl(viewingItem.featuredImageUrl) }}
+                    style={styles.detailImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.detailImage,
+                      {
+                        backgroundColor: '#f0f0f0',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      },
+                    ]}
+                  >
+                    <Text style={{ fontSize: 50 }}>
+                      {viewingItem.icon || '🛠️'}
+                    </Text>
+                  </View>
+                )}
+                <Text style={styles.detailTitle}>{viewingItem.name}</Text>
+                <Text style={styles.detailPrice}>
+                  {viewingItem.basePrice
+                    ? `$${viewingItem.basePrice}`
+                    : 'Custom Quote'}
+                </Text>
+                <ScrollView style={styles.detailScroll}>
+                  <Text style={styles.detailDescription}>
+                    {viewingItem.shortDescription ||
+                      'No description available.'}
+                  </Text>
+                </ScrollView>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <Modal
         visible={showForm}
         animationType="slide"
         transparent={true}
         onRequestClose={() => setShowForm(false)}
       >
+        {/* ... existing form ... */}
         <View style={styles.modalOverlay}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -358,6 +421,53 @@ const AdminServicesScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
+
+  detailContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    alignItems: 'center',
+    ...SHADOWS.large,
+  },
+  detailImage: {
+    width: '100%',
+    height: verticalScale(200),
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  detailTitle: {
+    fontSize: moderateScale(22),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  detailPrice: {
+    fontSize: moderateScale(18),
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginBottom: 12,
+  },
+  detailScroll: {
+    width: '100%',
+    maxHeight: verticalScale(200),
+  },
+  detailDescription: {
+    fontSize: moderateScale(16),
+    color: COLORS.text,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    padding: 8,
+  },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

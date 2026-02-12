@@ -9,12 +9,15 @@ import {
   Platform,
   TouchableOpacity,
   ImageBackground,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { COLORS, SHADOWS } from '../utils/constants';
-import { api } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 // Reuse the hero background if available
@@ -31,6 +34,10 @@ const ClientProfileScreen = () => {
   // Form State
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [profilePicture, setProfilePicture] = useState(
+    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
+  );
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -78,7 +85,7 @@ const ClientProfileScreen = () => {
     }
     try {
       setSaving(true);
-      const res = await api.updateMe({
+      const res = await api.updateProfile({
         name: name.trim(),
         phone: phone.trim(),
       });
@@ -94,6 +101,55 @@ const ClientProfileScreen = () => {
       Alert.alert('Error', 'Failed to update profile. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadProfilePicture = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 800,
+      maxHeight: 800,
+    });
+
+    if (result.didCancel) return;
+    if (result.errorCode) {
+      Alert.alert('Error', result.errorMessage || 'Failed to pick image');
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('profilePicture', {
+        uri:
+          Platform.OS === 'android'
+            ? asset.uri
+            : asset.uri.replace('file://', ''),
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `profile-${Date.now()}.jpg`,
+      });
+
+      const res = await api.uploadProfilePicture(formData);
+      const updatedUser = res.data?.data || {};
+
+      // Update local state and auth context
+      setProfilePicture(updatedUser.profilePicture);
+      const merged = { ...(user || {}), ...updatedUser };
+      await login(merged);
+
+      Alert.alert('Success', 'Profile picture updated successfully');
+    } catch (error) {
+      console.log('Upload profile picture error:', error.response || error);
+      Alert.alert(
+        'Error',
+        'Failed to upload profile picture. Please try again.',
+      );
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -167,14 +223,31 @@ const ClientProfileScreen = () => {
 
             <View style={styles.profileHeaderContent}>
               <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </Text>
-                {isEditing && (
-                  <TouchableOpacity style={styles.cameraButton}>
-                    <Text style={styles.cameraIcon}>📷</Text>
-                  </TouchableOpacity>
+                {profilePicture ? (
+                  <Image
+                    source={{
+                      uri: profilePicture.startsWith('http')
+                        ? profilePicture
+                        : `${SERVER_URL}${profilePicture}`,
+                    }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </Text>
                 )}
+                <TouchableOpacity
+                  style={styles.cameraButton}
+                  onPress={handleUploadProfilePicture}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Text style={styles.cameraIcon}>📷</Text>
+                  )}
+                </TouchableOpacity>
               </View>
               <Text style={styles.userName}>{user?.name || 'Client Name'}</Text>
               <Text style={styles.userEmail}>
@@ -279,30 +352,26 @@ const ClientProfileScreen = () => {
             <View style={styles.divider} />
             <SettingsItem
               icon="🛡️"
-              title="Privacy & Security"
-              onPress={() =>
-                Alert.alert(
-                  'Coming Soon',
-                  'Security settings will be available soon.',
-                )
-              }
+              title="Privacy Policy"
+              onPress={() => navigation.navigate('PrivacyPolicy')}
+            />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon="📄"
+              title="Terms & Conditions"
+              onPress={() => navigation.navigate('TermsConditions')}
             />
             <View style={styles.divider} />
             <SettingsItem
               icon="❓"
               title="Help & Support"
-              onPress={() =>
-                Alert.alert(
-                  'Support',
-                  'Contact us at support@mainstreetroofing.ca',
-                )
-              }
+              onPress={() => navigation.navigate('HelpSupport')}
             />
             <View style={styles.divider} />
             <SettingsItem
               icon="ℹ️"
               title="About App"
-              onPress={() => Alert.alert('About', 'Roof Service App v1.0.0')}
+              onPress={() => navigation.navigate('AboutApp')}
             />
           </View>
         </View>
@@ -398,6 +467,11 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(36),
     fontWeight: '700',
     color: COLORS.primary,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: moderateScale(60),
   },
   cameraButton: {
     position: 'absolute',

@@ -540,11 +540,10 @@ const ClientQuoteScreen = () => {
         <View style={styles.existingImagesContainer}>
           <Text style={styles.inputLabel}>Current Photos:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {existingImages.map((img, index) => {
-              console.log(`${SERVER_URL}${img.url}`, 'img');
+            {existingImages.map((img, index) => { 
               const imageUrl = img.url.startsWith('http')
                 ? img.url
-                : `${SERVER_URL}${img.url}`;
+                : `${SERVER_URL}/${img.url}`;
 
               return (
                 <View key={index} style={styles.existingImageWrapper}>

@@ -4,7 +4,12 @@ const path = require("path");
 // Set storage engine
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (req.originalUrl.includes("gallery")) {
+    if (req.originalUrl.includes("profile-picture")) {
+      if (req.user.role === "user") cb(null, "public/uploads/profiles/");
+      else if (req.user.role === "employee")
+        cb(null, "public/uploads/employees/");
+      else if (req.user.role === "admin") cb(null, "public/uploads/admins/");
+    } else if (req.originalUrl.includes("gallery")) {
       cb(null, "public/uploads/gallery/");
     } else if (req.originalUrl.includes("leads")) {
       cb(null, "public/uploads/leads/");
@@ -20,7 +25,11 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     let prefix = "service-";
-    if (req.originalUrl.includes("gallery")) prefix = "gallery-";
+    if (req.originalUrl.includes("profile-picture")) {
+      if (req.user.role === "user") prefix = "profile-";
+      else if (req.user.role === "employee") prefix = "employee-";
+      else if (req.user.role === "admin") prefix = "admin-";
+    } else if (req.originalUrl.includes("gallery")) prefix = "gallery-";
     else if (req.originalUrl.includes("leads")) prefix = "lead-";
     else if (
       req.originalUrl.includes("upload") ||
@@ -65,3 +74,4 @@ function checkFileType(file, cb) {
 }
 
 module.exports = upload;
+module.exports.upload = upload;

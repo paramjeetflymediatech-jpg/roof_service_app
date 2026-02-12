@@ -18,7 +18,7 @@ import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 import { api, SERVER_URL } from '../config/api';
 
-const ClientServicesScreen = () => {
+const EmployeeServicesScreen = () => {
   const navigation = useNavigation();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,10 +41,6 @@ const ClientServicesScreen = () => {
     }
   };
 
-  const handleGetQuote = quoteLabel => {
-    navigation.navigate('ClientQuote', { serviceType: quoteLabel });
-  };
-
   const openServiceModal = service => {
     setSelectedService(service);
     setModalVisible(true);
@@ -54,14 +50,7 @@ const ClientServicesScreen = () => {
     setModalVisible(false);
   };
 
-  const handleGetQuoteFromModal = () => {
-    if (selectedService) {
-      closeModal();
-      handleGetQuote(selectedService.name);
-    }
-  };
   const getImageSource = item => {
-    // If item has a featured image from backend
     if (item.featuredImageUrl) {
       return {
         uri: item.featuredImageUrl.startsWith('http')
@@ -69,12 +58,9 @@ const ClientServicesScreen = () => {
           : `${SERVER_URL}${item.featuredImageUrl}`,
       };
     }
-    // Fallback images based on slug or name
     if (item.slug?.includes('repair')) return require('../../assets/Repai.jpg');
     if (item.slug?.includes('metal'))
       return require('../../assets/Reroofs-New.jpg');
-
-    // Default fallback
     return require('../../assets/roofing-background.jpg');
   };
 
@@ -103,7 +89,7 @@ const ClientServicesScreen = () => {
             )}
           </View>
           <View style={styles.buttonContainer}>
-            <Text style={styles.ctaText}>Get Quote →</Text>
+            <Text style={styles.ctaText}>View Details →</Text>
           </View>
         </View>
       </ImageBackground>
@@ -174,10 +160,6 @@ const ClientServicesScreen = () => {
                 style={styles.modalContent}
                 showsVerticalScrollIndicator={false}
               >
-                {console.log(
-                  'Service image source:',
-                  getImageSource(selectedService),
-                )}
                 <Image
                   source={getImageSource(selectedService)}
                   style={styles.modalImage}
@@ -219,15 +201,6 @@ const ClientServicesScreen = () => {
                         ))}
                       </View>
                     )}
-
-                  <TouchableOpacity
-                    style={styles.getQuoteButton}
-                    onPress={handleGetQuoteFromModal}
-                  >
-                    <Text style={styles.getQuoteButtonText}>
-                      Get a Free Quote
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               </ScrollView>
             )}
@@ -276,14 +249,14 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(24),
     borderRadius: moderateScale(20),
     ...SHADOWS.medium,
-    backgroundColor: COLORS.white, // Fallback
+    backgroundColor: COLORS.white,
   },
   cardImage: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   cardOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.5)', // Darker overlay for better text contrast
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: moderateScale(20),
     padding: moderateScale(20),
     height: '100%',
@@ -296,7 +269,6 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(24),
     fontWeight: '700',
     color: COLORS.white,
-    // marginBottom: verticalScale(4),
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
@@ -319,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: {
-    color: COLORS.white, // Use a bright accent if possible, or white
+    color: COLORS.white,
     fontWeight: '700',
     fontSize: moderateScale(16),
     textDecorationLine: 'underline',
@@ -428,18 +400,6 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     lineHeight: verticalScale(22),
   },
-  getQuoteButton: {
-    backgroundColor: COLORS.primary,
-    padding: moderateScale(18),
-    borderRadius: moderateScale(12),
-    alignItems: 'center',
-    ...SHADOWS.medium,
-  },
-  getQuoteButtonText: {
-    color: COLORS.white,
-    fontSize: moderateScale(16),
-    fontWeight: '700',
-  },
 });
 
-export default ClientServicesScreen;
+export default EmployeeServicesScreen;

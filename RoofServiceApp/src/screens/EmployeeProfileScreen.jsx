@@ -9,12 +9,15 @@ import {
   Platform,
   TouchableOpacity,
   ImageBackground,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { COLORS, SHADOWS } from '../utils/constants';
-import { api } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 // Reuse the hero background
@@ -29,6 +32,10 @@ const EmployeeProfileScreen = () => {
 
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [profilePicture, setProfilePicture] = useState(
+    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
+  );
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -64,24 +71,70 @@ const EmployeeProfileScreen = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!name.trim()) return Alert.alert('Validation', 'Name is required');
-
-    setSaving(true);
+    if (!name.trim()) {
+      Alert.alert('Validation', 'Name is required');
+      return;
+    }
     try {
-      const res = await api.updateMe({
+      setSaving(true);
+      const res = await api.updateProfile({
         name: name.trim(),
         phone: phone.trim(),
       });
       const updatedUser = res.data?.data || res.data || {};
-
       const merged = { ...(user || {}), ...updatedUser };
       await login(merged);
-      Alert.alert('Success', 'Profile updated.');
+      Alert.alert('Success', 'Profile updated successfully');
       setIsEditing(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update.');
+      console.log('Update profile error:', error.response || error);
+      Alert.alert('Error', 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadProfilePicture = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 800,
+      maxHeight: 800,
+    });
+
+    if (result.didCancel) return;
+    if (result.errorCode) {
+      Alert.alert('Error', result.errorMessage || 'Failed to pick image');
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('profilePicture', {
+        uri:
+          Platform.OS === 'android'
+            ? asset.uri
+            : asset.uri.replace('file://', ''),
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `profile-${Date.now()}.jpg`,
+      });
+
+      const res = await api.uploadProfilePicture(formData);
+      const updatedUser = res.data?.data || {};
+      setProfilePicture(updatedUser.profilePicture);
+      const merged = { ...(user || {}), ...updatedUser };
+      await login(merged);
+
+      Alert.alert('Success', 'Profile picture updated successfully');
+    } catch (error) {
+      console.log('Upload profile picture error:', error.response || error);
+      Alert.alert('Error', 'Failed to upload profile picture');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -128,12 +181,36 @@ const EmployeeProfileScreen = () => {
 
             <View style={styles.profileHeaderContent}>
               <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'E'}
-                </Text>
+                {profilePicture ? (
+                  <Image
+                    source={{
+                      uri: profilePicture.startsWith('http')
+                        ? profilePicture
+                        : `${SERVER_URL}${profilePicture}`,
+                    }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'E'}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  style={styles.cameraButton}
+                  onPress={handleUploadProfilePicture}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Text style={styles.cameraIcon}>📷</Text>
+                  )}
+                </TouchableOpacity>
               </View>
               <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
-              <Text style={styles.userRole}>{user?.role || 'Team Member'}</Text>
+              <Text style={styles.userEmail}>
+                {user?.email || 'email@example.com'}
+              </Text>
             </View>
           </View>
         </ImageBackground>
@@ -212,6 +289,82 @@ const EmployeeProfileScreen = () => {
               style={styles.saveButton}
             />
           )}
+        </View>
+
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>App Settings</Text>
+          <View style={styles.formContainer}>
+            <TouchableOpacity
+              style={[
+                styles.settingRow,
+                {
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#f0f0f0',
+                  paddingVertical: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                },
+              ]}
+              onPress={() => navigation.navigate('PrivacyPolicy')}
+            >
+              <Text style={{ fontSize: 16, color: COLORS.text }}>
+                Privacy Policy
+              </Text>
+              <Text style={{ fontSize: 18, color: COLORS.textLight }}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.settingRow,
+                {
+                  paddingVertical: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                },
+              ]}
+              onPress={() => navigation.navigate('TermsConditions')}
+            >
+              <Text style={{ fontSize: 16, color: COLORS.text }}>
+                Terms & Conditions
+              </Text>
+              <Text style={{ fontSize: 18, color: COLORS.textLight }}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.settingRow,
+                {
+                  borderTopWidth: 1,
+                  borderTopColor: '#f0f0f0',
+                  paddingVertical: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                },
+              ]}
+              onPress={() => navigation.navigate('HelpSupport')}
+            >
+              <Text style={{ fontSize: 16, color: COLORS.text }}>
+                Help & Support
+              </Text>
+              <Text style={{ fontSize: 18, color: COLORS.textLight }}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.settingRow,
+                {
+                  borderTopWidth: 1,
+                  borderTopColor: '#f0f0f0',
+                  paddingVertical: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                },
+              ]}
+              onPress={() => navigation.navigate('AboutApp')}
+            >
+              <Text style={{ fontSize: 16, color: COLORS.text }}>
+                About App
+              </Text>
+              <Text style={{ fontSize: 18, color: COLORS.textLight }}>›</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.logoutContainer}>
@@ -327,9 +480,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarText: {
-    fontSize: 36,
+    fontSize: moderateScale(36),
     fontWeight: '700',
     color: COLORS.primary,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: moderateScale(45),
   },
   userName: {
     fontSize: 22,

@@ -18,7 +18,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Button from '../components/Button';
-import { api,SERVER_URL } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -35,10 +35,18 @@ const AdminGalleryScreen = () => {
   const [category, setCategory] = useState('');
   const [selectedImage, setSelectedImage] = useState(null); // { uri, type, fileName }
 
+  // Helper to get full URL
+  const getImageUrl = path => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${SERVER_URL}${path}`;
+  };
+
+  const [viewingItem, setViewingItem] = useState(null);
+
   useEffect(() => {
     loadGallery();
   }, []);
-
   const loadGallery = async () => {
     setLoading(true);
     try {
@@ -156,27 +164,15 @@ const AdminGalleryScreen = () => {
   };
 
   const renderItem = ({ item }) => {
-    // Handle image URL (prepend backend URL if needed, assume backend returns absolute or relative)
-    // If relative, we need base URL. For now assume full URL or handle in component.
-    // Actually, my api.js has BASE_URL. I might need to construct full URL if it's relative.
-    // Usually backend returns /uploads/..., creating a full URL helper would be good.
-    // For now, I'll rely on the backend returning a full URL or the Image component handling it if I prepend.
-    // Let's assume the API returns a relative path like /uploads/gallery/xyz.jpg
-
-    // Helper to get full URL
-    const getImageUrl = path => {
-      if (!path) return null;
-      if (path.startsWith('http')) return path;
-      return `${SERVER_URL}${path}`;
-    };
-
     return (
       <View style={styles.card}>
-        <Image
-          source={{ uri: getImageUrl(item.imageUrl) }}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
+        <TouchableOpacity onPress={() => setViewingItem(item)}>
+          <Image
+            source={{ uri: getImageUrl(item.imageUrl) }}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
         <View style={styles.cardContent}>
           <View style={styles.info}>
             <Text style={styles.title}>{item.title}</Text>
@@ -233,6 +229,39 @@ const AdminGalleryScreen = () => {
         }
       />
 
+      {/* Detail Modal */}
+      <Modal
+        visible={!!viewingItem}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setViewingItem(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailContainer}>
+            <TouchableOpacity
+              onPress={() => setViewingItem(null)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeText}>✕</Text>
+            </TouchableOpacity>
+            {viewingItem && (
+              <>
+                <Image
+                  source={{ uri: getImageUrl(viewingItem.imageUrl) }}
+                  style={styles.detailImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.detailTitle}>{viewingItem.title}</Text>
+                <Text style={styles.detailCategory}>
+                  {viewingItem.category}
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit/Create Form Modal */}
       <Modal
         visible={showForm}
         animationType="slide"
@@ -287,7 +316,7 @@ const AdminGalleryScreen = () => {
                     ) : editingItem ? (
                       <Image
                         source={{
-                          uri: `https://api.mainstreet-roofing.ca${editingItem.imageUrl}`,
+                          uri: getImageUrl(editingItem.imageUrl), // Updated to use helper
                         }}
                         style={styles.previewImage}
                       />
@@ -313,6 +342,46 @@ const AdminGalleryScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  // ... keep existing styles ...
+  detailContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    alignItems: 'center',
+    ...SHADOWS.large,
+  },
+  detailImage: {
+    width: '100%',
+    height: verticalScale(300),
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  detailTitle: {
+    fontSize: moderateScale(20),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  detailCategory: {
+    fontSize: moderateScale(14),
+    color: COLORS.textLight,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    padding: 8,
+  },
+
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   header: {
     flexDirection: 'row',

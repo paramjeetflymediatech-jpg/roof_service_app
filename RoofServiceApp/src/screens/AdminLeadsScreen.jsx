@@ -24,8 +24,9 @@ const formatDateLocal = value => {
   return d.toLocaleDateString();
 };
 
-const AdminLeadsScreen = () => {
+const AdminLeadsScreen = ({ route }) => {
   const navigation = useNavigation();
+  const { userId, userName } = route.params || {};
 
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,13 +41,13 @@ const AdminLeadsScreen = () => {
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    loadQuotes('');
-  }, []);
+    loadQuotes('', null, 1, false, userId);
+  }, [userId]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadQuotes(searchQuery, dateFilter);
-    }, []),
+      loadQuotes(searchQuery, dateFilter, 1, false, userId);
+    }, [userId]),
   );
 
   const isFirstRender = React.useRef(true);
@@ -57,16 +58,17 @@ const AdminLeadsScreen = () => {
     }
     const timeout = setTimeout(() => {
       setPage(1);
-      loadQuotes(searchQuery, dateFilter, 1, false);
+      loadQuotes(searchQuery, dateFilter, 1, false, userId);
     }, 500);
     return () => clearTimeout(timeout);
-  }, [searchQuery, dateFilter, statusFilter]);
+  }, [searchQuery, dateFilter, statusFilter, userId]);
 
   const loadQuotes = async (
     search = '',
     date = null,
     pageNum = 1,
     shouldAppend = false,
+    filterUserId = null,
   ) => {
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
@@ -76,6 +78,8 @@ const AdminLeadsScreen = () => {
       if (search) params.search = search;
       if (date) params.date = date;
       if (statusFilter !== 'all') params.status = statusFilter;
+      // Use passed userId or fallback to component state userId (if available in closure, but safer to pass)
+      if (filterUserId) params.userId = filterUserId;
 
       const response = await api.getLeads(params);
       const rawItems =
@@ -120,11 +124,9 @@ const AdminLeadsScreen = () => {
       if (shouldAppend) {
         setQuotes(prev => [...prev, ...normalizedItems]);
       } else {
-        // When invalidating logic (new search/filter), we set quotes to new items
         setQuotes(normalizedItems);
       }
 
-      // Update hasMore
       if (normalizedItems.length < 10) {
         setHasMore(false);
       } else {
@@ -138,21 +140,19 @@ const AdminLeadsScreen = () => {
     }
   };
 
-  console.log('quotes', quotes);
-
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setPage(1);
     setHasMore(true);
-    await loadQuotes(searchQuery, dateFilter, 1, false);
+    await loadQuotes(searchQuery, dateFilter, 1, false, userId);
     setRefreshing(false);
-  }, [searchQuery, dateFilter, statusFilter]);
+  }, [searchQuery, dateFilter, statusFilter, userId]);
 
   const onEndReached = () => {
     if (!loading && !loadingMore && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      loadQuotes(searchQuery, dateFilter, nextPage, true);
+      loadQuotes(searchQuery, dateFilter, nextPage, true, userId);
     }
   };
 
@@ -288,7 +288,9 @@ const AdminLeadsScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>All Leads</Text>
+        <Text style={styles.headerTitle}>
+          {userName ? `Leads: ${userName}` : 'All Leads'}
+        </Text>
       </View>
 
       <View style={styles.contentContainer}>

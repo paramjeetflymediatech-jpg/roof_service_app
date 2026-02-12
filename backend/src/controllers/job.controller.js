@@ -303,7 +303,10 @@ exports.getEmployeeJobs = async (req, res) => {
             "phone",
             "address",
             "serviceType",
+            "employee_notes",
             "message",
+            "clientImages",
+            "completionImages",
           ],
         },
         {

@@ -107,6 +107,8 @@ import AdminAssignScreen from './src/screens/AdminAssignScreen';
 import EmployeeDashboardScreen from './src/screens/EmployeeDashboardScreen';
 import EmployeeJobDetailScreen from './src/screens/EmployeeJobDetailScreen';
 import EmployeeProfileScreen from './src/screens/EmployeeProfileScreen';
+import EmployeeServicesScreen from './src/screens/EmployeeServicesScreen';
+import EmployeeGalleryScreen from './src/screens/EmployeeGalleryScreen';
 import ClientLeadDetailScreen from './src/screens/ClientLeadDetailScreen';
 import ClientProfileScreen from './src/screens/ClientProfileScreen';
 import AdminProfileScreen from './src/screens/AdminProfileScreen';
@@ -118,6 +120,10 @@ import ClientServicesScreen from './src/screens/ClientServicesScreen';
 import ClientGalleryScreen from './src/screens/ClientGalleryScreen';
 import ClientMyQuotesScreen from './src/screens/ClientMyQuotesScreen';
 import EmployeeMyJobsScreen from './src/screens/EmployeeMyJobsScreen';
+import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
+import TermsConditionsScreen from './src/screens/TermsConditionsScreen';
+import HelpSupportScreen from './src/screens/HelpSupportScreen';
+import AboutAppScreen from './src/screens/AboutAppScreen';
 
 // Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -171,6 +177,13 @@ const RootNavigator = () => {
           <Stack.Screen name="AdminLeads" component={AdminLeadsScreen} />
           <Stack.Screen name="AdminServices" component={AdminServicesScreen} />
           <Stack.Screen name="AdminGallery" component={AdminGalleryScreen} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+          <Stack.Screen
+            name="TermsConditions"
+            component={TermsConditionsScreen}
+          />
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+          <Stack.Screen name="AboutApp" component={AboutAppScreen} />
         </>
       )}
 
@@ -192,6 +205,21 @@ const RootNavigator = () => {
             name="EmployeeProfile"
             component={EmployeeProfileScreen}
           />
+          <Stack.Screen
+            name="EmployeeServices"
+            component={EmployeeServicesScreen}
+          />
+          <Stack.Screen
+            name="EmployeeGallery"
+            component={EmployeeGalleryScreen}
+          />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+          <Stack.Screen
+            name="TermsConditions"
+            component={TermsConditionsScreen}
+          />
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+          <Stack.Screen name="AboutApp" component={AboutAppScreen} />
         </>
       )}
 
@@ -209,6 +237,13 @@ const RootNavigator = () => {
             component={ClientServicesScreen}
           />
           <Stack.Screen name="ClientGallery" component={ClientGalleryScreen} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+          <Stack.Screen
+            name="TermsConditions"
+            component={TermsConditionsScreen}
+          />
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+          <Stack.Screen name="AboutApp" component={AboutAppScreen} />
           <Stack.Screen
             name="ClientMyQuotes"
             component={ClientMyQuotesScreen}

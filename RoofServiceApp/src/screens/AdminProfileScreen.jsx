@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,17 @@ import {
   Platform,
   TouchableOpacity,
   ImageBackground,
+  Image,
+  ActivityIndicator,
   StatusBar,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import { COLORS, SHADOWS } from '../utils/constants';
-import { api } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 // Reuse hero image
@@ -29,6 +32,10 @@ const AdminProfileScreen = () => {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(
+    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
+  );
+  const [uploading, setUploading] = useState(false);
   const [stats, setStats] = useState({
     leadsManaged: 0,
     activeEmployees: 0,
@@ -41,7 +48,7 @@ const AdminProfileScreen = () => {
   const loadProfileStats = async () => {
     try {
       const leadsRes = await api.getLeads({});
-      const usersRes = await api.getUsers('employee');
+      const usersRes = await api.getAllUsers({ role: 'employee' });
       const leads = leadsRes.data?.items?.length || 0;
       const employees = usersRes.data?.items?.length || 0;
 
@@ -73,7 +80,7 @@ const AdminProfileScreen = () => {
 
     try {
       setSaving(true);
-      const res = await api.updateMe({
+      const res = await api.updateProfile({
         name: name.trim(),
         phone: phone.trim(),
       });
@@ -82,12 +89,58 @@ const AdminProfileScreen = () => {
       // Merge with existing auth user to preserve token and role
       const merged = { ...(user || {}), ...updatedUser };
       await login(merged);
-      Alert.alert('Success', 'Profile updated successfully.');
+      Alert.alert('Success', 'Profile updated successfully');
       setIsEditing(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update profile.');
+      console.log('Update profile error:', error.response || error);
+      Alert.alert('Error', 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadProfilePicture = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 800,
+      maxHeight: 800,
+    });
+
+    if (result.didCancel) return;
+    if (result.errorCode) {
+      Alert.alert('Error', result.errorMessage || 'Failed to pick image');
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('profilePicture', {
+        uri:
+          Platform.OS === 'android'
+            ? asset.uri
+            : asset.uri.replace('file://', ''),
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `profile-${Date.now()}.jpg`,
+      });
+
+      const res = await api.uploadProfilePicture(formData);
+      const updatedUser = res.data?.data || {};
+
+      setProfilePicture(updatedUser.profilePicture);
+      const merged = { ...(user || {}), ...updatedUser };
+      await login(merged);
+
+      Alert.alert('Success', 'Profile picture updated successfully');
+    } catch (error) {
+      console.log('Upload profile picture error:', error.response || error);
+      Alert.alert('Error', 'Failed to upload profile picture');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -108,12 +161,36 @@ const AdminProfileScreen = () => {
         <View style={styles.headerOverlay}>
           <View style={styles.profileHeaderContent}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
-              </Text>
+              {profilePicture ? (
+                <Image
+                  source={{
+                    uri: profilePicture.startsWith('http')
+                      ? profilePicture
+                      : `${SERVER_URL}${profilePicture}`,
+                  }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <Text style={styles.avatarText}>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={styles.cameraButton}
+                onPress={handleUploadProfilePicture}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.cameraIcon}>📷</Text>
+                )}
+              </TouchableOpacity>
             </View>
             <Text style={styles.userName}>{user?.name || 'Admin'}</Text>
-            <Text style={styles.userRole}>System Administrator</Text>
+            <Text style={styles.userEmail}>
+              {user?.email || 'admin@example.com'}
+            </Text>
           </View>
         </View>
       </ImageBackground>
@@ -214,15 +291,41 @@ const AdminProfileScreen = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingRow}>
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+          >
             <View style={styles.settingInfo}>
               <Text style={styles.settingLabel}>Privacy Policy</Text>
             </View>
             <Text style={styles.chevron}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingRow}>
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('TermsConditions')}
+          >
             <View style={styles.settingInfo}>
               <Text style={styles.settingLabel}>Terms of Service</Text>
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('HelpSupport')}
+          >
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Help & Support</Text>
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('AboutApp')}
+          >
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>About App</Text>
             </View>
             <Text style={styles.chevron}>›</Text>
           </TouchableOpacity>
@@ -341,15 +444,49 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(12),
   },
   avatarText: {
-    fontSize: moderateScale(36),
+    fontSize: moderateScale(40),
     fontWeight: '700',
     color: COLORS.primary,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: moderateScale(50),
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.secondary,
+    width: moderateScale(28),
+    height: moderateScale(28),
+    borderRadius: moderateScale(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+    zIndex: 10,
+    elevation: 5,
+  },
+  cameraIcon: {
+    fontSize: moderateScale(14),
   },
   userName: {
     fontSize: moderateScale(22),
     fontWeight: '700',
     color: COLORS.white,
     marginBottom: verticalScale(2),
+  },
+  userEmail: {
+    fontSize: moderateScale(13),
+    color: COLORS.white,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: verticalScale(2),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(6),
+    borderRadius: moderateScale(12),
   },
   userRole: {
     fontSize: moderateScale(13),

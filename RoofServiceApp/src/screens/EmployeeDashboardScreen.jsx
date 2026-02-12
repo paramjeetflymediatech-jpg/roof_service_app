@@ -321,6 +321,28 @@ const EmployeeDashboardScreen = () => {
           ListHeaderComponent={() => (
             <View>
               <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Quick Access</Text>
+              </View>
+
+              {/* Services and Gallery Cards */}
+              <View style={styles.quickAccessRow}>
+                <TouchableOpacity
+                  style={styles.quickAccessCard}
+                  onPress={() => navigation.navigate('EmployeeServices')}
+                >
+                  <Text style={styles.quickAccessIcon}>🔨</Text>
+                  <Text style={styles.quickAccessLabel}>Services</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.quickAccessCard}
+                  onPress={() => navigation.navigate('EmployeeGallery')}
+                >
+                  <Text style={styles.quickAccessIcon}>🖼️</Text>
+                  <Text style={styles.quickAccessLabel}>Gallery</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Up Next</Text>
                 <TouchableOpacity
                   onPress={() => navigation.navigate('EmployeeMyJobs')}
@@ -479,6 +501,29 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(14),
     color: COLORS.primary,
     fontWeight: '600',
+  },
+  quickAccessRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(20),
+    gap: moderateScale(12),
+  },
+  quickAccessCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
+    alignItems: 'center',
+    ...SHADOWS.small,
+  },
+  quickAccessIcon: {
+    fontSize: moderateScale(40),
+    marginBottom: verticalScale(8),
+  },
+  quickAccessLabel: {
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+    color: COLORS.text,
   },
   emptyState: {
     alignItems: 'center',

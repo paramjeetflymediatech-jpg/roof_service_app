@@ -6,13 +6,16 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Linking,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS, FONTS} from '../utils/constants';
-import { api } from '../config/api';
+import { COLORS, FONTS } from '../utils/constants';
+import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
@@ -32,6 +35,9 @@ const ClientLeadDetailScreen = () => {
     phone: initialLead?.assignedEmployeePhone,
   });
   const [loading, setLoading] = useState(!initialLead);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [currentImages, setCurrentImages] = useState([]);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -41,7 +47,6 @@ const ClientLeadDetailScreen = () => {
         // Fetch latest lead data
         const res = await api.getLeadById(initialLead.id);
         const apiLead = res.data || {};
-
         // Merge API lead fields into existing mapped lead shape
         const mergedLead = {
           ...(initialLead || {}),
@@ -54,6 +59,7 @@ const ClientLeadDetailScreen = () => {
             apiLead.employeeEndTime || initialLead.employeeEndTime,
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
+          clientImages: apiLead.clientImages || initialLead.clientImages,
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
           preferedDate: apiLead.preferredDate
             ? formatDateLocal(apiLead.preferredDate)
@@ -85,6 +91,28 @@ const ClientLeadDetailScreen = () => {
 
     fetchDetails();
   }, [initialLead]);
+
+  const openImageModal = (images, index) => {
+    setCurrentImages(images);
+    setSelectedImageIndex(index);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const goToPrevImage = () => {
+    setSelectedImageIndex(prev =>
+      prev > 0 ? prev - 1 : currentImages.length - 1,
+    );
+  };
+
+  const goToNextImage = () => {
+    setSelectedImageIndex(prev =>
+      prev < currentImages.length - 1 ? prev + 1 : 0,
+    );
+  };
 
   if (!lead) {
     return (
@@ -118,6 +146,7 @@ const ClientLeadDetailScreen = () => {
     employeeStartTime,
     employeeEndTime,
     completionImages,
+    clientImages,
   } = lead;
 
   const assignedEmployeeName = employee?.name || lead.assignedEmployeeName;
@@ -169,10 +198,19 @@ const ClientLeadDetailScreen = () => {
               <Text style={styles.detailValue}>{assignedEmployeeName}</Text>
             </View>
             {assignedEmployeePhone && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Phone:</Text>
-                <Text style={styles.detailValue}>{assignedEmployeePhone}</Text>
-              </View>
+              <TouchableOpacity
+                style={[styles.contactCard, { marginRight: moderateScale(10) }]}
+                onPress={() =>
+                  Linking.openURL(`tel:${assignedEmployeePhone}`)
+                }
+              >
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Phone: </Text>
+                  <Text style={styles.detailValue}>
+                    {assignedEmployeePhone}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
           </>
         ) : (
@@ -190,6 +228,39 @@ const ClientLeadDetailScreen = () => {
         )}
       </Card>
 
+      {Array.isArray(clientImages) && clientImages.length > 0 && (
+        <Card title="Your Uploaded Photos" style={styles.card}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.imagesRow}
+          >
+            {clientImages.map((img, index) => {
+              const url = img.url || img.uri || img;
+              const imageUrl = url.startsWith('http')
+                ? url
+                : `${SERVER_URL}/${url}`;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    openImageModal(
+                      clientImages.map(i => {
+                        const u = i.url || i.uri || i;
+                        return u.startsWith('http') ? u : `${SERVER_URL}/${u}`;
+                      }),
+                      index,
+                    )
+                  }
+                >
+                  <Image source={{ uri: imageUrl }} style={styles.image} />
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </Card>
+      )}
+
       {Array.isArray(completionImages) && completionImages.length > 0 && (
         <Card title="Work Photos" style={styles.card}>
           <ScrollView
@@ -197,13 +268,28 @@ const ClientLeadDetailScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.imagesRow}
           >
-            {completionImages.map((img, index) => (
-              <Image
-                key={index}
-                source={{ uri: img.url || img.uri }}
-                style={styles.image}
-              />
-            ))}
+            {completionImages.map((img, index) => {
+              const url = img.url || img.uri;
+              const imageUrl = url.startsWith('http')
+                ? url
+                : `${SERVER_URL}/${url}`;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    openImageModal(
+                      completionImages.map(i => {
+                        const u = i.url || i.uri;
+                        return u.startsWith('http') ? u : `${SERVER_URL}/${u}`;
+                      }),
+                      index,
+                    )
+                  }
+                >
+                  <Image source={{ uri: imageUrl }} style={styles.image} />
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </Card>
       )}
@@ -214,6 +300,46 @@ const ClientLeadDetailScreen = () => {
         style={styles.backButton}
         variant="outline"
       />
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={closeModal}
+        animationType="fade"
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={closeModal}
+          >
+            <Text style={styles.modalCloseText}>✕</Text>
+          </TouchableOpacity>
+
+          <View style={styles.modalContent}>
+            {currentImages.length > 0 && (
+              <Image
+                source={{ uri: currentImages[selectedImageIndex] }}
+                style={styles.modalImage}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+
+          <View style={styles.modalControls}>
+            <TouchableOpacity style={styles.navButton} onPress={goToPrevImage}>
+              <Text style={styles.navButtonText}>‹</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.imageCounter}>
+              {selectedImageIndex + 1} of {currentImages.length}
+            </Text>
+
+            <TouchableOpacity style={styles.navButton} onPress={goToNextImage}>
+              <Text style={styles.navButtonText}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -312,6 +438,61 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(FONTS.sizes.h3),
     color: COLORS.textLight,
     marginBottom: verticalScale(16),
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: verticalScale(50),
+    right: moderateScale(20),
+    zIndex: 10,
+    padding: moderateScale(10),
+  },
+  modalCloseText: {
+    color: COLORS.white,
+    fontSize: moderateScale(28),
+    fontWeight: '600',
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalImage: {
+    width: '90%',
+    height: '70%',
+  },
+  modalControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(30),
+    paddingBottom: verticalScale(40),
+    width: '100%',
+  },
+  navButton: {
+    padding: moderateScale(15),
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: moderateScale(50),
+    width: moderateScale(50),
+    height: moderateScale(50),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonText: {
+    color: COLORS.white,
+    fontSize: moderateScale(32),
+    fontWeight: '300',
+  },
+  imageCounter: {
+    color: COLORS.white,
+    fontSize: moderateScale(16),
+    fontWeight: '500',
   },
 });
 

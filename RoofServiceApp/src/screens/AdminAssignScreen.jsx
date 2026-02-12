@@ -103,7 +103,7 @@ const AdminAssignScreen = ({ route }) => {
   console.log('selectedQuote', selectedQuote);
   const loadEmployees = async () => {
     try {
-      const response = await api.getUsers('employee');
+      const response = await api.getAllUsers({ role: 'employee' });
       const list =
         response?.data?.items ||
         response?.data?.data ||
@@ -201,7 +201,7 @@ const AdminAssignScreen = ({ route }) => {
       setLoading(false);
     }
   };
-
+  console.log('selectedQuote', selectedQuote);
   if (!selectedQuote) {
     return (
       <View style={styles.container}>
@@ -479,13 +479,19 @@ const AdminAssignScreen = ({ route }) => {
                   showsHorizontalScrollIndicator={false}
                   style={styles.imageScroll}
                 >
-                  {selectedQuote.completionImages.map((img, index) => (
-                    <Image
-                      key={index}
-                      source={{ uri: img.url || img.uri }}
-                      style={styles.completionImage}
-                    />
-                  ))}
+                  {selectedQuote.completionImages.map((img, index) => {
+                    const url = img.url || img.uri;
+                    const imageUrl = url.startsWith('http')
+                      ? url
+                      : `${SERVER_URL}/${url}`;
+                    return (
+                      <Image
+                        key={index}
+                        source={{ uri: imageUrl }}
+                        style={styles.completionImage}
+                      />
+                    );
+                  })}
                 </ScrollView>
               )}
           </View>

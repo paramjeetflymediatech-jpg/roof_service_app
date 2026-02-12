@@ -2,11 +2,11 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this to your backend server IP/URL
-export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
-export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
+// export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
+// export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
 
-// export const API_BASE_URL = 'http://10.0.2.2:5000/api';
-// export const SERVER_URL = 'http://10.0.2.2:5000';
+export const API_BASE_URL = 'http://10.0.2.2:5000/api';
+export const SERVER_URL = 'http://10.0.2.2:5000';
 
 // export const API_BASE_URL_IOS = 'http://localhost:5000/api'; // For iOS simulator
 
@@ -82,12 +82,18 @@ export const api = {
     apiClient.put(`/leads/my/${id}`, data, config),
 
   // Users
-  getUsers: role => apiClient.get(`/users${role ? `?role=${role}` : ''}`),
+  getAllUsers: (params = {}) => apiClient.get('/users', { params }),
   getUserById: id => apiClient.get(`/users/${id}`),
   createUser: data => apiClient.post('/users', data),
   updateUser: (id, data) => apiClient.put(`/users/${id}`, data),
   deleteUser: id => apiClient.delete(`/users/${id}`),
-  updateMe: data => apiClient.put('/users/me', data),
+  updateProfile: data => apiClient.put('/users/me', data),
+  uploadProfilePicture: formData =>
+    apiClient.post('/users/me/profile-picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
 
   // Jobs (for employees)
   getAllJobs: (filters = {}) => {

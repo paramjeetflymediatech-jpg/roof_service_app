@@ -1,5 +1,6 @@
-const { User } = require("../models");
-
+const { User, sequelize } = require("../models");
+const fs = require("fs");
+const path = require("path");
 // Get all users (optionally filtered by role)
 exports.getallusers = async (req, res, next) => {
   try {
@@ -10,6 +11,16 @@ exports.getallusers = async (req, res, next) => {
 
     const users = await User.findAll({
       where,
+      attributes: {
+        include: [
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM leads WHERE leads.user_id = User.id)",
+            ),
+            "leadsCount",
+          ],
+        ],
+      },
       order: [["createdAt", "DESC"]],
       raw: true,
     });
@@ -122,6 +133,24 @@ exports.deleteUser = async (req, res, next) => {
         .json({ success: false, message: "User not found" });
     }
 
+    if (user.profilePicture) {
+      let oldimage = user.profilePicture;
+      if (oldimage) {
+        try {
+          const imagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "public",
+            oldimage,
+          );
+          fs.unlinkSync(imagePath);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+
     await user.destroy();
     res.json({ success: true, message: "User deleted" });
   } catch (err) {
@@ -160,6 +189,71 @@ exports.updateMe = async (req, res, next) => {
     delete safeUser.password;
 
     res.json({ success: true, data: safeUser, message: "Profile updated" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Upload profile picture for authenticated user
+exports.uploadProfilePicture = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
+    }
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (req.file || req.files) {
+      let oldimage = user.profilePicture;
+      if (oldimage) {
+        try {
+          const imagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "public",
+            oldimage,
+          );
+          fs.unlinkSync(imagePath);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+    // Store relative path (the file is already saved by multer)
+    let profilePicturePath;
+    if (user.role === "user") {
+      profilePicturePath = `/uploads/profiles/${req.file.filename}`;
+    } else if (user.role === "employee") {
+      profilePicturePath = `/uploads/employees/${req.file.filename}`;
+    } else if (user.role === "admin") {
+      profilePicturePath = `/uploads/admins/${req.file.filename}`;
+    }
+
+    await user.update({ profilePicture: profilePicturePath });
+
+    const safeUser = user.toJSON();
+    delete safeUser.password;
+
+    res.json({
+      success: true,
+      data: safeUser,
+      message: "Profile picture uploaded successfully",
+    });
   } catch (err) {
     next(err);
   }

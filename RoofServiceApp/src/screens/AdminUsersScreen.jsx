@@ -60,7 +60,7 @@ const AdminUsersScreen = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.getUsers();
+      const res = await api.getAllUsers({});
       const raw =
         res.data?.items ||
         res.data?.data ||
@@ -179,7 +179,12 @@ const AdminUsersScreen = () => {
       <View style={styles.cardMain}>
         <TouchableOpacity
           style={styles.cardContent}
-          onPress={() => startEdit(item)}
+          onPress={() =>
+            navigation.navigate('AdminLeads', {
+              userId: item.id,
+              userName: item.name,
+            })
+          }
           activeOpacity={0.7}
         >
           <View style={styles.avatarContainer}>
@@ -227,6 +232,18 @@ const AdminUsersScreen = () => {
                   ]}
                 >
                   {item.role}
+                </Text>
+              </View>
+
+              {/* Lead Count Badge */}
+              <View
+                style={[
+                  styles.rolePill,
+                  { marginLeft: 8, backgroundColor: '#eef2ff' },
+                ]}
+              >
+                <Text style={[styles.roleText, { color: COLORS.primary }]}>
+                  {item.leadsCount || 0} Leads
                 </Text>
               </View>
             </View>

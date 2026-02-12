@@ -1,5 +1,7 @@
 const { Lead, Job, User } = require("../models");
 const { Op } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
 const {
   sendLeadNotification,
   sendCustomerConfirmation,
@@ -328,10 +330,8 @@ exports.updateLead = async (req, res, next) => {
   try {
     const lead = await Lead.findByPk(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
-    console.log(req.body);
     // 1️⃣ Prepare image metadata
     let completionImages = [];
-
     if (req.files && req.files.length > 0) {
       completionImages = req.files.map((file) => ({
         filename: file.filename,
@@ -581,6 +581,42 @@ exports.deleteLead = async (req, res, next) => {
         .json({ message: "Cannot delete a lead that is not pending" });
     }
 
+    if (lead.completion_images || lead.completionImages) {
+      const oldImages = lead.completion_images || lead.completionImages;
+      if (Array.isArray(oldImages)) {
+        oldImages.forEach((img) => {
+          const oldImagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "public",
+            img.url,
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        });
+      }
+    }
+
+    if (lead.clientImages || lead.client_images) {
+      const oldImages = lead.clientImages || lead.client_images;
+      if (Array.isArray(oldImages)) {
+        oldImages.forEach((img) => {
+          const oldImagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "public",
+            img.url,
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        });
+      }
+    }
+
     await lead.destroy();
     res.json({ success: true, message: "Quote deleted successfully" });
   } catch (err) {
@@ -616,28 +652,77 @@ exports.updateMyLead = async (req, res, next) => {
     delete updateData.userId; // Prevent transferring ownership
 
     // Handle kept images (for deletion/retention)
+    // Handle kept images (for deletion/retention)
     let finalImages = [];
-    if (Object.prototype.hasOwnProperty.call(updateData, "keptImages")) {
+    let keptImagesArray = [];
+
+    // Parse keptImages from request
+    if (Object.prototype.hasOwnProperty.call(req.body, "keptImages")) {
       try {
-        finalImages =
-          typeof updateData.keptImages === "string"
-            ? JSON.parse(updateData.keptImages)
-            : updateData.keptImages;
-        if (!Array.isArray(finalImages)) finalImages = [];
+        keptImagesArray =
+          typeof req.body.keptImages === "string"
+            ? JSON.parse(req.body.keptImages)
+            : req.body.keptImages;
+        if (!Array.isArray(keptImagesArray)) keptImagesArray = [];
       } catch (e) {
-        finalImages = [];
+        keptImagesArray = [];
       }
-      delete updateData.keptImages; // Don't save this field directly
     } else {
-      // Fallback: keep existing if not specified
-      finalImages = lead.clientImages || [];
+      // If keptImages not provided, assuming we keep existing ones logic?
+      // Or if not provided, maybe it means keep none?
+      // Usually form sends what is kept. If implied "keep all if not sent", strict check needed.
+      // But typically a form submission includes the field if it's handling images.
+      // Let's assume if it's missing, we default to keeping existing (safest).
+      // However, client app sends "keptImages" as stringified JSON of images to keep.
+      // If user deletes all, it sends empty array.
+      if (lead.clientImages) {
+        keptImagesArray = lead.clientImages;
+      }
     }
+
+    // Identify images to delete
+    const currentImages = lead.clientImages || [];
+    if (Array.isArray(currentImages)) {
+      const imagesToDelete = currentImages.filter(
+        (img) => !keptImagesArray.some((kept) => kept.url === img.url),
+      );
+
+      imagesToDelete.forEach((img) => {
+        try {
+          const oldImagePath = path.join(
+            __dirname,
+            "../../", // Adjusted path: controllers -> src -> backend -> public (assuming structure)
+            // Wait, looking at lines 591-597 in deleteLead:
+            // path.join(__dirname, "..", "..", "public", img.url)
+            // lead.clientImages urls likely start with "uploads/" or just filename?
+            // createLead says: url: `uploads/leads/${file.filename}`
+            // So public/uploads/leads/... is the path?
+            // line 680 in original code: path.join(__dirname, "..", "..", "public/uploads", img.url)
+            // If img.url is "uploads/leads/foo.jpg", joining "public/uploads" + "uploads/leads/..." duplicates uploads?
+            // createLead: url: `uploads/leads/${file.filename}`.
+            // If public is static root.
+            // Let's check deleteLead (lines 591-597): path.join(__dirname, "..", "..", "public", img.url)
+            // This suggests img.url includes "uploads/..."
+            // So: path.join(..., "public", "uploads/leads/foo.jpg") -> .../public/uploads/leads/foo.jpg
+            "public",
+            img.url,
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        } catch (err) {
+          console.error("Error deleting image:", err);
+        }
+      });
+    }
+
+    finalImages = [...keptImagesArray];
 
     // Handle new images if any
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => ({
         filename: file.filename,
-        url: `/leads/${file.filename}`,
+        url: `uploads/leads/${file.filename}`,
         mimeType: file.mimetype,
         size: file.size,
       }));
