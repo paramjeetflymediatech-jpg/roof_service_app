@@ -50,7 +50,7 @@ export default function GalleryPage({ seoData }) {
           // Combine with static projects or replace? User asked for dynamic.
           // Let's prepend dynamic items to static ones, or just use dynamic if available.
           // For now, I'll prepend so user sees their uploads first.
-          setGalleryItems([...mappedItems, ...PROJECTS]);
+          setGalleryItems([...mappedItems]);
         }
         setLoading(false);
       });
