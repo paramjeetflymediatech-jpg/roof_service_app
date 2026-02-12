@@ -28,7 +28,14 @@ const storage = multer.diskStorage({
     )
       prefix = "job-";
 
-    cb(null, prefix + Date.now() + path.extname(file.originalname));
+    cb(
+      null,
+      prefix +
+        Date.now() +
+        "-" +
+        Math.round(Math.random() * 1e9) +
+        path.extname(file.originalname),
+    );
   },
 });
 

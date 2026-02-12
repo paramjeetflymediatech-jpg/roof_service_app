@@ -37,6 +37,12 @@ exports.deleteGalleryItem = async (req, res, next) => {
     if (!item) return res.status(404).json({ message: "Item not found" });
 
     // Optional: Delete file from filesystem here if needed
+    if (item.imageUrl) {
+      const filePath = path.join(__dirname, "..", "public", item.imageUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
 
     await item.destroy();
     res.json({ message: "Item deleted" });

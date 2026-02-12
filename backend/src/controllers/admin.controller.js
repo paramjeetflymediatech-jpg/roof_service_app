@@ -1,4 +1,13 @@
-const { User, Lead, Service, SeoMeta, ServiceCategory } = require("../models");
+const {
+  User,
+  Lead,
+  Service,
+  SeoMeta,
+  ServiceCategory,
+  Gallery,
+} = require("../models");
+const fs = require("fs");
+const path = require("path");
 
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
@@ -194,7 +203,7 @@ const postCreateLead = async (req, res) => {
       serviceType,
       roofType,
       hearAboutUs,
-      status,
+      status = "pending",
       message,
       preferredDate,
       employeeStartTime,
@@ -229,6 +238,7 @@ const postCreateLead = async (req, res) => {
       hearAboutUs,
       userId,
       message,
+      status,
       preferredDate: preferredDate || null,
       employeeStartTime,
       employeeEndTime,
@@ -254,7 +264,6 @@ const getEditLead = async (req, res) => {
       req.flash("error", "Lead not found");
       return res.redirect("/admin/leads");
     }
-
     res.render("admin/leads/edit", {
       title: "Edit Lead",
       userName: req.session.userName,
@@ -310,6 +319,7 @@ const postUpdateLead = async (req, res) => {
       clientImages = [];
     }
 
+    // Add new uploaded images
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => ({
         url: `/uploads/leads/${file.filename}`,
@@ -317,6 +327,29 @@ const postUpdateLead = async (req, res) => {
         type: file.mimetype,
       }));
       clientImages = [...clientImages, ...newImages];
+    }
+
+    // Handle image deletion
+    if (req.body.deleteImages) {
+      const imagesToDelete = Array.isArray(req.body.deleteImages)
+        ? req.body.deleteImages
+        : [req.body.deleteImages];
+
+      clientImages = clientImages.filter((img) => {
+        if (imagesToDelete.includes(img.url)) {
+          // Delete file from filesystem
+          try {
+            const filePath = path.join(__dirname, "../../public", img.url);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          } catch (err) {
+            console.error("Error deleting image file:", err);
+          }
+          return false; // Remove from array
+        }
+        return true; // Keep in array
+      });
     }
 
     await Lead.update(
@@ -359,6 +392,28 @@ const deleteLead = async (req, res) => {
     if (!lead) {
       req.flash("error", "Lead not found");
       return res.redirect("/admin/leads");
+    }
+
+    // Delete associated files
+    if (lead.clientImages && lead.clientImages.length > 0) {
+      try {
+        const images = Array.isArray(lead.clientImages)
+          ? lead.clientImages
+          : JSON.parse(lead.clientImages);
+
+        for (const img of images) {
+          try {
+            const filePath = path.join(__dirname, "../../public", img.url);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          } catch (err) {
+            console.error("Error deleting image file:", err);
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing clientImages:", err);
+      }
     }
 
     await Lead.destroy({ where: { id: leadId } });
@@ -1108,14 +1163,22 @@ const postUpdateService = async (req, res) => {
     let featuredImageUrl = req.body.featuredImageUrl; // Keep existing if not updating, or use hidden input value
     if (req.file) {
       featuredImageUrl = `/uploads/services/${req.file.filename}`;
+      if (service.featuredImageUrl) {
+        try {
+          const oldImagePath = path.join(
+            __dirname,
+            "../../public",
+            service.featuredImageUrl,
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        } catch (err) {
+          console.error("Error deleting old image:", err);
+        }
+      }
     } else if (!featuredImageUrl && service.featuredImageUrl) {
-      // If no file and no URL provided, keep the old one?
-      // The form should populate the URL field with existing URL.
-      // If the user cleared it, they might want to remove the image.
-      // But usually "Edit" means "Modify if provided".
-      // Let's rely on req.body.featuredImageUrl which should be populated by the form if not changed.
-      // EXCEPT: The user might have not touched the file input.
-      featuredImageUrl = req.body.featuredImageUrl || service.featuredImageUrl;
+      featuredImageUrl = service.featuredImageUrl;
     }
 
     await Service.update(
@@ -1147,7 +1210,13 @@ const postUpdateService = async (req, res) => {
 const deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
+    const service = await Service.findByPk(serviceId);
+    if (!service) {
+      req.flash("error", "Service not found");
+      return res.redirect("/admin/services");
+    }
     await Service.destroy({ where: { id: serviceId } });
+
     req.flash("success", "Service deleted successfully");
     res.redirect("/admin/services");
   } catch (error) {
@@ -1157,53 +1226,43 @@ const deleteService = async (req, res) => {
   }
 };
 
-// GET /admin/gallery - Render gallery list
+// Gallery management routes
 const getGalleryList = async (req, res) => {
   try {
-    const { Gallery } = require("../models");
-    const items = await Gallery.findAll({
-      order: [["createdAt", "DESC"]],
-      raw: true,
-    });
-
+    const gallery = await Gallery.findAll();
     res.render("admin/gallery/index", {
       title: "Gallery Management",
       userName: req.session.userName,
-      items,
+      items: gallery,
     });
   } catch (error) {
     console.error("Gallery list error:", error);
-    req.flash("error", "Error loading gallery");
+    req.flash("error", "Error loading gallery list");
     res.redirect("/admin/dashboard");
   }
 };
 
-// GET /admin/gallery/create - Render create gallery form
-const getCreateGallery = (req, res) => {
+const getCreateGallery = async (req, res) => {
+  const categories = await ServiceCategory.findAll({
+    order: [["name", "ASC"]],
+  });
   res.render("admin/gallery/create", {
-    title: "Add New Image",
+    title: "Add New Gallery Image",
     userName: req.session.userName,
+    categories: categories.map((c) => c.toJSON()),
   });
 };
 
-// POST /admin/gallery - Create new gallery item
 const postCreateGallery = async (req, res) => {
   try {
-    const { Gallery } = require("../models");
     const { title, category } = req.body;
 
-    if (!title) {
-      req.flash("error", "Title is required");
-      return res.redirect("/admin/gallery/create");
-    }
-
-    let imageUrl = "";
-    if (req.file) {
-      imageUrl = `/uploads/gallery/${req.file.filename}`;
-    } else {
+    if (!req.file) {
       req.flash("error", "Image is required");
       return res.redirect("/admin/gallery/create");
     }
+
+    const imageUrl = `/uploads/gallery/${req.file.filename}`;
 
     await Gallery.create({
       title,
@@ -1211,32 +1270,42 @@ const postCreateGallery = async (req, res) => {
       imageUrl,
     });
 
-    req.flash("success", "Image uploaded successfully");
+    req.flash("success", "Image added to gallery successfully");
     res.redirect("/admin/gallery");
   } catch (error) {
     console.error("Create gallery error:", error);
-    req.flash("error", "Error uploading image");
+    req.flash("error", "Error adding image to gallery");
     res.redirect("/admin/gallery/create");
   }
 };
 
-// POST /admin/gallery/:id/delete - Delete gallery item
 const deleteGallery = async (req, res) => {
   try {
-    const { Gallery } = require("../models");
-    const item = await Gallery.findByPk(req.params.id);
+    const galleryId = req.params.id;
+    const gallery = await Gallery.findByPk(galleryId);
 
-    if (!item) {
-      req.flash("error", "Item not found");
+    if (!gallery) {
+      req.flash("error", "Image not found");
       return res.redirect("/admin/gallery");
     }
 
-    await item.destroy();
-    req.flash("success", "Item deleted successfully");
+    // Delete file from filesystem
+    try {
+      const filePath = path.join(__dirname, "../../public", gallery.imageUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (err) {
+      console.error("Error deleting gallery file:", err);
+    }
+
+    await Gallery.destroy({ where: { id: galleryId } });
+
+    req.flash("success", "Image deleted from gallery");
     res.redirect("/admin/gallery");
   } catch (error) {
     console.error("Delete gallery error:", error);
-    req.flash("error", "Error deleting item");
+    req.flash("error", "Error deleting image");
     res.redirect("/admin/gallery");
   }
 };
@@ -1247,12 +1316,6 @@ module.exports = {
   getDashboard,
   getLogout,
   getUserList,
-  getCreateUser,
-  postCreateUser,
-  getEditUser,
-  postUpdateUser,
-  deleteUser,
-  deleteAllUsers,
   getLeadList,
   getCreateLead,
   postCreateLead,
@@ -1260,6 +1323,12 @@ module.exports = {
   postUpdateLead,
   deleteLead,
   deleteAllLeads,
+  getCreateUser,
+  postCreateUser,
+  getEditUser,
+  postUpdateUser,
+  deleteUser,
+  deleteAllUsers,
   getSeoList,
   getCreateSeo,
   postCreateSeo,

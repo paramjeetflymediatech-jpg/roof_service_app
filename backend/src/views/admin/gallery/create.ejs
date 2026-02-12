@@ -1,4 +1,4 @@
-  <%- include('../../partials/header') %>
+<%- include('../../partials/header') %>
 
 <body <% if (error && error.length > 0) { %>data-flash-error="<%= error %>"<% } %>
     <% if (success && success.length > 0) { %>data-flash-success="<%= success %>"<% } %>>
@@ -52,12 +52,14 @@
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="">Select Category</option>
-                                        <option value="Residential">Residential</option>
-                                        <option value="Commercial">Commercial</option>
-                                        <option value="Repairs">Repairs</option>
-                                        <option value="New Construction">New Construction</option>
-                                        <option value="Metal Roofing">Metal Roofing</option>
-                                        <option value="Wall Metals">Wall Metals</option>
+                                        <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                                            <% categories.forEach(function(category) { %>
+                                                <option value="<%= category.name %>"><%= category.name %></option>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <option value="Residential">Residential</option>
+                                            <option value="Commercial">Commercial</option>
+                                        <% } %>
                                     </select>
                                 </div>
 
