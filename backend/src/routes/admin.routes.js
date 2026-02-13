@@ -259,4 +259,32 @@ router.post(
   adminController.deleteGallery,
 );
 
+// Data Deletion Request management routes
+const deletionRequestController = require("../controllers/deletionRequest.controller");
+
+router.get(
+  "/deletion-requests",
+  isAuthenticated,
+  isAdmin,
+  deletionRequestController.getDeletionRequestList,
+);
+router.get(
+  "/deletion-requests/:id",
+  isAuthenticated,
+  isAdmin,
+  deletionRequestController.getRequestDetail,
+);
+router.post(
+  "/deletion-requests/:id/approve",
+  isAuthenticated,
+  isAdmin,
+  deletionRequestController.approveDeletionRequest,
+);
+router.post(
+  "/deletion-requests/:id/reject",
+  isAuthenticated,
+  isAdmin,
+  deletionRequestController.rejectDeletionRequest,
+);
+
 module.exports = router;

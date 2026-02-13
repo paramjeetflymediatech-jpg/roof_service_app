@@ -94,6 +94,7 @@ export const api = {
         'Content-Type': 'multipart/form-data',
       },
     }),
+  deleteMyAccount: () => apiClient.delete('/users/me'),
 
   // Jobs (for employees)
   getAllJobs: (filters = {}) => {

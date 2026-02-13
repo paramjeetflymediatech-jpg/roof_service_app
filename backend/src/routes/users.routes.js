@@ -19,6 +19,9 @@ router.post(
   userController.uploadProfilePicture,
 );
 
+// Delete own account and all associated data
+router.delete("/me", jwtAuth, userController.deleteMyAccount);
+
 router.get("/:id", jwtAuth, userController.getUserById);
 router.put("/:id", jwtAuth, isAdmin, userController.updateUser);
 router.delete("/:id", jwtAuth, isAdmin, userController.deleteUser);

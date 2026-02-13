@@ -63,8 +63,7 @@ const EmployeeMyJobsScreen = () => {
         response.data?.items ||
         response.data?.data ||
         (Array.isArray(response.data) ? response.data : []);
-
-        console.log(raw,'raw')
+ 
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
         const scheduledDate = job.scheduledDate || lead.preferredDate || '';
@@ -89,7 +88,6 @@ const EmployeeMyJobsScreen = () => {
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });
-      console.log(mappedJobs)
       setJobs(mappedJobs);
     } catch (error) {
       console.log('Load jobs error:', error);

@@ -1,0 +1,241 @@
+<%- include('../../partials/header') %>
+
+<body <% if (error && error.length> 0) { %>data-flash-error="<%= error %>"<% } %>
+      <% if (success && success.length> 0) { %>data-flash-success="<%= success %>"<% } %>>
+  
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <div class="admin-wrapper">
+    <%- include('../../partials/sidebar') %>
+
+    <main class="main-content">
+      <%- include('../../partials/top-header') %>
+
+      <div class="content">
+        <!-- Back Button -->
+        <div class="mb-4">
+          <a href="/admin/deletion-requests" class="inline-flex items-center text-blue-600 hover:text-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Back to Deletion Requests
+          </a>
+        </div>
+
+        <!-- Request Information -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Request Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-medium text-gray-600">Request ID</label>
+              <p class="text-gray-900">#<%= request.id %></p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Status</label>
+              <p>
+                <span class="badge 
+                  <%= request.status === 'pending' ? 'badge-warning' : 
+                      request.status === 'completed' ? 'badge-success' :
+                      request.status === 'processing' ? 'badge-primary' :
+                      'badge-danger' %>">
+                  <%= request.status.toUpperCase() %>
+                </span>
+              </p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Submitted Name</label>
+              <p class="text-gray-900"><%= request.name %></p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Email</label>
+              <p class="text-gray-900">
+                <%= request.email %>
+                <a href="mailto:<%= request.email %>" target="_blank" class="ml-2 text-blue-600 hover:text-blue-700 text-sm">
+                  Contact
+                </a>
+              </p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Requested Date</label>
+              <p class="text-gray-900"><%= new Date(request.requestedAt).toLocaleString() %></p>
+            </div>
+            <% if (request.processedAt) { %>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Processed Date</label>
+                <p class="text-gray-900"><%= new Date(request.processedAt).toLocaleString() %></p>
+              </div>
+            <% } %>
+            <% if (request.notes) { %>
+              <div class="md:col-span-2">
+                <label class="text-sm font-medium text-gray-600">Admin Notes</label>
+                <p class="text-gray-700 bg-gray-50 p-3 rounded"><%= request.notes %></p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- User Account Information -->
+        <% if (user) { %>
+          <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              User Account Found
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-medium text-gray-600">Name</label>
+                <p class="text-gray-900"><%= user.name %></p>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Email</label>
+                <p class="text-gray-900"><%= user.email %></p>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Role</label>
+                <p><span class="badge badge-primary"><%= user.role.toUpperCase() %></span></p>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Phone</label>
+                <p class="text-gray-900"><%= user.phone || 'N/A' %></p>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Account Status</label>
+                <p>
+                  <span class="badge <%= user.isActive ? 'badge-success' : 'badge-danger' %>">
+                    <%= user.isActive ? 'ACTIVE' : 'INACTIVE' %>
+                  </span>
+                </p>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Member Since</label>
+                <p class="text-gray-900"><%= new Date(user.createdAt).toLocaleDateString() %></p>
+              </div>
+            </div>
+
+            <!-- User Statistics -->
+            <% if (userStats) { %>
+              <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Data to be Deleted</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-700"><%= userStats.leadCount %></div>
+                    <div class="text-sm text-gray-600">Leads</div>
+                  </div>
+                  <div class="bg-purple-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-700"><%= userStats.jobCount %></div>
+                    <div class="text-sm text-gray-600">Jobs as Employee</div>
+                  </div>
+                  <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-indigo-700"><%= userStats.assignedJobCount %></div>
+                    <div class="text-sm text-gray-600">Jobs Assigned</div>
+                  </div>
+                  <div class="bg-red-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-red-700"><%= userStats.totalJobs %></div>
+                    <div class="text-sm text-gray-600">Total Jobs</div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                  <div class="flex">
+                    <svg class="h-5 w-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="text-sm text-yellow-700">
+                      <strong>Warning:</strong> Approving this request will permanently delete all associated data including profile, leads, jobs, and uploaded files. This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        <% } else { %>
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-6 mb-6">
+            <div class="flex items-start">
+              <svg class="h-6 w-6 text-yellow-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <div>
+                <h3 class="text-yellow-800 font-semibold">User Account Not Found</h3>
+                <p class="text-yellow-700 mt-2">
+                  No user account exists with the email <strong><%= request.email %></strong> in the system.
+                  The user may have already deleted their account or never registered.
+                </p>
+                <p class="text-yellow-700 mt-2 text-sm">
+                  You can still mark this request as completed or contact the user for clarification.
+                </p>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Actions -->
+        <% if (request.status === 'pending') { %>
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+            <div class="flex gap-4">
+              <form action="/admin/deletion-requests/<%= request.id %>/approve" method="POST" class="flex-1"
+                onsubmit="return confirm('<%= user ? `FINAL WARNING: This will PERMANENTLY DELETE the user account and ALL associated data. This cannot be undone. Are you absolutely sure?` : `Mark this request as completed?` %>');">
+                <button type="submit" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                  <%= user ? 'Approve & Delete Account' : 'Mark as Completed' %>
+                </button>
+              </form>
+              <button onclick="showRejectModal()" class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold">
+                Reject Request
+              </button>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="bg-gray-50 rounded-lg p-6 text-center">
+            <p class="text-gray-600">
+              This request has already been <%= request.status %>. No further action can be taken.
+            </p>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <!-- Reject Modal -->
+  <div id="rejectModal" class="modal">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Reject Deletion Request</h3>
+      <form action="/admin/deletion-requests/<%= request.id %>/reject" method="POST">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection (optional)</label>
+          <textarea name="notes" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter reason for rejecting this request..."></textarea>
+        </div>
+        <div class="flex gap-4">
+          <button type="button" onclick="closeRejectModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+            Reject
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/toast.js"></script>
+  <script>
+    function showRejectModal() {
+      document.getElementById('rejectModal').classList.add('show');
+    }
+
+    function closeRejectModal() {
+      document.getElementById('rejectModal').classList.remove('show');
+    }
+
+    // Close modal on outside click
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeRejectModal();
+      }
+    });
+  </script>
+</body>
+
+</html>

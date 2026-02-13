@@ -78,6 +78,62 @@ const ClientProfileScreen = () => {
     ]);
   };
 
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This will permanently delete all your data including quotes, jobs, and images. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            // Double confirmation
+            Alert.alert(
+              'Final Confirmation',
+              'This is your last chance! All your data will be permanently deleted. Are you absolutely sure?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, Delete Everything',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      setSaving(true);
+                      await api.deleteMyAccount();
+                      Alert.alert(
+                        'Account Deleted',
+                        'Your account has been permanently deleted.',
+                        [
+                          {
+                            text: 'OK',
+                            onPress: async () => await logout(),
+                          },
+                        ],
+                      );
+                    } catch (error) {
+                      console.log(
+                        'Delete account error:',
+                        error.response || error,
+                      );
+                      Alert.alert(
+                        'Error',
+                        error.response?.data?.message ||
+                          'Failed to delete account. Please try again.',
+                      );
+                    } finally {
+                      setSaving(false);
+                    }
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  };
+
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       Alert.alert('Validation', 'Name is required');
@@ -372,6 +428,21 @@ const ClientProfileScreen = () => {
               icon="ℹ️"
               title="About App"
               onPress={() => navigation.navigate('AboutApp')}
+            />
+          </View>
+        </View>
+
+        {/* Danger Zone */}
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionTitle, { color: COLORS.error }]}>
+            Danger Zone
+          </Text>
+          <View style={styles.menuContainer}>
+            <SettingsItem
+              icon="🗑️"
+              title="Delete Account"
+              onPress={handleDeleteAccount}
+              isDestructive={true}
             />
           </View>
         </View>

@@ -9,6 +9,7 @@ const jobRoutes = require("./job.routes");
 const galleryRoutes = require("./gallery.routes");
 const categoryRoutes = require("./category.routes");
 const uploadRoutes = require("./upload.routes");
+const dataDeletionRoutes = require("./dataDeletion.routes");
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/jobs", jobRoutes);
 router.use("/gallery", galleryRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/upload", uploadRoutes);
+router.use("/data-deletion", dataDeletionRoutes);
 
 module.exports = router;

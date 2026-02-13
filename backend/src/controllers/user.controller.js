@@ -1,4 +1,5 @@
 const { User, sequelize } = require("../models");
+const { Op } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
 // Get all users (optionally filtered by role)
@@ -255,6 +256,127 @@ exports.uploadProfilePicture = async (req, res, next) => {
       message: "Profile picture uploaded successfully",
     });
   } catch (err) {
+    next(err);
+  }
+};
+
+// Delete current authenticated user's account and all associated data
+exports.deleteMyAccount = async (req, res, next) => {
+  const { Lead, Job, JobLog } = require("../models");
+
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Helper function to delete image files
+    const deleteImageFile = (imagePath) => {
+      if (!imagePath) return;
+      try {
+        const fullPath = path.join(__dirname, "..", "..", "public", imagePath);
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      } catch (error) {
+        console.log("Error deleting image:", imagePath, error);
+      }
+    };
+
+    // Helper function to delete images from JSON array
+    const deleteImagesFromArray = (imagesArray) => {
+      if (!imagesArray || !Array.isArray(imagesArray)) return;
+      imagesArray.forEach((img) => {
+        if (typeof img === "string") {
+          deleteImageFile(img);
+        } else if (img && img.uri) {
+          deleteImageFile(img.uri);
+        }
+      });
+    };
+
+    // 1. Find all leads created by or assigned to the user
+    const userLeads = await Lead.findAll({
+      where: {
+        [Op.or]: [{ userId: userId }, { assignedToId: userId }],
+      },
+    });
+
+    const leadIds = userLeads.map((lead) => lead.id);
+
+    // 2. Find all jobs - both jobs referencing user's leads AND jobs where user is employee/assigned by
+    const whereConditions = [{ employeeId: userId }, { assignedById: userId }];
+
+    if (leadIds.length > 0) {
+      whereConditions.push({ leadId: leadIds });
+    }
+
+    const userJobs = await Job.findAll({
+      where: {
+        [Op.or]: whereConditions,
+      },
+    });
+
+    // Delete job-related images
+    for (const job of userJobs) {
+      deleteImagesFromArray(job.beforeImages);
+      deleteImagesFromArray(job.afterImages);
+      if (job.clientSignature) {
+        deleteImageFile(job.clientSignature);
+      }
+    }
+
+    // 3. Delete job logs associated with all these jobs
+    const jobIds = userJobs.map((job) => job.id);
+    if (jobIds.length > 0) {
+      await JobLog.destroy({
+        where: { jobId: jobIds },
+      });
+    }
+
+    // 4. Delete all the jobs
+    await Job.destroy({
+      where: {
+        [Op.or]: whereConditions,
+      },
+    });
+
+    // 5. Delete lead-related images
+    for (const lead of userLeads) {
+      deleteImagesFromArray(lead.clientImages);
+      deleteImagesFromArray(lead.completionImages);
+    }
+
+    // 6. Delete the leads (now safe since all referencing jobs are deleted)
+    await Lead.destroy({
+      where: {
+        [Op.or]: [{ userId: userId }, { assignedToId: userId }],
+      },
+    });
+
+    // 7. Delete user's profile picture
+    if (user.profilePicture) {
+      deleteImageFile(user.profilePicture);
+    }
+
+    // 8. Finally, delete the user account
+    await user.destroy();
+
+    res.json({
+      success: true,
+      message: "Account and all associated data deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error deleting account:", err);
     next(err);
   }
 };
