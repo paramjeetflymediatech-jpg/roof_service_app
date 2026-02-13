@@ -73,8 +73,8 @@ const Lead = sequelize.define('Lead', {
   },
   // Mobile app status flow: new -> pending -> reviewed -> approved -> assigned -> in_progress -> completed
   status: {
-    type: DataTypes.ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
-    defaultValue: 'new',
+    type: DataTypes.ENUM('pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
+    defaultValue: 'pending',
   },
   assignedToId: {
     type: DataTypes.INTEGER,

@@ -96,7 +96,7 @@ async function runMigration() {
         hear_about_us VARCHAR(255),
         service_id INT,
         source ENUM('website', 'mobile_app', 'other') DEFAULT 'website',
-        status ENUM('new', 'pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled') DEFAULT 'new',
+        status ENUM('pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
         assigned_to_id INT,
         user_id INT,
         in_time DATETIME NULL,

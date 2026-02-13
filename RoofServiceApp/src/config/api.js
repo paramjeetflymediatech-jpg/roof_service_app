@@ -1,14 +1,14 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  API_BASE_URL as ENV_API_BASE_URL,
+  SERVER_URL as ENV_SERVER_URL,
+} from '@env';
 
-// Update this to your backend server IP/URL
-// export const API_BASE_URL = 'https://api.mainstreet-roofing.ca/api'; // For physical device
-// export const SERVER_URL = 'https://api.mainstreet-roofing.ca' // For physical device
-
-export const API_BASE_URL = 'http://10.0.2.2:5000/api';
-export const SERVER_URL = 'http://10.0.2.2:5000';
-
-// export const API_BASE_URL_IOS = 'http://localhost:5000/api'; // For iOS simulator
+// Use environment variables from .env file
+// Falls back to localhost for development if .env is not configured
+export const API_BASE_URL = ENV_API_BASE_URL || 'http://10.0.2.2:5000/api';
+export const SERVER_URL = ENV_SERVER_URL || 'http://10.0.2.2:5000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
