@@ -256,7 +256,11 @@ const AdminAssignScreen = ({ route }) => {
               label="Client"
               value={selectedQuote.clientName}
             />
-            <InfoItem icon="📍" label="Address" value={selectedQuote.address} />
+            <InfoItem
+              icon="📍"
+              label="Address"
+              value={selectedQuote.address + ' ' + selectedQuote?.city || ''}
+            />
             <InfoItem icon="📞" label="Phone" value={selectedQuote.phone} />
             <InfoItem icon="📧" label="Email" value={selectedQuote.email} />
             <InfoItem

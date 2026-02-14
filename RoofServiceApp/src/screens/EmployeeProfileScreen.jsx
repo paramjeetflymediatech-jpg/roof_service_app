@@ -70,62 +70,6 @@ const EmployeeProfileScreen = () => {
     ]);
   };
 
-  const handleDeleteAccount = async () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This will permanently delete all your data including jobs, assignments, and images. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            // Double confirmation
-            Alert.alert(
-              'Final Confirmation',
-              'This is your last chance! All your data will be permanently deleted. Are you absolutely sure?',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Yes, Delete Everything',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      setSaving(true);
-                      await api.deleteMyAccount();
-                      Alert.alert(
-                        'Account Deleted',
-                        'Your account has been permanently deleted.',
-                        [
-                          {
-                            text: 'OK',
-                            onPress: async () => await logout(),
-                          },
-                        ],
-                      );
-                    } catch (error) {
-                      console.log(
-                        'Delete account error:',
-                        error.response || error,
-                      );
-                      Alert.alert(
-                        'Error',
-                        error.response?.data?.message ||
-                          'Failed to delete account. Please try again.',
-                      );
-                    } finally {
-                      setSaving(false);
-                    }
-                  },
-                },
-              ],
-            );
-          },
-        },
-      ],
-    );
-  };
-
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       Alert.alert('Validation', 'Name is required');
@@ -419,29 +363,6 @@ const EmployeeProfileScreen = () => {
                 About App
               </Text>
               <Text style={{ fontSize: 18, color: COLORS.textLight }}>›</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Danger Zone */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: COLORS.error }]}>
-            Danger Zone
-          </Text>
-          <View style={styles.formContainer}>
-            <TouchableOpacity
-              style={{
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-              onPress={handleDeleteAccount}
-            >
-              <Text style={{ fontSize: 20, marginRight: 12 }}>🗑️</Text>
-              <Text style={{ fontSize: 16, color: COLORS.error, flex: 1 }}>
-                Delete Account
-              </Text>
-              <Text style={{ fontSize: 18, color: COLORS.error }}>›</Text>
             </TouchableOpacity>
           </View>
         </View>

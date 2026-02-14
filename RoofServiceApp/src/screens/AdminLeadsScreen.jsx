@@ -90,7 +90,7 @@ const AdminLeadsScreen = ({ route }) => {
         id: item.id || item._id || item.lead_id,
         clientName: item.clientName || item.client_name || item.name || 'N/A',
         service: item.serviceType || item.service_name || 'N/A',
-        address: item.address || 'N/A',
+        address: `${item.address} ${item?.city || ''}` || 'N/A',
         phone: item.phone || item.phone_number || 'N/A',
         status: item.status || LEAD_STATUS.PENDING,
         date: formatDateLocal(item.date || item.created_at || item.createdAt),

@@ -63,7 +63,7 @@ const EmployeeMyJobsScreen = () => {
         response.data?.items ||
         response.data?.data ||
         (Array.isArray(response.data) ? response.data : []);
- 
+
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
         const scheduledDate = job.scheduledDate || lead.preferredDate || '';
@@ -73,7 +73,7 @@ const EmployeeMyJobsScreen = () => {
           id: String(job.id ?? lead.id ?? Math.random()),
           leadId: lead.id,
           service: lead.serviceType || 'Roof Service',
-          address: lead.address || 'N/A',
+          address: `${lead.address} ${lead?.city || ''} ` || 'N/A',
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,

@@ -72,62 +72,6 @@ const AdminProfileScreen = () => {
     ]);
   };
 
-  const handleDeleteAccount = async () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This will permanently delete all your data including leads, jobs, users, and images. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            // Double confirmation
-            Alert.alert(
-              'Final Confirmation',
-              'This is your last chance! All your administrative data will be permanently deleted. Are you absolutely sure?',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Yes, Delete Everything',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      setSaving(true);
-                      await api.deleteMyAccount();
-                      Alert.alert(
-                        'Account Deleted',
-                        'Your account has been permanently deleted.',
-                        [
-                          {
-                            text: 'OK',
-                            onPress: async () => await logout(),
-                          },
-                        ],
-                      );
-                    } catch (error) {
-                      console.log(
-                        'Delete account error:',
-                        error.response || error,
-                      );
-                      Alert.alert(
-                        'Error',
-                        error.response?.data?.message ||
-                          'Failed to delete account. Please try again.',
-                      );
-                    } finally {
-                      setSaving(false);
-                    }
-                  },
-                },
-              ],
-            );
-          },
-        },
-      ],
-    );
-  };
-
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       Alert.alert('Validation', 'Name is required');
@@ -384,28 +328,6 @@ const AdminProfileScreen = () => {
               <Text style={styles.settingLabel}>About App</Text>
             </View>
             <Text style={styles.chevron}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Danger Zone */}
-        <View style={[styles.card, { borderWidth: 1, borderColor: '#fee2e2' }]}>
-          <Text style={[styles.cardTitle, { color: COLORS.error }]}>
-            Danger Zone
-          </Text>
-          <View style={styles.divider} />
-          <TouchableOpacity
-            style={styles.settingRow}
-            onPress={handleDeleteAccount}
-          >
-            <View style={styles.settingInfo}>
-              <Text style={[styles.settingLabel, { color: COLORS.error }]}>
-                🗑️ Delete Account
-              </Text>
-              <Text style={styles.settingSub}>
-                Permanently delete your account and all data
-              </Text>
-            </View>
-            <Text style={[styles.chevron, { color: COLORS.error }]}>›</Text>
           </TouchableOpacity>
         </View>
 

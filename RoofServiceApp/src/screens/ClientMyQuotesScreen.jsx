@@ -55,7 +55,7 @@ const ClientMyQuotesScreen = () => {
       const mapped = clientLeads.map(lead => ({
         id: String(lead.id),
         service: lead.serviceType || 'Roof Service',
-        address: lead.address || lead.city || 'N/A',
+        address: `${lead.address} ${lead?.city || ''}` || 'N/A',
         status: lead.status,
         date: formatDateLocal(lead.createdAt),
         message: lead.message || lead.description || '',

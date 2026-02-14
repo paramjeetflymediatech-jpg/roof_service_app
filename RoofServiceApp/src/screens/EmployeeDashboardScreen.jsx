@@ -84,7 +84,7 @@ const EmployeeDashboardScreen = () => {
           id: String(job.id ?? lead.id ?? Math.random()),
           leadId: lead.id,
           service: lead.serviceType || 'Roof Service',
-          address: lead.address || 'N/A',
+          address:  `${lead.address} ${lead?.city || ''}` || 'N/A',
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,
