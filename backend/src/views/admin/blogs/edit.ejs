@@ -62,7 +62,7 @@
                                     <input type="url" id="imageInput" name="image" value="<%= blog.image %>"
                                         class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         oninput="previewImage()">
-                                    <%if(blog.image){%> <img id="imagePreview" src="<%= blog.image.startsWith('http') ? blog.image : process.env.BASE_URL + blog.image %>" alt="Preview"
+                                    <%if(blog.image){%> <img id="imagePreview" src="<%= blog.image.startsWith('http') ? blog.image : process.env.BACKEND_URL + blog.image %>" alt="Preview"
                                         class="preview-image <%= blog.image ? 'block' : 'hidden' %>"> <%}%>
                                 </div>
                                 <div class="w-full">

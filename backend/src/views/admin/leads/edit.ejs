@@ -181,10 +181,10 @@
                                                                             images=[] } %>
                                                                             <% images.forEach(img=> { %>
                                                                                 <div class="relative group">
-                                                                                    <img src="<%= img.url.startsWith('http') ? img.url : process.env.BASE_URL + img.url %>"
+                                                                                    <img src="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + img.url %>"
                                                                                         alt="Client Image"
                                                                                         class="w-full h-32 object-cover rounded-lg border border-gray-300">
-                                                                                    <a href="<%= img.url.startsWith('http') ? img.url : process.env.BASE_URL + img.url %>"
+                                                                                    <a href="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + img.url %>"
                                                                                         target="_blank"
                                                                                         class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
                                                                                         <svg class="w-8 h-8 text-white"
