@@ -530,8 +530,8 @@ exports.getAvailableEmployees = async (req, res, next) => {
       raw: true,
     });
 
-    // 3. Filter employees
-    const availableEmployees = employees.filter((employee) => {
+    // 3. Map employees with availability status
+    const employeeAvailability = employees.map((employee) => {
       // Check if employee has a job in the requested slot
       const hasClash = jobs.some((job) => {
         if (job.employeeId !== employee.id) return false;
@@ -548,10 +548,13 @@ exports.getAvailableEmployees = async (req, res, next) => {
         return jobSlot === slot;
       });
 
-      return !hasClash;
+      return {
+        ...employee,
+        isAvailable: !hasClash,
+      };
     });
 
-    res.json({ success: true, items: availableEmployees });
+    res.json({ success: true, items: employeeAvailability });
   } catch (error) {
     console.error("Get available employees error:", error);
     next(error);

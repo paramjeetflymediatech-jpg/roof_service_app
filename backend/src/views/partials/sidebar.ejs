@@ -502,10 +502,10 @@
   }
 
   // Close modal when clicking outside
-  const modal = document.getElementById("logoutModal");
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
+  const logoutModalEl = document.getElementById("logoutModal");
+  if (logoutModalEl) {
+    logoutModalEl.addEventListener("click", (e) => {
+      if (e.target === logoutModalEl) {
         cancelLogout();
       }
     });

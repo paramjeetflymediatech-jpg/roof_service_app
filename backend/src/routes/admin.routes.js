@@ -67,12 +67,14 @@ router.get(
   isAdmin,
   adminController.getCreateLead,
 );
+// Must be before /leads/:id
 router.post(
   "/leads/delete-all",
   isAuthenticated,
   isAdmin,
   adminController.deleteAllLeads,
-); // Must be before /:id
+);
+
 router.post(
   "/leads",
   isAuthenticated,
@@ -85,6 +87,14 @@ router.get(
   isAuthenticated,
   isAdmin,
   leadController.getAvailableEmployees,
+);
+
+// Specific ID routes come after specific paths
+router.get(
+  "/leads/:id",
+  isAuthenticated,
+  isAdmin,
+  adminController.getLeadDetail,
 );
 
 router.get(
@@ -100,6 +110,14 @@ router.post(
   upload.array("clientImages", 5),
   adminController.postUpdateLead,
 );
+
+router.post(
+  "/leads/:id/approve",
+  isAuthenticated,
+  isAdmin,
+  adminController.approveLead,
+);
+
 router.post(
   "/leads/:id/delete",
   isAuthenticated,

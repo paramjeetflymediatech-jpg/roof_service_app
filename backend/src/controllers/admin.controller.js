@@ -427,6 +427,58 @@ const deleteLead = async (req, res) => {
   }
 };
 
+// GET /admin/leads/:id - View lead details
+const getLeadDetail = async (req, res) => {
+  try {
+    const lead = await Lead.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: "assignedTo",
+          attributes: ["name", "email", "phone"],
+        },
+      ],
+    });
+
+    if (!lead) {
+      req.flash("error", "Lead not found");
+      return res.redirect("/admin/leads");
+    }
+
+    res.render("admin/leads/view", {
+      title: "View Lead",
+      userName: req.session.userName,
+      lead: lead.dataValues || lead,
+    });
+  } catch (error) {
+    console.error("View lead error:", error);
+    req.flash("error", "Error loading lead");
+    res.redirect("/admin/leads");
+  }
+};
+
+// POST /admin/leads/:id/approve - Approve lead
+const approveLead = async (req, res) => {
+  try {
+    const lead = await Lead.findByPk(req.params.id);
+
+    if (!lead) {
+      req.flash("error", "Lead not found");
+      return res.redirect("/admin/leads");
+    }
+
+    lead.status = "approved";
+    await lead.save();
+
+    req.flash("success", "Lead approved successfully");
+    res.redirect(`/admin/leads/${lead.id}`);
+  } catch (error) {
+    console.error("Approve lead error:", error);
+    req.flash("error", "Error approving lead");
+    res.redirect("/admin/leads");
+  }
+};
+
 // POST /admin/leads/delete-all - Delete all leads
 const deleteAllLeads = async (req, res) => {
   try {
@@ -1379,4 +1431,6 @@ module.exports = {
   getCreateGallery,
   postCreateGallery,
   deleteGallery,
+  getLeadDetail,
+  approveLead,
 };
