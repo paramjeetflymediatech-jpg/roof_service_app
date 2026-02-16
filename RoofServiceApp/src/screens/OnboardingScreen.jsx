@@ -113,10 +113,10 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(40),
   },
   appName: {
-    fontSize: moderateScale(32),
-    fontWeight: '900',
+    fontSize: moderateScale(20),
+    fontWeight: '800',
     color: COLORS.white,
-    marginTop: verticalScale(20),
+    marginTop: verticalScale(10),
     letterSpacing: 2,
     textTransform: 'uppercase',
   },

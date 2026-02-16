@@ -304,7 +304,6 @@ const ClientHomeScreen = () => {
             >
               <Text style={styles.menuItemText}>Profile</Text>
             </TouchableOpacity>
-            <View style={styles.menuDivider} />
             <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
               <Text style={[styles.menuItemText, { color: COLORS.error }]}>
                 Logout

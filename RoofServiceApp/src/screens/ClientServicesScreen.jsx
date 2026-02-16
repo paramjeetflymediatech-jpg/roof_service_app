@@ -156,15 +156,17 @@ const ClientServicesScreen = () => {
         animationType="slide"
         onRequestClose={closeModal}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={closeModal}
-        >
-          <TouchableOpacity style={styles.modalContainer} activeOpacity={1}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={closeModal}
+          />
+          <View style={styles.modalContainer}>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={closeModal}
+              zIndex={10}
             >
               <Text style={styles.modalCloseText}>✕</Text>
             </TouchableOpacity>
@@ -174,10 +176,6 @@ const ClientServicesScreen = () => {
                 style={styles.modalContent}
                 showsVerticalScrollIndicator={false}
               >
-                {console.log(
-                  'Service image source:',
-                  getImageSource(selectedService),
-                )}
                 <Image
                   source={getImageSource(selectedService)}
                   style={styles.modalImage}
@@ -231,8 +229,8 @@ const ClientServicesScreen = () => {
                 </View>
               </ScrollView>
             )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </View>
   );

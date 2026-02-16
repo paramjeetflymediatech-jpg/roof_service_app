@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(40),
   },
   appName: {
-    fontSize: moderateScale(32),
+    fontSize: moderateScale(20),
     fontWeight: '800',
     color: COLORS.white,
     marginTop: verticalScale(10),
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(24),
   },
   title: {
-    fontSize: moderateScale(32),
+    fontSize: moderateScale(24),
     fontWeight: '800',
     color: COLORS.white,
     marginBottom: verticalScale(8),

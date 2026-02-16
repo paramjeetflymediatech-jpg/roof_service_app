@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(20),
   },
   appName: {
-    fontSize: moderateScale(24),
+    fontSize: moderateScale(20),
     fontWeight: '800',
     color: COLORS.white,
     marginTop: verticalScale(8),
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(10),
   },
   title: {
-    fontSize: moderateScale(32),
+    fontSize: moderateScale(24),
     fontWeight: '800',
     color: COLORS.white,
     marginBottom: verticalScale(8),

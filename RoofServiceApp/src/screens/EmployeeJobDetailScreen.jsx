@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -30,6 +31,8 @@ const EmployeeJobDetailScreen = () => {
   const [loading, setLoading] = useState(false);
   const [inTime, setInTime] = useState(job?.inTime || job?.employeeStartTime);
   const [outTime, setOutTime] = useState(job?.outTime || job?.employeeEndTime);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Status Checkers
   const jobStatus = currentJob?.status;
@@ -120,6 +123,16 @@ const EmployeeJobDetailScreen = () => {
     setOutTime(timeString);
     setCurrentJob({ ...currentJob, outTime: timeString });
     Alert.alert('Clocked Out', `Finished at ${timeString}`);
+  };
+
+  const openImageModal = imageUrl => {
+    setSelectedImage(imageUrl);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedImage(null);
   };
 
   const handleCompleteJob = async () => {
@@ -307,11 +320,15 @@ const EmployeeJobDetailScreen = () => {
                     ? url
                     : `${SERVER_URL}/${url}`;
                   return (
-                    <Image
+                    <TouchableOpacity
                       key={index}
-                      source={{ uri: imageUrl }}
-                      style={styles.detailImage}
-                    />
+                      onPress={() => openImageModal(imageUrl)}
+                    >
+                      <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.detailImage}
+                      />
+                    </TouchableOpacity>
                   );
                 })}
               </ScrollView>
@@ -339,11 +356,15 @@ const EmployeeJobDetailScreen = () => {
                   ? url
                   : `${SERVER_URL}/${url}`;
                 return (
-                  <Image
+                  <TouchableOpacity
                     key={index}
-                    source={{ uri: imageUrl }}
-                    style={styles.detailImage}
-                  />
+                    onPress={() => openImageModal(imageUrl)}
+                  >
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.detailImage}
+                    />
+                  </TouchableOpacity>
                 );
               })}
             </ScrollView>
@@ -473,6 +494,28 @@ const EmployeeJobDetailScreen = () => {
         </View>
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={closeModal}
+          >
+            <Text style={styles.modalCloseText}>✕</Text>
+          </TouchableOpacity>
+          {selectedImage && (
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.modalImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -686,6 +729,28 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 10,
     backgroundColor: '#eee',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: verticalScale(40),
+    right: moderateScale(20),
+    zIndex: 10,
+    padding: 10,
+  },
+  modalCloseText: {
+    color: COLORS.white,
+    fontSize: moderateScale(30),
+    fontWeight: 'bold',
+  },
+  modalImage: {
+    width: '100%',
+    height: '80%',
   },
 });
 

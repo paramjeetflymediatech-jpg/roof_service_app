@@ -10,6 +10,7 @@ import {
   TextInput,
   Platform,
   StatusBar,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
@@ -29,6 +30,8 @@ const AdminAssignScreen = ({ route }) => {
   const [scheduledDate, setScheduledDate] = useState(''); // YYYY-MM-DD
   const [selectedSlot, setSelectedSlot] = useState(null); // 'morning' | 'afternoon' | 'evening'
   const [busyEmployeeIds, setBusyEmployeeIds] = useState([]); // employees already booked for selected date/slot
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     loadEmployees();
@@ -200,6 +203,16 @@ const AdminAssignScreen = ({ route }) => {
     }
   };
 
+  const openImageModal = imageUrl => {
+    setSelectedImage(imageUrl);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedImage(null);
+  };
+
   if (!selectedQuote) {
     return (
       <View style={styles.container}>
@@ -259,7 +272,7 @@ const AdminAssignScreen = ({ route }) => {
             <InfoItem
               icon="📍"
               label="Address"
-              value={selectedQuote.address + ' ' + selectedQuote?.city || ''}
+              value={selectedQuote.address}
             />
             <InfoItem icon="📞" label="Phone" value={selectedQuote.phone} />
             <InfoItem icon="📧" label="Email" value={selectedQuote.email} />
@@ -452,15 +465,24 @@ const AdminAssignScreen = ({ route }) => {
                 style={styles.imageScroll}
               >
                 {selectedQuote.client_images.map((img, index) => (
-                  <Image
+                  <TouchableOpacity
                     key={index}
-                    source={{
-                      uri:
+                    onPress={() =>
+                      openImageModal(
                         `${SERVER_URL}/${img.url}` ||
-                        `${SERVER_URL}/${img.uri}`,
-                    }}
-                    style={styles.completionImage}
-                  />
+                          `${SERVER_URL}/${img.uri}`,
+                      )
+                    }
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          `${SERVER_URL}/${img.url}` ||
+                          `${SERVER_URL}/${img.uri}`,
+                      }}
+                      style={styles.completionImage}
+                    />
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             )}
@@ -487,11 +509,15 @@ const AdminAssignScreen = ({ route }) => {
                       ? url
                       : `${SERVER_URL}/${url}`;
                     return (
-                      <Image
+                      <TouchableOpacity
                         key={index}
-                        source={{ uri: imageUrl }}
-                        style={styles.completionImage}
-                      />
+                        onPress={() => openImageModal(imageUrl)}
+                      >
+                        <Image
+                          source={{ uri: imageUrl }}
+                          style={styles.completionImage}
+                        />
+                      </TouchableOpacity>
                     );
                   })}
                 </ScrollView>
@@ -530,6 +556,28 @@ const AdminAssignScreen = ({ route }) => {
           ) : null}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={closeModal}
+          >
+            <Text style={styles.modalCloseText}>✕</Text>
+          </TouchableOpacity>
+          {selectedImage && (
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.modalImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -785,6 +833,28 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(40),
     fontSize: moderateScale(16),
     color: COLORS.textLight,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: verticalScale(40),
+    right: moderateScale(20),
+    zIndex: 10,
+    padding: 10,
+  },
+  modalCloseText: {
+    color: COLORS.white,
+    fontSize: moderateScale(30),
+    fontWeight: 'bold',
+  },
+  modalImage: {
+    width: '100%',
+    height: '80%',
   },
 });
 

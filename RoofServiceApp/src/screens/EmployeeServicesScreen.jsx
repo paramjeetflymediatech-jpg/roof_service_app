@@ -142,70 +142,80 @@ const EmployeeServicesScreen = () => {
         animationType="slide"
         onRequestClose={closeModal}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={closeModal}
-        >
-          <TouchableOpacity style={styles.modalContainer} activeOpacity={1}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={closeModal}
+          />
+
+          <View style={styles.modalContainer}>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={closeModal}
+              zIndex={10}
             >
               <Text style={styles.modalCloseText}>✕</Text>
             </TouchableOpacity>
 
-            {selectedService && (
-              <ScrollView
-                style={styles.modalContent}
-                showsVerticalScrollIndicator={false}
-              >
-                <Image
-                  source={getImageSource(selectedService)}
-                  style={styles.modalImage}
-                  resizeMode="cover"
-                />
+            <ScrollView
+              style={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              {selectedService && (
+                <>
+                  <Image
+                    source={getImageSource(selectedService)}
+                    style={styles.modalImage}
+                    resizeMode="cover"
+                  />
 
-                <View style={styles.modalDetails}>
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalIcon}>{selectedService.icon}</Text>
-                    <Text style={styles.modalTitle}>
-                      {selectedService.name}
-                    </Text>
-                  </View>
-
-                  <Text style={styles.modalDescription}>
-                    {selectedService.description ||
-                      selectedService.shortDescription}
-                  </Text>
-
-                  {selectedService.basePrice && (
-                    <View style={styles.pricingSection}>
-                      <Text style={styles.pricingLabel}>Starting Price</Text>
-                      <Text style={styles.pricingValue}>
-                        ${selectedService.basePrice}
+                  <View style={styles.modalDetails}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalIcon}>
+                        {selectedService.icon}
+                      </Text>
+                      <Text style={styles.modalTitle}>
+                        {selectedService.name}
                       </Text>
                     </View>
-                  )}
 
-                  {selectedService.whyChooseUs &&
-                    Array.isArray(selectedService.whyChooseUs) &&
-                    selectedService.whyChooseUs.length > 0 && (
-                      <View style={styles.benefitsSection}>
-                        <Text style={styles.benefitsTitle}>Why Choose Us</Text>
-                        {selectedService.whyChooseUs.map((benefit, index) => (
-                          <View key={index} style={styles.benefitItem}>
-                            <Text style={styles.benefitBullet}>✓</Text>
-                            <Text style={styles.benefitText}>{benefit}</Text>
-                          </View>
-                        ))}
+                    <Text style={styles.modalDescription}>
+                      {selectedService.description ||
+                        selectedService.shortDescription}
+                    </Text>
+
+                    {selectedService.basePrice && (
+                      <View style={styles.pricingSection}>
+                        <Text style={styles.pricingLabel}>Starting Price</Text>
+                        <Text style={styles.pricingValue}>
+                          ${selectedService.basePrice}
+                        </Text>
                       </View>
                     )}
-                </View>
-              </ScrollView>
-            )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+
+                    {selectedService.whyChooseUs &&
+                      Array.isArray(selectedService.whyChooseUs) &&
+                      selectedService.whyChooseUs.length > 0 && (
+                        <View style={styles.benefitsSection}>
+                          <Text style={styles.benefitsTitle}>
+                            Why Choose Us
+                          </Text>
+                          {selectedService.whyChooseUs.map((benefit, index) => (
+                            <View key={index} style={styles.benefitItem}>
+                              <Text style={styles.benefitBullet}>✓</Text>
+                              <Text style={styles.benefitText}>{benefit}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
     </View>
   );
