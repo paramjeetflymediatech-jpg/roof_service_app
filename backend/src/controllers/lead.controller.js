@@ -357,95 +357,95 @@ exports.updateLead = async (req, res, next) => {
 };
 
 // ... existing assignLead ...
-// exports.assignLead = async (req, res, next) => {
-//   // ... (keep existing implementation)
-//   try {
-//     const { employeeId, status, adminid, scheduledDate } = req.body;
+exports.assignLead = async (req, res, next) => {
+  // ... (keep existing implementation)
+  try {
+    const { employeeId, status, adminid, scheduledDate } = req.body;
 
-//     const lead = await Lead.findByPk(req.params.id);
+    const lead = await Lead.findByPk(req.params.id);
 
-//     if (!lead) return res.status(404).json({ message: "Lead not found" });
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
 
-//     const employee = await User.findByPk(employeeId);
+    const employee = await User.findByPk(employeeId);
 
-//     if (!employee)
-//       return res.status(404).json({ message: "Employee not found" });
+    if (!employee)
+      return res.status(404).json({ message: "Employee not found" });
 
-//     // Optional scheduled date/time for this job
-//     let scheduled = null;
-//     if (scheduledDate) {
-//       const d = new Date(scheduledDate);
-//       if (!Number.isNaN(d.getTime())) {
-//         scheduled = d;
-//       }
-//     }
+    // Optional scheduled date/time for this job
+    let scheduled = null;
+    if (scheduledDate) {
+      const d = new Date(scheduledDate);
+      if (!Number.isNaN(d.getTime())) {
+        scheduled = d;
+      }
+    }
 
-//     // If a scheduled time was provided, ensure no clash for this employee
-//     if (scheduled) {
-//       const dayStart = new Date(scheduled);
-//       dayStart.setHours(0, 0, 0, 0);
-//       const dayEnd = new Date(scheduled);
-//       dayEnd.setHours(23, 59, 59, 999);
+    // If a scheduled time was provided, ensure no clash for this employee
+    if (scheduled) {
+      const dayStart = new Date(scheduled);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(scheduled);
+      dayEnd.setHours(23, 59, 59, 999);
 
-//       const existing = await Job.findAll({
-//         where: {
-//           employeeId,
-//           scheduledDate: { [Op.between]: [dayStart, dayEnd] },
-//           status: { [Op.in]: ["pending", "accepted", "in_progress"] },
-//         },
-//         raw: true,
-//       });
+      const existing = await Job.findAll({
+        where: {
+          employeeId,
+          scheduledDate: { [Op.between]: [dayStart, dayEnd] },
+          status: { [Op.in]: ["pending", "accepted", "in_progress"] },
+        },
+        raw: true,
+      });
 
-//       const getSlot = (date) => {
-//         const h = date.getHours();
-//         if (h < 12) return "morning";
-//         if (h < 17) return "afternoon";
-//         return "evening";
-//       };
+      const getSlot = (date) => {
+        const h = date.getHours();
+        if (h < 12) return "morning";
+        if (h < 17) return "afternoon";
+        return "evening";
+      };
 
-//       const newSlot = getSlot(scheduled);
-//       const hasClash = existing.some((j) => {
-//         if (!j.scheduledDate) return false;
-//         const d = new Date(j.scheduledDate);
-//         return getSlot(d) === newSlot;
-//       });
+      const newSlot = getSlot(scheduled);
+      const hasClash = existing.some((j) => {
+        if (!j.scheduledDate) return false;
+        const d = new Date(j.scheduledDate);
+        return getSlot(d) === newSlot;
+      });
 
-//       if (hasClash) {
-//         return res.status(400).json({
-//           success: false,
-//           message:
-//             "This employee already has a job in the selected time slot for that date.",
-//         });
-//       }
-//     }
+      if (hasClash) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "This employee already has a job in the selected time slot for that date.",
+        });
+      }
+    }
 
-//     await lead.update({
-//       assignedToId: employeeId,
-//       status: status,
-//       preferredDate: scheduled || lead.preferredDate,
-//     });
+    await lead.update({
+      assignedToId: employeeId,
+      status: status,
+      preferredDate: scheduled || lead.preferredDate,
+    });
 
-//     // 4️⃣ Create job record for this assignment
-//     // req.user may not be set for mobile/API calls, so fall back to null for assignedById
-//     const assignedBy = adminid || (req.user ? req.user.id : null);
-//     await Job.create({
-//       leadId: lead.id,
-//       employeeId: employeeId,
-//       assignedById: assignedBy,
-//       status: "pending",
-//       priority: "medium",
-//       scheduledDate: scheduled,
-//     });
+    // 4️⃣ Create job record for this assignment
+    // req.user may not be set for mobile/API calls, so fall back to null for assignedById
+    const assignedBy = adminid || (req.user ? req.user.id : null);
+    await Job.create({
+      leadId: lead.id,
+      employeeId: employeeId,
+      assignedById: assignedBy,
+      status: "pending",
+      priority: "medium",
+      scheduledDate: scheduled,
+    });
 
-//     res.json({
-//       success: true,
-//       message: "Lead assigned successfully",
-//       lead: lead.dataValues || lead,
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+    res.json({
+      success: true,
+      message: "Lead assigned successfully",
+      lead: lead.dataValues || lead,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 // exports.assignLead = async (req, res, next) => {
 //   try {
 //     const { employeeId, status, adminid, scheduledDate } = req.body;
@@ -550,121 +550,119 @@ exports.updateLead = async (req, res, next) => {
 //   }
 // };
 
-// const { Op } = require("sequelize");
-// const { Lead, User, Job } = require("../models");
+ 
+// exports.assignLead = async (req, res, next) => {
+//   try {
+//     const { employeeId, status, adminid, scheduledDate } = req.body;
 
-exports.assignLead = async (req, res, next) => {
-  try {
-    const { employeeId, status, adminid, scheduledDate } = req.body;
+//     // 1️⃣ Validate Lead
+//     const lead = await Lead.findByPk(req.params.id);
+//     if (!lead) {
+//       return res.status(404).json({ message: "Lead not found" });
+//     }
 
-    // 1️⃣ Validate Lead
-    const lead = await Lead.findByPk(req.params.id);
-    if (!lead) {
-      return res.status(404).json({ message: "Lead not found" });
-    }
+//     // 2️⃣ Validate Employee
+//     const employee = await User.findByPk(employeeId);
+//     if (!employee) {
+//       return res.status(404).json({ message: "Employee not found" });
+//     }
 
-    // 2️⃣ Validate Employee
-    const employee = await User.findByPk(employeeId);
-    if (!employee) {
-      return res.status(404).json({ message: "Employee not found" });
-    }
+//     // 3️⃣ Parse Scheduled Date
+//     let scheduled = null;
+//     if (scheduledDate) {
+//       const parsed = new Date(scheduledDate);
+//       if (!Number.isNaN(parsed.getTime())) {
+//         scheduled = parsed;
+//       } else {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Invalid scheduled date format",
+//         });
+//       }
+//     }
 
-    // 3️⃣ Parse Scheduled Date
-    let scheduled = null;
-    if (scheduledDate) {
-      const parsed = new Date(scheduledDate);
-      if (!Number.isNaN(parsed.getTime())) {
-        scheduled = parsed;
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid scheduled date format",
-        });
-      }
-    }
+//     // 4️⃣ Time Slot Helper
+//     const getTimeSlot = (date) => {
+//       const hour = date.getHours();
 
-    // 4️⃣ Time Slot Helper
-    const getTimeSlot = (date) => {
-      const hour = date.getHours();
+//       if (hour >= 6 && hour < 12) return "morning";
+//       if (hour >= 12 && hour < 17) return "afternoon";
+//       if (hour >= 17 && hour < 21) return "evening";
+//       return "night";
+//     };
 
-      if (hour >= 6 && hour < 12) return "morning";
-      if (hour >= 12 && hour < 17) return "afternoon";
-      if (hour >= 17 && hour < 21) return "evening";
-      return "night";
-    };
+//     // 5️⃣ Check clash if scheduled provided
+//     if (scheduled) {
+//       const newSlot = getTimeSlot(scheduled);
 
-    // 5️⃣ Check clash if scheduled provided
-    if (scheduled) {
-      const newSlot = getTimeSlot(scheduled);
+//       // Get all jobs for that employee on same day
+//       const dayStart = new Date(scheduled);
+//       dayStart.setHours(0, 0, 0, 0);
 
-      // Get all jobs for that employee on same day
-      const dayStart = new Date(scheduled);
-      dayStart.setHours(0, 0, 0, 0);
+//       const dayEnd = new Date(scheduled);
+//       dayEnd.setHours(23, 59, 59, 999);
 
-      const dayEnd = new Date(scheduled);
-      dayEnd.setHours(23, 59, 59, 999);
+//       const existingJobs = await Job.findAll({
+//         where: {
+//           employeeId,
+//           scheduledDate: {
+//             [Op.between]: [dayStart, dayEnd],
+//           },
+//           status: {
+//             [Op.in]: ["pending", "accepted", "in_progress"],
+//           },
+//         },
+//         raw: true,
+//       });
 
-      const existingJobs = await Job.findAll({
-        where: {
-          employeeId,
-          scheduledDate: {
-            [Op.between]: [dayStart, dayEnd],
-          },
-          status: {
-            [Op.in]: ["pending", "accepted", "in_progress"],
-          },
-        },
-        raw: true,
-      });
+//       // Compare time slots dynamically
+//       const hasClash = existingJobs.some((job) => {
+//         if (!job.scheduledDate) return false;
 
-      // Compare time slots dynamically
-      const hasClash = existingJobs.some((job) => {
-        if (!job.scheduledDate) return false;
+//         const existingDate = new Date(job.scheduledDate);
+//         const existingSlot = getTimeSlot(existingDate);
 
-        const existingDate = new Date(job.scheduledDate);
-        const existingSlot = getTimeSlot(existingDate);
+//         return existingSlot === newSlot;
+//       });
 
-        return existingSlot === newSlot;
-      });
+//       if (hasClash) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             "This employee already has a job in the selected time slot for that date.",
+//         });
+//       }
+//     }
 
-      if (hasClash) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "This employee already has a job in the selected time slot for that date.",
-        });
-      }
-    }
+//     // 6️⃣ Update Lead
+//     await lead.update({
+//       assignedToId: employeeId,
+//       status: status || lead.status,
+//       preferredDate: scheduled || lead.preferredDate,
+//     });
 
-    // 6️⃣ Update Lead
-    await lead.update({
-      assignedToId: employeeId,
-      status: status || lead.status,
-      preferredDate: scheduled || lead.preferredDate,
-    });
+//     // 7️⃣ Create Job
+//     const assignedBy = adminid || (req.user ? req.user.id : null);
 
-    // 7️⃣ Create Job
-    const assignedBy = adminid || (req.user ? req.user.id : null);
+//     const job = await Job.create({
+//       leadId: lead.id,
+//       employeeId,
+//       assignedById: assignedBy,
+//       status: "pending",
+//       priority: "medium",
+//       scheduledDate: scheduled,
+//     });
 
-    const job = await Job.create({
-      leadId: lead.id,
-      employeeId,
-      assignedById: assignedBy,
-      status: "pending",
-      priority: "medium",
-      scheduledDate: scheduled,
-    });
+//     return res.json({
+//       success: true,
+//       message: "Lead assigned successfully",
+//       job,
+//     });
 
-    return res.json({
-      success: true,
-      message: "Lead assigned successfully",
-      job,
-    });
-
-  } catch (err) {
-    next(err);
-  }
-};
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 // ... existing getEmployeeLeads ...
 exports.getEmployeeLeads = async (req, res, next) => {
