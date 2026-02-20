@@ -375,13 +375,16 @@ const getSlotFromDate = (date) => {
   return null;
 };
 exports.assignLead = async (req, res, next) => {
+  console.log(req.body, "req.body");
   try {
     const { employeeId, status, adminid, scheduledDate } = req.body;
-
+    console.log(req.params.id, "req.params.id");
     const lead = await Lead.findByPk(req.params.id);
+    console.log(lead, "lead");
     if (!lead) return res.status(404).json({ message: "Lead not found" });
 
     const employee = await User.findByPk(employeeId);
+    console.log(employee, "employee");
     if (!employee)
       return res.status(404).json({ message: "Employee not found" });
 
@@ -393,7 +396,7 @@ exports.assignLead = async (req, res, next) => {
     }
 
     const scheduled = new Date(scheduledDate);
-
+    console.log(scheduled, "scheduled");
     if (Number.isNaN(scheduled.getTime())) {
       return res.status(400).json({
         success: false,
@@ -402,7 +405,7 @@ exports.assignLead = async (req, res, next) => {
     }
 
     const newSlot = getSlotFromDate(scheduled);
-
+    console.log(newSlot, "newSlot");
     if (!newSlot) {
       return res.status(400).json({
         success: false,
@@ -416,7 +419,8 @@ exports.assignLead = async (req, res, next) => {
 
     const dayEnd = new Date(scheduled);
     dayEnd.setHours(23, 59, 59, 999);
-
+    console.log(dayStart, "dayStart");
+    console.log(dayEnd, "dayEnd");
     const existingJobs = await Job.findAll({
       where: {
         employeeId,
@@ -425,7 +429,7 @@ exports.assignLead = async (req, res, next) => {
       },
       raw: true,
     });
-
+    console.log(existingJobs, "existingJobs");
     const hasClash = existingJobs.some((job) => {
       if (!job.scheduledDate) return false;
 
@@ -434,6 +438,7 @@ exports.assignLead = async (req, res, next) => {
 
       return existingSlot === newSlot;
     });
+    console.log(hasClash, "hasclashj");
 
     if (hasClash) {
       return res.status(400).json({
