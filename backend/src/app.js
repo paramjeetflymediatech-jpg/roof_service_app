@@ -5,6 +5,7 @@ const path = require("path");
 const session = require("express-session");
 const flash = require("connect-flash");
 const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
 const MySQLStore = require("express-mysql-session")(session);
 const routes = require("./routes");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
@@ -26,7 +27,7 @@ const allowedOrigins = [
   "exp://127.0.0.1:8081", // React Native localhost
   process.env.BACKEND_URL || "http://localhost:5000",
 ].filter(Boolean);
-
+app.set('trust proxy', 1);
 app.use(
   cors({
     origin: allowedOrigins,
@@ -36,7 +37,6 @@ app.use(
   }),
 );
 
-const rateLimit = require("express-rate-limit");
 
 // Body parser middleware
 app.use(express.json());
