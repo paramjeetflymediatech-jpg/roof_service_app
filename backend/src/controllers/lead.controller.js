@@ -465,6 +465,7 @@ exports.assignLead = async (req, res, next) => {
       message: "Lead assigned successfully",
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
