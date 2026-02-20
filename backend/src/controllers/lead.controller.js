@@ -377,7 +377,7 @@ const getSlotFromDate = (date) => {
 exports.assignLead = async (req, res, next) => {
   console.log(req.body, "req.body");
   try {
-    const { employeeId, status, adminid, scheduledDate } = req.body;
+    const { employeeId, status, adminid, scheduledDate, timeSlot } = req.body;
     console.log(req.params.id, "req.params.id");
     const lead = await Lead.findByPk(req.params.id);
     console.log(lead, "lead");
@@ -404,12 +404,13 @@ exports.assignLead = async (req, res, next) => {
       });
     }
 
-    const newSlot = getSlotFromDate(scheduled);
+    // Use explicit timeSlot if provided, otherwise fallback to deriving from date
+    const newSlot = timeSlot || getSlotFromDate(scheduled);
     console.log(newSlot, "newSlot");
     if (!newSlot) {
       return res.status(400).json({
         success: false,
-        message: "Scheduled time must be between 9AM and 8PM",
+        message: "Scheduled time slot is required or invalid",
       });
     }
 
@@ -431,11 +432,12 @@ exports.assignLead = async (req, res, next) => {
     });
     console.log(existingJobs, "existingJobs");
     const hasClash = existingJobs.some((job) => {
-      if (!job.scheduledDate) return false;
-
-      const existingDate = new Date(job.scheduledDate);
-      const existingSlot = getSlotFromDate(existingDate);
-
+      // Prioritize explicit timeSlot field in database, fallback to deriving from scheduled_date
+      const existingSlot =
+        job.timeSlot ||
+        (job.scheduledDate
+          ? getSlotFromDate(new Date(job.scheduledDate))
+          : null);
       return existingSlot === newSlot;
     });
     console.log(hasClash, "hasclashj");
@@ -444,7 +446,7 @@ exports.assignLead = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message:
-          "This employee already has a job in this time range for the selected date.",
+          "This employee already has a job in this time slot for the selected date.",
       });
     }
 
@@ -463,6 +465,7 @@ exports.assignLead = async (req, res, next) => {
       status: "pending",
       priority: "medium",
       scheduledDate: scheduled,
+      timeSlot: newSlot,
     });
 
     res.json({

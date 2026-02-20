@@ -189,6 +189,7 @@ const AdminAssignScreen = ({ route }) => {
         status: LEAD_STATUS.ASSIGNED,
         adminid: user.id,
         scheduledDate: scheduledISO,
+        timeSlot: selectedSlot,
       });
 
       Alert.alert(
@@ -269,11 +270,7 @@ const AdminAssignScreen = ({ route }) => {
               label="Client"
               value={selectedQuote.clientName}
             />
-            <InfoItem
-              icon="📍"
-              label="Address"
-              value={selectedQuote.address}
-            />
+            <InfoItem icon="📍" label="Address" value={selectedQuote.address} />
             <InfoItem icon="📞" label="Phone" value={selectedQuote.phone} />
             <InfoItem icon="📧" label="Email" value={selectedQuote.email} />
             <InfoItem

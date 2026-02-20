@@ -106,6 +106,7 @@ exports.createJob = async (req, res) => {
       employeeId,
       priority,
       scheduledDate,
+      timeSlot,
       notes,
       estimatedHours,
     } = req.body;
@@ -139,6 +140,7 @@ exports.createJob = async (req, res) => {
       assignedById: req.user.id,
       priority: priority || "medium",
       scheduledDate,
+      timeSlot,
       notes,
       estimatedHours,
     });
