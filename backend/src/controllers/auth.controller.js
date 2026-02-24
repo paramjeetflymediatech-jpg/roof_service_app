@@ -154,8 +154,9 @@ exports.logout = async (req, res) => {
 // Forgot Password
 exports.forgotPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { email: req.body.email } });
-
+    const user = await User.findOne({
+      where: { email: req.body.email },
+    });
     if (!user) {
       return res
         .status(404)
@@ -166,13 +167,15 @@ exports.forgotPassword = async (req, res) => {
     const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Set token and expiry (10 minutes)
-    user.resetPasswordToken = crypto
+    const reset_password_token = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-
-    await user.save();
+    const reset_password_expire = Date.now() + 10 * 60 * 1000;
+    await user.update({
+      reset_password_token: reset_password_token,
+      reset_password_expire: reset_password_expire,
+    });
 
     try {
       await sendPasswordResetEmail(user, resetToken);
@@ -182,8 +185,8 @@ exports.forgotPassword = async (req, res) => {
         message: "Email sent with reset code",
       });
     } catch (err) {
-      user.resetPasswordToken = null;
-      user.resetPasswordExpire = null;
+      user.reset_password_token = null;
+      user.reset_password_expire = null;
       await user.save();
 
       return res.status(500).json({
@@ -211,11 +214,11 @@ exports.resetPassword = async (req, res) => {
     const user = await User.findOne({
       where: {
         email: email,
-        resetPasswordToken: resetPasswordToken,
-        resetPasswordExpire: { [require("sequelize").Op.gt]: Date.now() },
+        reset_password_token: resetPasswordToken,
+        reset_password_expire: { [require("sequelize").Op.gt]: Date.now() },
       },
     });
-
+    console.log(user, "user");
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -225,8 +228,8 @@ exports.resetPassword = async (req, res) => {
 
     // Update password
     user.password = password; // Will be hashed by beforeSave hook
-    user.resetPasswordToken = null;
-    user.resetPasswordExpire = null;
+    user.reset_password_token = null;
+    user.reset_password_expire = null;
 
     // Explicitly update changed fields if necessary, but saving should trigger hook
     // However, since we are using Sequelize model instance, updating property sets it as changed.
