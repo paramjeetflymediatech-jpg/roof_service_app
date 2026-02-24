@@ -9,7 +9,7 @@ router.get("/seo/:pageName", async (req, res) => {
     const { pageName } = req.params;
 
     // const seoData = await SeoMeta.findOne({ pageName: pageName.toLowerCase() });
-    const seoData = await SeoMeta.findAll({ pageName: pageName.toLowerCase() });
+    const seoData = await SeoMeta.findOne({ pageName: pageName.toLowerCase() });
     console.log(seoData)
 
     if (!seoData) {
