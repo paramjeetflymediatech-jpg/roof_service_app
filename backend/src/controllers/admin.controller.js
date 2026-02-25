@@ -133,9 +133,10 @@ const getUserList = async (req, res) => {
       userName: req.session.userName,
       users,
       currentPage: page,
-      totalPages,
-      totalUsers,
-      limit,
+      totalPages:totalPages,
+      totalUsers:totalUsers,
+      totalItems:totalUsers,
+      limit:limit,
     });
   } catch (error) {
     console.error("User list error:", error);
@@ -1422,8 +1423,8 @@ const getGalleryList = async (req, res) => {
       category: category || "",
       currentPage:page,
       totalPages: Math.ceil(totalItems / limit),
-      totalItems,
-      limit,
+      totalItems:totalItems,
+      limit:limit,
     });
   } catch (error) {
     console.error("Gallery list error:", error);
