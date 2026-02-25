@@ -133,10 +133,10 @@ const getUserList = async (req, res) => {
       userName: req.session.userName,
       users,
       currentPage: page,
-      totalPages:totalPages,
-      totalUsers:totalUsers,
-      totalItems:totalUsers,
-      limit:limit,
+      totalPages: totalPages,
+      totalUsers: totalUsers,
+      totalItems: totalUsers,
+      limit: limit,
     });
   } catch (error) {
     console.error("User list error:", error);
@@ -772,11 +772,24 @@ const getSeoList = async (req, res) => {
 };
 
 // GET /admin/seo/create - Render create SEO form
-const getCreateSeo = (req, res) => {
-  res.render("admin/seo/create", {
-    title: "Add New SEO Page",
-    userName: req.session.userName,
-  });
+const getCreateSeo = async (req, res) => {
+  try {
+    const services = await Service.findAll({ order: [["name", "ASC"]] });
+    const categories = await ServiceCategory.findAll({
+      order: [["name", "ASC"]],
+    });
+
+    res.render("admin/seo/create", {
+      title: "Add New SEO Page",
+      userName: req.session.userName,
+      services,
+      categories,
+    });
+  } catch (error) {
+    console.error("Create SEO view error:", error);
+    req.flash("error", "Error loading create SEO view");
+    res.redirect("/admin/seo");
+  }
 };
 
 // POST /admin/seo - Create new SEO page
@@ -845,10 +858,17 @@ const getEditSeo = async (req, res) => {
       return res.redirect("/admin/seo");
     }
 
+    const services = await Service.findAll({ order: [["name", "ASC"]] });
+    const categories = await ServiceCategory.findAll({
+      order: [["name", "ASC"]],
+    });
+
     res.render("admin/seo/edit", {
       title: "Edit SEO Meta Tags",
       userName: req.session.userName,
       seoPage: seoPage.dataValues || seoPage,
+      services,
+      categories,
     });
   } catch (error) {
     console.error("Edit SEO error:", error);
@@ -861,6 +881,7 @@ const getEditSeo = async (req, res) => {
 const postUpdateSeo = async (req, res) => {
   try {
     const {
+      pageName,
       pageTitle,
       metaDescription,
       metaRobots,
@@ -875,8 +896,8 @@ const postUpdateSeo = async (req, res) => {
     const seoId = req.params.id;
 
     // Validation
-    if (!pageTitle || !metaDescription) {
-      req.flash("error", "Page title and meta description are required");
+    if (!pageName || !pageTitle || !metaDescription) {
+      req.flash("error", "Page name, title and meta description are required");
       return res.redirect(`/admin/seo/${seoId}/edit`);
     }
 
@@ -887,8 +908,23 @@ const postUpdateSeo = async (req, res) => {
       return res.redirect("/admin/seo");
     }
 
+    // Check if new pageName already exists for other records
+    if (pageName.toLowerCase() !== seoPage.pageName.toLowerCase()) {
+      const existingPage = await SeoMeta.findOne({
+        where: {
+          pageName: pageName.toLowerCase(),
+          id: { [Op.ne]: seoId },
+        },
+      });
+      if (existingPage) {
+        req.flash("error", "SEO for this page already exists");
+        return res.redirect(`/admin/seo/${seoId}/edit`);
+      }
+    }
+
     await SeoMeta.update(
       {
+        pageName: pageName.toLowerCase(),
         pageTitle,
         metaDescription,
         metaRobots: metaRobots || "index, follow",
@@ -1421,10 +1457,10 @@ const getGalleryList = async (req, res) => {
       breadcrumbs,
       location: location || "",
       category: category || "",
-      currentPage:page,
+      currentPage: page,
       totalPages: Math.ceil(totalItems / limit),
-      totalItems:totalItems,
-      limit:limit,
+      totalItems: totalItems,
+      limit: limit,
     });
   } catch (error) {
     console.error("Gallery list error:", error);

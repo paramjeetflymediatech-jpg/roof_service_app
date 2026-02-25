@@ -9,9 +9,10 @@ import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
 import { getServiceBySlug } from "@/lib/api/service";
 import { COMPANY_INFO } from "@/lib/constants";
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, req }) {
+  console.log(params, "-----------para,", req.url);
   const { slug } = params;
-  const data = await getServiceBySlug(slug);
+  const data = await getServiceBySlug(slug, req.url);
 
   if (!data) {
     return {

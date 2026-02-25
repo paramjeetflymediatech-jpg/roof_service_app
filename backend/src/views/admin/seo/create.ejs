@@ -57,29 +57,13 @@
                     <option value="contact">Contact Us</option>
                   </optgroup>
 
+                
+
                   <!-- Service Pages -->
                   <optgroup label="Services">
-                    <option value="new-construction">New Construction</option>
-                    <option value="reroofs">Reroofs</option>
-                    <option value="metal-roofing">Metal Roofing</option>
-                    <option value="wall-metals">Wall Metals</option>
-                    <option value="torch-on">Torch On</option>
-                    <option value="epdm">EPDM</option>
-                    <option value="metal-gutters-downspouts">
-                      Metal Gutters & Downspouts
-                    </option>
-                    <option value="leak-repair">Leak Repair</option>
-                    <option value="tile-slate-roofing">
-                      Tile & Slate Roofing
-                    </option>
-                    <option value="rain-storm-damage">
-                      Rain & Storm Damage
-                    </option>
-                    <option value="insulation">Insulation</option>
-                    <option value="restorations-servicing">
-                      Restorations Servicing
-                    </option>
-                    <option value="solar-panels">Solar Panels</option>
+                    <% services.forEach(service => { %>
+                      <option value="services/<%= service.slug %>"><%= service.name %></option>
+                    <% }) %>
                   </optgroup>
                 </select>
                 <p class="text-xs text-gray-400 mt-1">
