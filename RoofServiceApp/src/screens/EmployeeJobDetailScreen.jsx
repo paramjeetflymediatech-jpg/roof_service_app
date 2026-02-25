@@ -182,6 +182,25 @@ const EmployeeJobDetailScreen = () => {
         afterImages: completionImages,
       });
 
+      // ALSO: Automatically add these images to the Gallery with location info
+      try {
+        const location =
+          currentJob.lead?.city ||
+          currentJob.address?.split(',').pop()?.trim() ||
+          '';
+        for (const img of completionImages) {
+          await api.createGalleryItem({
+            title: `${currentJob.service} - ${currentJob.id}`,
+            category: currentJob.service,
+            location: location,
+            imageUrl: img.uri,
+          });
+        }
+      } catch (galleryError) {
+        console.error('Failed to auto-add images to gallery:', galleryError);
+        // We don't block job completion if gallery upload fails
+      }
+
       setCurrentJob(prev => ({ ...prev, status: JOB_STATUS.COMPLETED }));
       Alert.alert('Success', 'Job marked as completed!', [
         { text: 'Back', onPress: () => navigation.goBack() },

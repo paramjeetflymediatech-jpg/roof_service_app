@@ -106,8 +106,9 @@ export const api = {
   updateJob: (jobId, data) => apiClient.put(`/jobs/${jobId}`, data),
   updateJobStatus: (jobId, data) =>
     apiClient.put(`/jobs/${jobId}/status`, data),
-  getEmployeeJobs: employeeId => apiClient.get(`/jobs/employee/${employeeId}`),
-  getMyJobs: () => apiClient.get('/jobs/my-jobs'),
+  getEmployeeJobs: (employeeId, params = {}) =>
+    apiClient.get(`/jobs/employee/${employeeId}`, { params }),
+  getMyJobs: (params = {}) => apiClient.get('/jobs/my-jobs', { params }),
   startJob: jobId => apiClient.post(`/jobs/${jobId}/start`),
   completeJob: (jobId, data) => apiClient.post(`/jobs/${jobId}/complete`, data),
   getJobLogs: jobId => apiClient.get(`/jobs/${jobId}/logs`),
@@ -125,7 +126,10 @@ export const api = {
   deleteService: id => apiClient.delete(`/services/${id}`),
 
   // Gallery
-  getGallery: () => apiClient.get('/gallery'),
+  getGallery: params => apiClient.get('/gallery', { params }),
+  getGalleryFolders: () => apiClient.get('/gallery/folders'),
+  getGalleryCategories: params =>
+    apiClient.get('/gallery/categories', { params }),
   createGalleryItem: data =>
     apiClient.post('/gallery', data, {
       headers: { 'Content-Type': 'multipart/form-data' },

@@ -10,7 +10,11 @@ exports.getallusers = async (req, res, next) => {
     const where = {};
     if (role) where.role = role;
 
-    const users = await User.findAll({
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await User.findAndCountAll({
       where,
       attributes: {
         include: [
@@ -23,12 +27,17 @@ exports.getallusers = async (req, res, next) => {
         ],
       },
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
       raw: true,
     });
 
     res.json({
       success: true,
-      items: users,
+      items: rows,
+      total: count,
+      page,
+      pages: Math.ceil(count / limit),
     });
   } catch (err) {
     next(err);

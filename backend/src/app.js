@@ -53,7 +53,7 @@ const limiter = rateLimit({
 });
 
 // Apply rate limiting to all API routes
-app.use("/api", limiter);
+// app.use("/api", limiter);
 
 const sessionStore = new MySQLStore({
   host: process.env.MYSQL_HOST || "localhost",

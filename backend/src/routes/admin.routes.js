@@ -277,6 +277,16 @@ router.post(
   adminController.deleteGallery,
 );
 
+// Job management routes
+router.get("/jobs", isAuthenticated, isAdmin, adminController.getJobList);
+router.get("/jobs/:id", isAuthenticated, isAdmin, adminController.getJobDetail);
+router.post(
+  "/jobs/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteJob,
+);
+
 // Data Deletion Request management routes
 const deletionRequestController = require("../controllers/deletionRequest.controller");
 

@@ -4,14 +4,15 @@ const { Op } = require("sequelize");
 // Get all jobs (admin)
 exports.getAllJobs = async (req, res) => {
   try {
-    const { status, priority, employeeId, limit } = req.query;
+    const { status, priority, employeeId, page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
     const where = {};
 
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (employeeId) where.employeeId = employeeId;
 
-    const jobs = await Job.findAll({
+    const { count, rows } = await Job.findAndCountAll({
       where,
       include: [
         {
@@ -23,6 +24,7 @@ exports.getAllJobs = async (req, res) => {
             "email",
             "phone",
             "address",
+            "city",
             "serviceType",
             "message",
           ],
@@ -39,10 +41,17 @@ exports.getAllJobs = async (req, res) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit: limit ? parseInt(limit) : undefined,
+      limit: parseInt(limit),
+      offset: offset,
     });
 
-    res.json({ success: true, data: jobs });
+    res.json({
+      success: true,
+      data: rows,
+      total: count,
+      page: parseInt(page),
+      pages: Math.ceil(count / limit),
+    });
   } catch (error) {
     console.error("Get all jobs error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch jobs" });
@@ -286,13 +295,13 @@ exports.updateJobStatus = async (req, res) => {
 exports.getEmployeeJobs = async (req, res) => {
   try {
     const employeeId = req.params.employeeId || req.user.id;
-    const { status } = req.query;
+    const { status, page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const where = { employeeId };
-    // If a specific status filter is requested, apply it; otherwise return all statuses
     if (status) where.status = status;
 
-    const jobs = await Job.findAll({
+    const { count, rows } = await Job.findAndCountAll({
       where,
       include: [
         {
@@ -304,6 +313,7 @@ exports.getEmployeeJobs = async (req, res) => {
             "email",
             "phone",
             "address",
+            "city",
             "serviceType",
             "employee_notes",
             "message",
@@ -318,9 +328,17 @@ exports.getEmployeeJobs = async (req, res) => {
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit: parseInt(limit),
+      offset: offset,
     });
 
-    res.json({ success: true, data: jobs });
+    res.json({
+      success: true,
+      data: rows,
+      total: count,
+      page: parseInt(page),
+      pages: Math.ceil(count / limit),
+    });
   } catch (error) {
     console.error("Get employee jobs error:", error);
     res

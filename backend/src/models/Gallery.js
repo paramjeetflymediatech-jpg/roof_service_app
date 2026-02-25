@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require('../config/mysql');
+const sequelize = require("../config/mysql");
 
 const Gallery = sequelize.define(
   "Gallery",
@@ -20,6 +20,10 @@ const Gallery = sequelize.define(
     imageUrl: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

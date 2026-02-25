@@ -31,7 +31,14 @@ const AdminGalleryScreen = () => {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null); 
+  const [location, setLocation] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const [viewMode, setViewMode] = useState('folders'); // folders, subfolders, gallery
+  const [locations, setLocations] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const getImageUrl = path => {
     if (!path) return null;
@@ -42,12 +49,48 @@ const AdminGalleryScreen = () => {
   const [viewingItem, setViewingItem] = useState(null);
 
   useEffect(() => {
-    loadGallery();
-  }, []);
+    if (viewMode === 'folders') {
+      loadFolders();
+    } else if (viewMode === 'subfolders') {
+      loadCategories();
+    } else if (viewMode === 'gallery') {
+      loadGallery();
+    }
+  }, [viewMode, selectedLocation, selectedCategory]);
+
+  const loadFolders = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getGalleryFolders();
+      setLocations(res.data || []);
+    } catch (error) {
+      console.log('Load folders error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getGalleryCategories({
+        location: selectedLocation,
+      });
+      setCategories(res.data || []);
+    } catch (error) {
+      console.log('Load categories error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadGallery = async () => {
     setLoading(true);
     try {
-      const res = await api.getGallery();
+      const res = await api.getGallery({
+        location: selectedLocation,
+        category: selectedCategory === 'All' ? undefined : selectedCategory,
+      });
       const raw = res.data?.items || res.data || [];
       setItems(Array.isArray(raw) ? raw : []);
     } catch (error) {
@@ -61,11 +104,16 @@ const AdminGalleryScreen = () => {
     setEditingItem(null);
     setTitle('');
     setCategory('');
+    setLocation('');
     setSelectedImage(null);
   };
 
   const openCreateForm = () => {
     resetForm();
+    // Pre-fill with current selection if possible
+    if (selectedLocation) setLocation(selectedLocation);
+    if (selectedCategory && selectedCategory !== 'All')
+      setCategory(selectedCategory);
     setShowForm(true);
   };
 
@@ -73,7 +121,8 @@ const AdminGalleryScreen = () => {
     setEditingItem(item);
     setTitle(item.title || '');
     setCategory(item.category || '');
-    setSelectedImage(null); // Reset new image selection
+    setLocation(item.location || '');
+    setSelectedImage(null);
     setShowForm(true);
   };
 
@@ -94,8 +143,8 @@ const AdminGalleryScreen = () => {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      Alert.alert('Validation', 'Title is required');
+    if (!title.trim() || !location.trim() || !category.trim()) {
+      Alert.alert('Validation', 'Title, Location and Category are required');
       return;
     }
 
@@ -110,6 +159,7 @@ const AdminGalleryScreen = () => {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('category', category.trim());
+      formData.append('location', location.trim());
 
       if (selectedImage) {
         formData.append('image', {
@@ -125,7 +175,7 @@ const AdminGalleryScreen = () => {
         await api.createGalleryItem(formData);
       }
 
-      await loadGallery();
+      await onRefresh();
       resetForm();
       setShowForm(false);
       Alert.alert('Success', 'Gallery item saved successfully');
@@ -136,6 +186,12 @@ const AdminGalleryScreen = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onRefresh = async () => {
+    if (viewMode === 'folders') loadFolders();
+    else if (viewMode === 'subfolders') loadCategories();
+    else loadGallery();
   };
 
   const handleDelete = itemToDelete => {
@@ -150,7 +206,7 @@ const AdminGalleryScreen = () => {
           onPress: async () => {
             try {
               await api.deleteGalleryItem(itemToDelete.id);
-              await loadGallery();
+              await onRefresh();
             } catch (error) {
               Alert.alert('Error', 'Failed to delete item');
             }
@@ -159,6 +215,57 @@ const AdminGalleryScreen = () => {
       ],
     );
   };
+
+  const handleBack = () => {
+    if (viewMode === 'gallery') {
+      setViewMode('subfolders');
+      setSelectedCategory(null);
+    } else if (viewMode === 'subfolders') {
+      setViewMode('folders');
+      setSelectedLocation(null);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const renderFolderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.folderCard}
+      onPress={() => {
+        setSelectedLocation(item.name);
+        setViewMode('subfolders');
+      }}
+    >
+      <View style={styles.folderIconContainer}>
+        <Text style={styles.folderIcon}>📁</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{item.count}</Text>
+        </View>
+      </View>
+      <Text style={styles.folderName} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text style={styles.folderSub}>{item.count} photos</Text>
+    </TouchableOpacity>
+  );
+
+  const renderSubfolderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.folderCard}
+      onPress={() => {
+        setSelectedCategory(item);
+        setViewMode('gallery');
+      }}
+    >
+      <View style={styles.folderIconContainer}>
+        <Text style={styles.folderIcon}>📂</Text>
+      </View>
+      <Text style={styles.folderName} numberOfLines={1}>
+        {item}
+      </Text>
+      <Text style={styles.folderSub}>View images</Text>
+    </TouchableOpacity>
+  );
 
   const renderItem = ({ item }) => {
     return (
@@ -173,7 +280,9 @@ const AdminGalleryScreen = () => {
         <View style={styles.cardContent}>
           <View style={styles.info}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.category}>{item.category}</Text>
+            <Text style={styles.category}>
+              {item.category} • {item.location}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.editBtn}
@@ -197,29 +306,56 @@ const AdminGalleryScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
+        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Gallery</Text>
+        <Text style={styles.headerTitle}>
+          {viewMode === 'folders'
+            ? 'Manage Gallery'
+            : selectedCategory || selectedLocation}
+        </Text>
         <TouchableOpacity onPress={openCreateForm} style={styles.addBtn}>
           <Text style={styles.addText}>+</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
-        data={items}
-        keyExtractor={item => String(item.id)}
-        renderItem={renderItem}
+        data={
+          viewMode === 'folders'
+            ? locations
+            : viewMode === 'subfolders'
+            ? categories
+            : items
+        }
+        keyExtractor={(item, index) =>
+          typeof item === 'string'
+            ? item
+            : String(item.id || item.name || index)
+        }
+        renderItem={
+          viewMode === 'folders'
+            ? renderFolderItem
+            : viewMode === 'subfolders'
+            ? renderSubfolderItem
+            : renderItem
+        }
+        numColumns={viewMode === 'gallery' ? 1 : 2}
+        key={viewMode} // Force re-render on grid change
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
             refreshing={loading}
-            onRefresh={loadGallery}
+            onRefresh={onRefresh}
             tintColor={COLORS.primary}
           />
+        }
+        ListHeaderComponent={
+          viewMode !== 'folders' && (
+            <Text style={styles.breadcrumb}>
+              Gallery › {selectedLocation}{' '}
+              {selectedCategory ? `› ${selectedCategory}` : ''}
+            </Text>
+          )
         }
         ListEmptyComponent={
           !loading && <Text style={styles.emptyText}>No items found.</Text>
@@ -290,6 +426,15 @@ const AdminGalleryScreen = () => {
                   />
                 </View>
                 <View style={styles.formGroup}>
+                  <Text style={styles.label}>Location</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={location}
+                    onChangeText={setLocation}
+                    placeholder="e.g. Houston, Austin..."
+                  />
+                </View>
+                <View style={styles.formGroup}>
                   <Text style={styles.label}>Category</Text>
                   <TextInput
                     style={styles.input}
@@ -340,7 +485,107 @@ const AdminGalleryScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
-  // ... keep existing styles ...
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: moderateScale(20),
+    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
+    backgroundColor: COLORS.white,
+    ...SHADOWS.small,
+  },
+  headerTitle: {
+    fontSize: moderateScale(18),
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  backBtn: { padding: 10 },
+  backText: { fontSize: 24, color: COLORS.text },
+  addBtn: {
+    backgroundColor: COLORS.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addText: { color: COLORS.white, fontSize: 24, marginTop: -2 },
+  listContent: { padding: moderateScale(20) },
+  breadcrumb: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '600',
+  },
+  folderCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    margin: 8,
+    alignItems: 'center',
+    ...SHADOWS.small,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  folderIconContainer: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#F0F7FF',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  folderIcon: { fontSize: 24 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeText: { color: COLORS.white, fontSize: 10, fontWeight: '700' },
+  folderName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+  folderSub: { fontSize: 10, color: COLORS.textLight, marginTop: 4 },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
+    ...SHADOWS.small,
+  },
+  cardImage: { width: '100%', height: 180 },
+  cardContent: { flexDirection: 'row', padding: 16, alignItems: 'center' },
+  info: { flex: 1 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  category: { fontSize: 12, color: COLORS.textLight, marginTop: 4 },
+  editBtn: { padding: 8 },
+  editIcon: { fontSize: 18, color: COLORS.textLight },
+  deleteBtn: {
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff0f0',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  deleteText: { color: COLORS.error, fontWeight: '600' },
+  emptyText: { textAlign: 'center', marginTop: 50, color: COLORS.textLight },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
   detailContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
@@ -349,6 +594,7 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
     alignItems: 'center',
     ...SHADOWS.large,
+    alignSelf: 'center',
   },
   detailImage: {
     width: '100%',
@@ -378,69 +624,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
     padding: 8,
   },
-
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
-    backgroundColor: COLORS.white,
-    ...SHADOWS.small,
-  },
-  headerTitle: {
-    fontSize: moderateScale(18),
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  backBtn: { padding: 10 },
-  backText: { fontSize: 24, color: COLORS.text },
-  addBtn: {
-    backgroundColor: COLORS.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addText: { color: COLORS.white, fontSize: 24, marginTop: -2 },
-  listContent: { padding: moderateScale(20) },
-  card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    ...SHADOWS.small,
-  },
-  cardImage: { width: '100%', height: 150 },
-  cardContent: { flexDirection: 'row', padding: 16, alignItems: 'center' },
-  info: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '700', color: COLORS.text },
-  category: { fontSize: 12, color: COLORS.textLight, marginTop: 4 },
-  editBtn: { padding: 8 },
-  editIcon: { fontSize: 18, color: COLORS.textLight },
-  deleteBtn: {
-    padding: 12,
-    alignItems: 'center',
-    backgroundColor: '#fff0f0',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  deleteText: { color: COLORS.error, fontWeight: '600' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: COLORS.textLight },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 20,
-  },
   keyboardView: { flex: 1, justifyContent: 'center' },
   modalContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
     padding: 20,
-    maxHeight: '80%',
+    maxHeight: '90%',
   },
   modalHeader: {
     flexDirection: 'row',

@@ -24,43 +24,91 @@ const ITEM_WIDTH = (width - moderateScale(60)) / COLUMN_COUNT;
 const EmployeeGalleryScreen = () => {
   const navigation = useNavigation();
   const [galleryItems, setGalleryItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
   const [categories, setCategories] = useState(['All']);
+  const [locations, setLocations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [viewMode, setViewMode] = useState('folders');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    loadGallery();
-  }, []);
-
-  useEffect(() => {
-    if (selectedCategory === 'All') {
-      setFilteredItems(galleryItems);
-    } else {
-      setFilteredItems(
-        galleryItems.filter(item => item.category === selectedCategory),
-      );
+    if (viewMode === 'folders') {
+      loadFolders();
+    } else if (viewMode === 'subfolders') {
+      loadCategories();
+    } else if (viewMode === 'gallery' && selectedLocation && selectedCategory) {
+      setPage(1);
+      fetchImages(1, true);
     }
-  }, [selectedCategory, galleryItems]);
+  }, [viewMode, selectedLocation, selectedCategory]);
 
-  const loadGallery = async () => {
+  const loadFolders = async () => {
+    setLoading(true);
     try {
-      const res = await api.getGallery();
-      const raw = res.data?.items || res.data || [];
-      const items = Array.isArray(raw) ? raw : [];
-      setGalleryItems(items);
-
-      // Extract unique categories
-      const cats = new Set(['All']);
-      items.forEach(item => {
-        if (item.category) cats.add(item.category);
-      });
-      setCategories(Array.from(cats));
+      const res = await api.getGalleryFolders();
+      setLocations(res.data || []);
     } catch (error) {
-      console.log('Error fetching gallery:', error);
+      console.log('Error fetching folders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getGalleryCategories({
+        location: selectedLocation,
+      });
+      // The API returns a simple array of category strings.
+      // We might need counts if we want to show them on subfolder cards.
+      // For now, let's just use the strings.
+      setCategories(res.data || []);
+    } catch (error) {
+      console.log('Error fetching categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchImages = async (pageNum, isInitial = false) => {
+    if (pageNum > 1 && !hasMore) return;
+    if (pageNum > 1) setLoadingMore(true);
+
+    try {
+      const res = await api.getGallery({
+        location: selectedLocation,
+        category: selectedCategory === 'All' ? undefined : selectedCategory,
+        page: pageNum,
+        limit: 20,
+      });
+
+      const { items, totalPages } = res.data;
+      const newItems = Array.isArray(items) ? items : [];
+
+      if (isInitial) {
+        setGalleryItems(newItems);
+      } else {
+        setGalleryItems(prev => [...prev, ...newItems]);
+      }
+
+      setHasMore(pageNum < totalPages);
+      setPage(pageNum);
+    } catch (error) {
+      console.log('Error fetching images:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchImages(page + 1);
     }
   };
 
@@ -84,82 +132,188 @@ const EmployeeGalleryScreen = () => {
         <Text style={styles.itemTitle} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={styles.itemCategory}>{item.category}</Text>
+        <Text style={styles.itemCategory}>
+          {item.category} {item.location ? `• ${item.location}` : ''}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
-  const renderCategoryItem = ({ item }) => (
+  const renderFolderItem = ({ item }) => (
     <TouchableOpacity
-      style={[
-        styles.categoryChip,
-        selectedCategory === item && styles.categoryChipActive,
-      ]}
-      onPress={() => setSelectedCategory(item)}
+      style={styles.folderContainer}
+      onPress={() => {
+        setSelectedLocation(item.name);
+        setViewMode('subfolders');
+      }}
     >
-      <Text
-        style={[
-          styles.categoryText,
-          selectedCategory === item && styles.categoryTextActive,
-        ]}
-      >
-        {item}
+      <View style={styles.folderIconContainer}>
+        <Text style={styles.folderIcon}>📁</Text>
+        <View style={styles.folderBadge}>
+          <Text style={styles.folderBadgeText}>{item.count}</Text>
+        </View>
+      </View>
+      <Text style={styles.folderName} numberOfLines={1}>
+        {item.name}
       </Text>
     </TouchableOpacity>
   );
 
-  if (loading) {
+  const renderSubfolderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.folderContainer}
+      onPress={() => {
+        setSelectedCategory(item);
+        setViewMode('gallery');
+      }}
+    >
+      <View style={styles.folderIconContainer}>
+        <Text style={styles.folderIcon}>📂</Text>
+      </View>
+      <Text style={styles.folderName} numberOfLines={1}>
+        {item === 'All' ? 'All Photos' : item}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const handleBack = () => {
+    if (viewMode === 'gallery') {
+      setViewMode('subfolders');
+      setSelectedCategory('All');
+    } else if (viewMode === 'subfolders') {
+      setViewMode('folders');
+      setSelectedLocation(null);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const renderContent = () => {
+    if (viewMode === 'folders') {
+      return (
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={locations}
+            keyExtractor={item => item.name}
+            renderItem={renderFolderItem}
+            numColumns={COLUMN_COUNT}
+            columnWrapperStyle={styles.columnWrapper}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <Text style={styles.sectionLabel}>Locations</Text>
+            }
+            ListEmptyComponent={
+              !loading && (
+                <Text style={{ textAlign: 'center', marginTop: 20 }}>
+                  No locations found.
+                </Text>
+              )
+            }
+          />
+          {loading && (
+            <View style={styles.loaderOverlay}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    if (viewMode === 'subfolders') {
+      return (
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={categories}
+            keyExtractor={item => item}
+            renderItem={renderSubfolderItem}
+            numColumns={COLUMN_COUNT}
+            columnWrapperStyle={styles.columnWrapper}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <Text style={styles.sectionLabel}>
+                Categories in {selectedLocation}
+              </Text>
+            }
+            ListEmptyComponent={
+              !loading && (
+                <Text style={{ textAlign: 'center', marginTop: 20 }}>
+                  No categories found.
+                </Text>
+              )
+            }
+          />
+          {loading && (
+            <View style={styles.loaderOverlay}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          )}
+        </View>
+      );
+    }
+
     return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: 'center', alignItems: 'center' },
-        ]}
-      >
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={galleryItems}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderGalleryItem}
+          numColumns={COLUMN_COUNT}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListHeaderComponent={
+            <Text style={styles.sectionLabel}>
+              {selectedLocation} ›{' '}
+              {selectedCategory === 'All' ? 'All' : selectedCategory}
+            </Text>
+          }
+          ListFooterComponent={
+            loadingMore && (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              </View>
+            )
+          }
+          ListEmptyComponent={
+            !loading && (
+              <Text style={{ textAlign: 'center', marginTop: 20 }}>
+                No items found.
+              </Text>
+            )
+          }
+        />
+
+        {loading && (
+          <View style={[styles.loaderOverlay, { top: verticalScale(80) }]}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        )}
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Project Gallery</Text>
+        <Text style={styles.headerTitle}>
+          {viewMode === 'folders'
+            ? 'Project Gallery'
+            : viewMode === 'subfolders'
+            ? selectedLocation
+            : selectedCategory}
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.categoryContainer}>
-        <FlatList
-          horizontal
-          data={categories}
-          keyExtractor={item => item}
-          renderItem={renderCategoryItem}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryList}
-        />
-      </View>
-
-      <FlatList
-        data={filteredItems}
-        keyExtractor={item => String(item.id)}
-        renderItem={renderGalleryItem}
-        numColumns={COLUMN_COUNT}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={{ textAlign: 'center', marginTop: 20 }}>
-            No items found.
-          </Text>
-        }
-      />
+      {renderContent()}
 
       {/* Image Modal */}
       <Modal
@@ -202,6 +356,18 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingTop: Platform.OS === 'ios' ? verticalScale(40) : verticalScale(10),
   },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -227,9 +393,64 @@ const styles = StyleSheet.create({
   categoryContainer: {
     marginVertical: verticalScale(16),
   },
+  sectionLabel: {
+    fontSize: moderateScale(FONTS.sizes.small),
+    fontWeight: '700',
+    color: COLORS.text,
+    paddingHorizontal: moderateScale(20),
+    marginBottom: verticalScale(8),
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
   categoryList: {
     paddingHorizontal: moderateScale(20),
     paddingRight: moderateScale(40),
+  },
+  folderContainer: {
+    width: ITEM_WIDTH,
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    alignItems: 'center',
+    ...SHADOWS.small,
+    marginBottom: verticalScale(16),
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  folderIconContainer: {
+    width: moderateScale(60),
+    height: moderateScale(60),
+    backgroundColor: '#F0F7FF',
+    borderRadius: moderateScale(30),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: verticalScale(12),
+  },
+  folderIcon: {
+    fontSize: moderateScale(30),
+  },
+  folderBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: COLORS.primary,
+    borderRadius: moderateScale(10),
+    minWidth: moderateScale(20),
+    height: moderateScale(20),
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  folderBadgeText: {
+    color: COLORS.white,
+    fontSize: moderateScale(10),
+    fontWeight: 'bold',
+  },
+  folderName: {
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
   },
   categoryChip: {
     paddingHorizontal: moderateScale(16),

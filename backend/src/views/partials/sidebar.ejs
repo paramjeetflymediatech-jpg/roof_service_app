@@ -110,6 +110,30 @@
     </a>
 
     <a
+      href="/admin/jobs"
+      class="nav-item <%= title === 'Job Management' || (typeof title === 'string' && title.startsWith('Job #')) ? 'active' : '' %>"
+    >
+      <span class="icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M21 7h-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"
+          ></path>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </span>
+      <span class="label">Jobs</span>
+      <span class="badge-dot"></span>
+    </a>
+
+    <a
       href="/admin/categories"
       class="nav-item <%= title === 'Category Management' || title === 'Add New Category' || title === 'Edit Category' ? 'active' : '' %>"
     >

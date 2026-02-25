@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
@@ -41,28 +42,48 @@ const EmployeeMyJobsScreen = () => {
   const navigation = useNavigation();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    loadJobs();
-  }, []);
+    loadJobs(1, true);
+  }, [activeTab]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadJobs();
-    }, [user?.id]),
+      loadJobs(1, true);
+    }, [user?.id, activeTab]),
   );
 
-  const loadJobs = async () => {
-    setLoading(true);
+  const getStatusFilter = () => {
+    if (activeTab === 'New') return JOB_STATUS.ASSIGNED; // Backend logic might need to be flexible for multiple statuses
+    if (activeTab === 'Active') return JOB_STATUS.IN_PROGRESS;
+    if (activeTab === 'Completed') return JOB_STATUS.COMPLETED;
+    return null;
+  };
+
+  const loadJobs = async (pageNum = 1, isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+      setHasMore(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
-      const response = await api.getEmployeeJobs(user.id);
-      const raw =
-        response.data?.items ||
-        response.data?.data ||
-        (Array.isArray(response.data) ? response.data : []);
+      const status = getStatusFilter();
+      const response = await api.getEmployeeJobs(user.id, {
+        page: pageNum,
+        limit: 10,
+        status: status,
+      });
+
+      const { data, total, pages } = response.data;
+      const raw = Array.isArray(data) ? data : [];
 
       const mappedJobs = raw.map(job => {
         const lead = job.lead || {};
@@ -74,6 +95,7 @@ const EmployeeMyJobsScreen = () => {
           leadId: lead.id,
           service: lead.serviceType || 'Roof Service',
           address: `${lead.address} ${lead?.city || ''} ` || 'N/A',
+          city: lead.city || '',
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,
@@ -88,17 +110,32 @@ const EmployeeMyJobsScreen = () => {
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });
-      setJobs(mappedJobs);
+
+      if (isInitial) {
+        setJobs(mappedJobs);
+      } else {
+        setJobs(prev => [...prev, ...mappedJobs]);
+      }
+
+      setPage(pageNum);
+      setHasMore(pageNum < pages);
     } catch (error) {
       console.log('Load jobs error:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadJobs(page + 1);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadJobs();
+    await loadJobs(1, true);
     setRefreshing(false);
   };
 
@@ -137,38 +174,15 @@ const EmployeeMyJobsScreen = () => {
     }
   };
 
-  const filterJobs = () => {
-    let filtered = jobs;
-
-    // Tab Filter
-    if (activeTab === 'New') {
-      filtered = filtered.filter(
-        j => j.status === JOB_STATUS.ASSIGNED || j.status === 'pending',
-      );
-    } else if (activeTab === 'Active') {
-      filtered = filtered.filter(
-        j =>
-          j.status === JOB_STATUS.IN_PROGRESS ||
-          j.status === 'in_progress' ||
-          j.status === 'accepted',
-      );
-    } else if (activeTab === 'Completed') {
-      filtered = filtered.filter(
-        j => j.status === JOB_STATUS.COMPLETED || j.status === 'completed',
-      );
-    }
-
-    // Search Filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        job =>
-          job.clientName?.toLowerCase().includes(query) ||
-          job.address?.toLowerCase().includes(query) ||
-          job.service?.toLowerCase().includes(query),
-      );
-    }
-    return filtered;
+  const getFilteredJobs = () => {
+    if (!searchQuery.trim()) return jobs;
+    const query = searchQuery.toLowerCase();
+    return jobs.filter(
+      job =>
+        job.clientName?.toLowerCase().includes(query) ||
+        job.address?.toLowerCase().includes(query) ||
+        job.service?.toLowerCase().includes(query),
+    );
   };
 
   const renderJobItem = ({ item }) => (
@@ -278,18 +292,27 @@ const EmployeeMyJobsScreen = () => {
       </View>
 
       <FlatList
-        data={filterJobs()}
+        data={getFilteredJobs()}
         keyExtractor={item => item.id}
         renderItem={renderJobItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() =>
+          loadingMore ? (
+            <View style={{ paddingVertical: 20 }}>
+              <ActivityIndicator color={COLORS.primary} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
-              No jobs found in this category.
+              {loading ? 'Loading jobs...' : 'No jobs found in this category.'}
             </Text>
           </View>
         )}

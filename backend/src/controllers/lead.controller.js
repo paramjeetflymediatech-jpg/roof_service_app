@@ -785,19 +785,25 @@ exports.assignLead = async (req, res, next) => {
 
 // ... existing getEmployeeLeads ...
 exports.getEmployeeLeads = async (req, res, next) => {
-  // ... (keep existing implementation)
   try {
     const { employeeId } = req.params;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const offset = (page - 1) * limit;
 
-    const leads = await Lead.findAll({
+    const { count, rows } = await Lead.findAndCountAll({
       where: { assignedToId: employeeId },
       order: [["createdAt", "DESC"]],
-      raw: true,
+      limit,
+      offset,
     });
 
     res.json({
       success: true,
-      items: leads,
+      items: rows,
+      total: count,
+      page,
+      pages: Math.ceil(count / limit),
     });
   } catch (err) {
     next(err);

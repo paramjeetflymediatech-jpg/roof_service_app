@@ -5,6 +5,8 @@ const upload = require("../middlewares/upload.middleware");
 
 // /api/gallery
 router.get("/", galleryController.getGalleryItems);
+router.get("/folders", galleryController.getGalleryFolders);
+router.get("/categories", galleryController.getGalleryCategories);
 router.post("/", upload.single("image"), galleryController.createGalleryItem);
 router.delete("/:id", galleryController.deleteGalleryItem);
 

@@ -5,10 +5,13 @@ const {
   SeoMeta,
   ServiceCategory,
   Gallery,
+  Job,
+  JobLog,
 } = require("../models");
 const fs = require("fs");
 const path = require("path");
-
+const { Op } = require("sequelize");
+const sequelize = require("../config/mysql");
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
   if (req.session && req.session.userId) {
@@ -111,7 +114,7 @@ const getLogout = (req, res) => {
 const getUserList = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 12;
     const offset = (page - 1) * limit;
 
     const totalUsers = await User.count();
@@ -132,6 +135,7 @@ const getUserList = async (req, res) => {
       currentPage: page,
       totalPages,
       totalUsers,
+      limit,
     });
   } catch (error) {
     console.error("User list error:", error);
@@ -144,7 +148,7 @@ const getUserList = async (req, res) => {
 const getLeadList = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 12;
     const offset = (page - 1) * limit;
 
     const totalLeads = await Lead.count();
@@ -164,6 +168,7 @@ const getLeadList = async (req, res) => {
       currentPage: page,
       totalPages,
       totalLeads,
+      limit,
     });
   } catch (error) {
     console.error("Lead list error:", error);
@@ -738,8 +743,14 @@ const deleteAllUsers = async (req, res) => {
 // GET /admin/seo - Render SEO list
 const getSeoList = async (req, res) => {
   try {
-    const seoPages = await SeoMeta.findAll({
-      order: [["pageName", "ASC"]],
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: seoPages } = await SeoMeta.findAndCountAll({
+      order: [["updatedAt", "DESC"]],
+      limit,
+      offset,
       raw: true,
     });
 
@@ -747,10 +758,14 @@ const getSeoList = async (req, res) => {
       title: "SEO Management",
       userName: req.session.userName,
       seoPages,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      limit,
     });
   } catch (error) {
     console.error("SEO list error:", error);
-    req.flash("error", "Error loading SEO list");
+    req.flash("error", "Error loading SEO pages");
     res.redirect("/admin/dashboard");
   }
 };
@@ -921,19 +936,30 @@ const deleteSeo = async (req, res) => {
 // GET /admin/categories - Render category list
 const getCategoryList = async (req, res) => {
   try {
-    const categories = await ServiceCategory.findAll({
-      order: [["name", "ASC"]],
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: categories } = await ServiceCategory.findAndCountAll({
       include: [{ model: Service, as: "services" }],
+      order: [["name", "ASC"]],
+      limit,
+      offset,
+      distinct: true,
     });
 
     res.render("admin/categories/list", {
       title: "Category Management",
       userName: req.session.userName,
-      categories: categories.map((c) => c.toJSON()),
+      categories,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      limit,
     });
   } catch (error) {
     console.error("Category list error:", error);
-    req.flash("error", "Error loading category list");
+    req.flash("error", "Error loading categories");
     res.redirect("/admin/dashboard");
   }
 };
@@ -1073,19 +1099,29 @@ const deleteCategory = async (req, res) => {
 // GET /admin/services - Render service list
 const getServiceList = async (req, res) => {
   try {
-    const services = await Service.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: services } = await Service.findAndCountAll({
       include: [{ model: ServiceCategory, as: "category" }],
       order: [["name", "ASC"]],
+      limit,
+      offset,
     });
 
     res.render("admin/services/list", {
       title: "Service Management",
       userName: req.session.userName,
-      services: services.map((s) => s.toJSON()),
+      services,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      limit,
     });
   } catch (error) {
     console.error("Service list error:", error);
-    req.flash("error", "Error loading service list");
+    req.flash("error", "Error loading services");
     res.redirect("/admin/dashboard");
   }
 };
@@ -1309,11 +1345,85 @@ const deleteService = async (req, res) => {
 // Gallery management routes
 const getGalleryList = async (req, res) => {
   try {
-    const gallery = await Gallery.findAll();
+    const { location, category } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+
+    let viewMode = "folders";
+    let items = [];
+    let breadcrumbs = [{ name: "Gallery", url: "/admin/gallery" }];
+    let count = 0;
+
+    if (location && category) {
+      // Level 3: Images
+      viewMode = "images";
+      const { count: imgCount, rows } = await Gallery.findAndCountAll({
+        where: { location, category },
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset,
+      });
+      items = rows;
+      count = imgCount;
+      breadcrumbs.push({
+        name: location,
+        url: `/admin/gallery?location=${encodeURIComponent(location)}`,
+      });
+      breadcrumbs.push({ name: category, url: "#" });
+    } else if (location) {
+      // Level 2: Categories (Subfolders)
+      viewMode = "subfolders";
+      const categories = await Gallery.findAll({
+        attributes: [
+          "category",
+          [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+        ],
+        where: { location },
+        group: ["category"],
+        raw: true,
+      });
+      items = categories.map((c) => ({
+        name: c.category || "Uncategorized",
+        count: parseInt(c.count),
+        url: `/admin/gallery?location=${encodeURIComponent(
+          location,
+        )}&category=${encodeURIComponent(c.category || "Uncategorized")}`,
+      }));
+      breadcrumbs.push({ name: location, url: "#" });
+    } else {
+      // Level 1: Locations (Folders)
+      viewMode = "folders";
+      const locations = await Gallery.findAll({
+        attributes: [
+          "location",
+          [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+        ],
+        group: ["location"],
+        raw: true,
+      });
+      items = locations.map((l) => ({
+        name: l.location || "Unknown",
+        count: parseInt(l.count),
+        url: `/admin/gallery?location=${encodeURIComponent(
+          l.location || "Unknown",
+        )}`,
+      }));
+      totalItems = items.length; // Count of locations
+    }
+
     res.render("admin/gallery/index", {
       title: "Gallery Management",
       userName: req.session.userName,
-      items: gallery,
+      items,
+      viewMode,
+      breadcrumbs,
+      location: location || "",
+      category: category || "",
+      currentPage:page,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems,
+      limit,
     });
   } catch (error) {
     console.error("Gallery list error:", error);
@@ -1335,7 +1445,7 @@ const getCreateGallery = async (req, res) => {
 
 const postCreateGallery = async (req, res) => {
   try {
-    const { title, category } = req.body;
+    const { title, category, location } = req.body;
 
     if (!req.file) {
       req.flash("error", "Image is required");
@@ -1348,6 +1458,7 @@ const postCreateGallery = async (req, res) => {
       title,
       category,
       imageUrl,
+      location,
     });
 
     req.flash("success", "Image added to gallery successfully");
@@ -1387,6 +1498,114 @@ const deleteGallery = async (req, res) => {
     console.error("Delete gallery error:", error);
     req.flash("error", "Error deleting image");
     res.redirect("/admin/gallery");
+  }
+};
+
+// Job management routes
+const getJobList = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Job.findAndCountAll({
+      include: [
+        {
+          model: Lead,
+          as: "lead",
+          attributes: ["id", "name", "email", "phone", "address"],
+        },
+        {
+          model: User,
+          as: "employee",
+          attributes: ["id", "name", "email", "phone"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+      distinct: true,
+    });
+
+    res.render("admin/jobs/index", {
+      title: "Job Management",
+      userName: req.session.userName,
+      jobs: rows,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      limit,
+    });
+  } catch (error) {
+    console.error("Get job list error:", error);
+    req.flash("error", "Error loading job list");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+const getJobDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const job = await Job.findByPk(id, {
+      include: [
+        {
+          model: Lead,
+          as: "lead",
+          include: [{ model: Service, as: "service" }],
+        },
+        {
+          model: User,
+          as: "employee",
+        },
+        {
+          model: User,
+          as: "assignedBy",
+          attributes: ["id", "name"],
+        },
+        {
+          model: JobLog,
+          as: "logs",
+          include: [{ model: User, as: "user", attributes: ["name"] }],
+        },
+      ],
+      order: [[{ model: JobLog, as: "logs" }, "createdAt", "DESC"]],
+    });
+
+    if (!job) {
+      req.flash("error", "Job not found");
+      return res.redirect("/admin/jobs");
+    }
+
+    res.render("admin/jobs/view", {
+      title: `Job #${job.id} Details`,
+      userName: req.session.userName,
+      job,
+    });
+  } catch (error) {
+    console.error("Get job detail error:", error);
+    req.flash("error", "Error loading job details");
+    res.redirect("/admin/jobs");
+  }
+};
+
+const deleteJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const job = await Job.findByPk(id);
+
+    if (!job) {
+      req.flash("error", "Job not found");
+      return res.redirect("/admin/jobs");
+    }
+
+    await job.destroy();
+
+    req.flash("success", "Job deleted successfully");
+    res.redirect("/admin/jobs");
+  } catch (error) {
+    console.error("Delete job error:", error);
+    req.flash("error", "Error deleting job");
+    res.redirect("/admin/jobs");
   }
 };
 
@@ -1433,4 +1652,7 @@ module.exports = {
   deleteGallery,
   getLeadDetail,
   approveLead,
+  getJobList,
+  getJobDetail,
+  deleteJob,
 };

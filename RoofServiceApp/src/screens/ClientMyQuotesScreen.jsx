@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../App';
@@ -32,25 +33,50 @@ const ClientMyQuotesScreen = () => {
   const navigation = useNavigation();
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    loadQuotes();
-  }, []);
+    loadQuotes(1, true);
+  }, [activeTab]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadQuotes();
-    }, [user?.id]),
+      loadQuotes(1, true);
+    }, [user?.id, activeTab]),
   );
 
-  const loadQuotes = async () => {
-    setLoading(true);
+  const getStatusFilter = () => {
+    if (activeTab === 'Pending') return LEAD_STATUS.PENDING;
+    if (activeTab === 'Approved') return LEAD_STATUS.APPROVED; // Backend might need to handle 'assigned' too
+    if (activeTab === 'Completed') return LEAD_STATUS.COMPLETED;
+    return null;
+  };
+
+  const loadQuotes = async (pageNum = 1, isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+      setHasMore(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
-      const response = await api.getLeads({ userId: user?.id });
-      const clientLeads = response.data?.items || [];
+      const status = getStatusFilter();
+      const response = await api.getLeads({
+        userId: user?.id,
+        page: pageNum,
+        limit: 10,
+        status: status,
+        search: searchQuery.trim() || undefined,
+      });
+
+      const { items, pages } = response.data;
+      const clientLeads = Array.isArray(items) ? items : [];
 
       const mapped = clientLeads.map(lead => ({
         id: String(lead.id),
@@ -71,17 +97,32 @@ const ClientMyQuotesScreen = () => {
         // Keep raw data for editing
         raw: lead,
       }));
-      setQuotes(mapped);
+
+      if (isInitial) {
+        setQuotes(mapped);
+      } else {
+        setQuotes(prev => [...prev, ...mapped]);
+      }
+
+      setPage(pageNum);
+      setHasMore(pageNum < pages);
     } catch (error) {
       console.log('Load quotes error:', error.response || error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadQuotes(page + 1);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadQuotes();
+    await loadQuotes(1, true);
     setRefreshing(false);
   };
 
@@ -269,28 +310,43 @@ const ClientMyQuotesScreen = () => {
       </View>
 
       <FlatList
-        data={filteredQuotes}
+        data={quotes}
         keyExtractor={item => item.id}
         renderItem={renderQuoteItem}
         contentContainerStyle={styles.listContent}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() =>
+          loadingMore ? (
+            <View style={{ paddingVertical: 20 }}>
+              <ActivityIndicator color={COLORS.primary} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📋</Text>
-            <Text style={styles.emptyText}>No quotes found</Text>
+            <Text style={styles.emptyText}>
+              {loading ? 'Loading quotes...' : 'No quotes found'}
+            </Text>
             <Text style={styles.emptySubtext}>
-              {activeTab !== 'All'
+              {loading
+                ? 'Please wait while we fetch your data'
+                : activeTab !== 'All'
                 ? `No ${activeTab.toLowerCase()} quotes found`
                 : 'Request a quote to get started'}
             </Text>
-            <Button
-              title="Request New Quote"
-              onPress={() => navigation.navigate('ClientQuote')}
-              style={styles.emptyButton}
-              size="small"
-            />
+            {!loading && (
+              <Button
+                title="Request New Quote"
+                onPress={() => navigation.navigate('ClientQuote')}
+                style={styles.emptyButton}
+                size="small"
+              />
+            )}
           </View>
         }
       />

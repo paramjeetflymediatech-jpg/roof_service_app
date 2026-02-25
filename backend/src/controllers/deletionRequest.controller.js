@@ -4,7 +4,7 @@ const { DataDeletionRequest, User, Lead, Job, JobLog } = require("../models");
 exports.getDeletionRequestList = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 12;
     const offset = (page - 1) * limit;
 
     const totalRequests = await DataDeletionRequest.count();
@@ -23,7 +23,8 @@ exports.getDeletionRequestList = async (req, res) => {
       requests,
       currentPage: page,
       totalPages,
-      totalRequests,
+      totalItems: totalRequests,
+      limit,
     });
   } catch (error) {
     console.error("Deletion requests list error:", error);
