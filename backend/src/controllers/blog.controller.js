@@ -20,7 +20,7 @@ exports.getAdminList = async (req, res) => {
     res.render("admin/blogs/list", {
       title: "Blog Management",
       userName: req.session.userName,
-      blogs,
+      blogs: blogs,
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       totalItems: count,

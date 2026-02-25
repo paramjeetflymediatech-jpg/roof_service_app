@@ -22,9 +22,9 @@ exports.getDeletionRequestList = async (req, res) => {
       userName: req.session.userName,
       requests,
       currentPage: page,
-      totalPages,
-      totalItems: totalRequests,
-      limit,
+      totalPages: totalPages,
+      totalRequests: totalRequests,
+      limit: limit,
     });
   } catch (error) {
     console.error("Deletion requests list error:", error);
