@@ -24,6 +24,7 @@ exports.getDeletionRequestList = async (req, res) => {
       currentPage: page,
       totalPages: totalPages,
       totalRequests: totalRequests,
+      totalItems: totalRequests,
       limit: limit,
     });
   } catch (error) {

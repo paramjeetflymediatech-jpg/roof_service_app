@@ -3,14 +3,22 @@ const router = express.Router();
 const SeoMeta = require("../models/SeoMeta");
 const blogController = require("../controllers/blog.controller");
 
-// GET /api/seo/:pageName - Get SEO meta tags for a specific page
-router.get("/seo/:pageName", async (req, res) => {
+// GET /api/seo/* - Get SEO meta tags for a specific page (supports nested paths)
+router.get("/seo/*", async (req, res) => {
   try {
-    const { pageName } = req.params;
+    // Extract everything after /seo/
+    const pagePath = req.params[0];
+
+    if (!pagePath) {
+      return res.status(400).json({
+        success: false,
+        message: "Page path is required",
+      });
+    }
 
     const seoData = await SeoMeta.findOne({
       where: {
-        pageName: pageName.toLowerCase(),
+        pageName: pagePath.toLowerCase(),
       },
     });
 
