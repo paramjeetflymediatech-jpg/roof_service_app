@@ -51,8 +51,8 @@
                             </a>
 
                             <!-- Generate Invoice Button (for completed leads) -->
-                            <% if (lead.status === 'Completed') { %>
-                                <% if (!lead.Invoices || lead.Invoices.length === 0) { %>
+                            <% if (lead.status && lead.status.toLowerCase() === 'completed') { %>
+                                <% if (!lead.invoices || lead.invoices.length === 0) { %>
                                     <a href="/admin/invoices/generate-from-lead/<%= lead.id %>" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -64,7 +64,7 @@
                                         Generate Invoice
                                     </a>
                                 <% } else { %>
-                                    <a href="/admin/invoices/<%= lead.Invoices[0].id %>/preview" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                                    <a href="/admin/invoices/<%= lead.invoices[0].id %>/preview" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -84,6 +84,57 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- Associated Estimates & Invoices (Flow Section) -->
+                    <% if ((lead.estimates && lead.estimates.length > 0) || (lead.invoices && lead.invoices.length > 0)) { %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-6 border-t border-gray-100">
+                        <!-- Estimates Column -->
+                        <% if (lead.estimates && lead.estimates.length > 0) { %>
+                        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Associated Estimates
+                            </h3>
+                            <div class="space-y-3">
+                                <% lead.estimates.forEach(est => { %>
+                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-indigo-300 transition-all">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900"><%= est.estimateNumber %></span>
+                                        <span class="text-[10px] text-gray-400 font-medium uppercase"><%= est.status %> • $<%= est.total %></span>
+                                    </div>
+                                    <a href="/admin/estimates/<%= est.id %>/preview" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
+                                </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <!-- Invoices Column -->
+                        <% if (lead.invoices && lead.invoices.length > 0) { %>
+                        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Associated Invoices
+                            </h3>
+                            <div class="space-y-3">
+                                <% lead.invoices.forEach(inv => { %>
+                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-emerald-300 transition-all">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900"><%= inv.invoiceNumber %></span>
+                                        <span class="text-[10px] text-gray-400 font-medium uppercase font-bold text-emerald-600">Generated</span>
+                                    </div>
+                                    <a href="/admin/invoices/<%= inv.id %>/preview" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
+                                </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
 
                     <!-- Lead Details Card -->
                     <div class="bg-white rounded-lg shadow-md overflow-hidden">

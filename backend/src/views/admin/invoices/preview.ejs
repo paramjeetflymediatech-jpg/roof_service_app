@@ -72,13 +72,25 @@
 <body class="bg-gray-100 py-10 lg:py-20">
     <!-- Navbar / Actions -->
     <div class="max-w-4xl mx-auto mb-8 px-4 no-print flex flex-wrap justify-between items-center gap-4">
-        <a href="/admin/invoices" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Invoices Dashboard
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="/admin/invoices" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Invoices
+            </a>
+            <% if (invoice.lead) { %>
+            <a href="/admin/leads/<%= invoice.lead.id %>" class="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1">
+                View Lead: <%= invoice.lead.name %>
+            </a>
+            <% } %>
+            <% if (invoice.estimate) { %>
+            <a href="/admin/estimates/<%= invoice.estimate.id %>" class="text-xs font-bold text-gray-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                View Estimate: <%= invoice.estimate.estimateNumber %>
+            </a>
+            <% } %>
+        </div>
         <div class="flex gap-3">
             <button onclick="window.print()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

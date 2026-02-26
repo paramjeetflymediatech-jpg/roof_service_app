@@ -1,4 +1,4 @@
-const { Estimate, User, Lead } = require("../models");
+const { Estimate, User, Lead, Invoice } = require("../models");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -96,8 +96,7 @@ const EstimateController = {
       const total = subtotal + tax;
 
       // Generate estimate number (simple version)
-      const count = await Estimate.count();
-      const estimateNumber = `EST-${String(count + 1).padStart(4, "0")}`;
+      const estimateNumber = `EST-${uuidv4()}`;
 
       await Estimate.create({
         estimateNumber,
@@ -228,6 +227,11 @@ const EstimateController = {
             model: User,
             as: "createdBy",
             attributes: ["name", "email", "phone"],
+          },
+          {
+            model: Invoice,
+            as: "invoices",
+            attributes: ["id", "invoiceNumber"],
           },
         ],
       });

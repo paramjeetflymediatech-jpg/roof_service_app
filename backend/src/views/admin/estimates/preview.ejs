@@ -81,16 +81,26 @@
         </a>
         <div class="flex gap-3">
             <% if (estimate.status === 'Accepted') { %>
-                <a href="/admin/invoices/generate/<%= estimate.id %>" class="px-5 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    Generate Invoice
-                </a>
+                <% if (!estimate.invoices || estimate.invoices.length === 0) { %>
+                    <a href="/admin/invoices/generate/<%= estimate.id %>" class="px-5 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Generate Invoice
+                    </a>
+                <% } else { %>
+                    <a href="/admin/invoices/<%= estimate.invoices[0].id %>/preview" class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        View Existing Invoice
+                    </a>
+                <% } %>
             <% } %>
             <button onclick="window.print()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -151,8 +161,8 @@
                     <img src="/assets/roofing-logo.png" alt="Company Logo" class="max-w-[140px] max-h-[140px] w-auto h-auto object-contain print-logo" onerror="this.src='/images/logo.png'; this.onerror=null;">
                 </div>
                 <div class="space-y-1">
-                    <h2 class="text-4xl font-extrabold text-gray-200 uppercase tracking-tighter">Estimate</h2>
-                    <p class="text-lg font-bold text-gray-900 tracking-tight"><%= estimate.estimateNumber %></p>
+                    <h2 class="text-xl font-bold ">Estimate No</h2>
+                    <p class="text-sm font-bold text-gray-900 tracking-tight"><%= estimate.estimateNumber %></p>
                 </div>
             </div>
         </div>

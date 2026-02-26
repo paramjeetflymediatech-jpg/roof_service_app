@@ -1,5 +1,6 @@
 const { Invoice, User, Estimate, Lead } = require("../models");
 
+const { v4: uuidv4 } = require("uuid");
 /**
  * Helper to calculate work hours from a lead
  */
@@ -162,8 +163,7 @@ const InvoiceController = {
       const total = subtotal + tax;
 
       // Generate invoice number
-      const count = await Invoice.count();
-      const invoiceNumber = `INV-${String(count + 1).padStart(4, "0")}`;
+      const invoiceNumber = `INV-${uuidv4()}`;
 
       await Invoice.create({
         invoiceNumber,
@@ -305,6 +305,16 @@ const InvoiceController = {
             model: User,
             as: "createdBy",
             attributes: ["name", "email", "phone"],
+          },
+          {
+            model: Lead,
+            as: "lead",
+            attributes: ["id", "name"],
+          },
+          {
+            model: Estimate,
+            as: "estimate",
+            attributes: ["id", "estimateNumber"],
           },
         ],
       });
