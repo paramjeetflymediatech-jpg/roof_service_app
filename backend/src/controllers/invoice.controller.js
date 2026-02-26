@@ -6,32 +6,46 @@ const { Invoice, User, Estimate, Lead } = require("../models");
 const calculateWorkHours = (lead) => {
   if (!lead) return 0;
 
-  // 1. Try inTime and outTime (most accurate)
-  if (lead.inTime && lead.outTime) {
-    const start = new Date(lead.inTime);
-    const end = new Date(lead.outTime);
-    const diffMs = end - start;
-    if (diffMs > 0) {
-      return parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2));
+  /**
+   * Helper to parse time string like "09:00", "09:30 AM", "17:00"
+   */
+  const parseTimeStr = (timeStr) => {
+    if (!timeStr || typeof timeStr !== "string") return null;
+    const match = timeStr.match(/(\d+):(\d+)(?:\s*(AM|PM))?/i);
+    if (!match) return null;
+
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const ampm = match[3];
+
+    if (ampm) {
+      if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
+      if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
+    }
+    return hours + minutes / 60;
+  };
+
+  // 1. Try manual employeeStartTime and employeeEndTime first (Override)
+  if (lead.employeeStartTime && lead.employeeEndTime) {
+    const start = parseTimeStr(lead.employeeStartTime);
+    const end = parseTimeStr(lead.employeeEndTime);
+
+    if (start !== null && end !== null) {
+      let diff = end - start;
+      if (diff < 0) diff += 24; // Handle overnight wrap
+      return parseFloat(diff.toFixed(2));
     }
   }
 
-  // 2. Fallback to employeeStartTime and employeeEndTime
-  if (lead.employeeStartTime && lead.employeeEndTime) {
-    try {
-      const parseTime = (timeStr) => {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return hours + minutes / 60;
-      };
-
-      const start = parseTime(lead.employeeStartTime);
-      const end = parseTime(lead.employeeEndTime);
-      const diff = end - start;
-      if (diff > 0) {
-        return parseFloat(diff.toFixed(2));
+  // 2. Fallback to automatic inTime and outTime
+  if (lead.inTime && lead.outTime) {
+    const start = new Date(lead.inTime);
+    const end = new Date(lead.outTime);
+    if (!isNaN(start) && !isNaN(end)) {
+      const diffMs = end - start;
+      if (diffMs > 0) {
+        return parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2));
       }
-    } catch (e) {
-      console.error("Error parsing employee times:", e);
     }
   }
 
