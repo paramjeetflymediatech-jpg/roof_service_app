@@ -54,7 +54,7 @@
             
         }
 
-        .estimate-card {
+        .invoice-card {
             background-color: white;
             position: relative;
         }
@@ -72,26 +72,14 @@
 <body class="bg-gray-100 py-10 lg:py-20">
     <!-- Navbar / Actions -->
     <div class="max-w-4xl mx-auto mb-8 px-4 no-print flex flex-wrap justify-between items-center gap-4">
-        <a href="/admin/estimates" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
+        <a href="/admin/invoices" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Estimates Dashboard
+            Invoices Dashboard
         </a>
         <div class="flex gap-3">
-            <% if (estimate.status === 'Accepted') { %>
-                <a href="/admin/invoices/generate/<%= estimate.id %>" class="px-5 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    Generate Invoice
-                </a>
-            <% } %>
             <button onclick="window.print()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -100,7 +88,7 @@
                 </svg>
                 Print / Download
             </button>
-            <a href="/admin/estimates/<%= estimate.id %>/edit" class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2">
+            <a href="/admin/invoices/<%= invoice.id %>/edit" class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -110,8 +98,8 @@
         </div>
     </div>
 
-    <!-- Estimate Content -->
-    <div class="max-w-4xl mx-auto estimate-card shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden content-wrapper">
+    <!-- Invoice Content -->
+    <div class="max-w-4xl mx-auto invoice-card shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden content-wrapper">
         <div class="header-accent no-print"></div>
 
         <!-- Corporate Header -->
@@ -151,8 +139,8 @@
                     <img src="/assets/roofing-logo.png" alt="Company Logo" class="max-w-[140px] max-h-[140px] w-auto h-auto object-contain print-logo" onerror="this.src='/images/logo.png'; this.onerror=null;">
                 </div>
                 <div class="space-y-1">
-                    <h2 class="text-4xl font-extrabold text-gray-200 uppercase tracking-tighter">Estimate</h2>
-                    <p class="text-lg font-bold text-gray-900 tracking-tight"><%= estimate.estimateNumber %></p>
+                    <h2 class="text-4xl font-extrabold text-gray-200 uppercase tracking-tighter">Invoice</h2>
+                    <p class="text-lg font-bold text-gray-900 tracking-tight"><%= invoice.invoiceNumber %></p>
                 </div>
             </div>
         </div>
@@ -161,21 +149,21 @@
         <div class="px-8 py-10 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-12 border-y border-gray-100 bg-gray-50/20">
             <div class="space-y-6">
                 <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Estimate To</span>
-                    <h3 class="text-xl font-bold text-gray-900 leading-tight"><%= estimate.clientName %></h3>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Invoice To</span>
+                    <h3 class="text-xl font-bold text-gray-900 leading-tight"><%= invoice.clientName %></h3>
                 </div>
                 <div class="space-y-1.5 text-sm text-gray-600">
                     <p class="flex items-start gap-2">
                         <svg class="w-4 h-4 mt-0.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <%= estimate.clientAddress %>
+                        <%= invoice.clientAddress %>
                     </p>
                     <p class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        <%= estimate.clientPhone %>
+                        <%= invoice.clientPhone %>
                     </p>
                     <p class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <%= estimate.clientEmail %>
+                        <%= invoice.clientEmail %>
                     </p>
                 </div>
             </div>
@@ -183,14 +171,21 @@
             <div class="md:text-right space-y-6">
                 <div class="space-y-1">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Dates & Totals</span>
-                    <p class="text-sm font-semibold text-gray-700">Date Issued: <span class="text-gray-900 ml-1"><%= new Date(estimate.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
-                    <% if(estimate.expiryDate) { %>
-                        <p class="text-sm font-semibold text-gray-700">Valid Until: <span class="text-gray-900 ml-1"><%= new Date(estimate.expiryDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
+                    <p class="text-sm font-semibold text-gray-700">Date Issued: <span class="text-gray-900 ml-1"><%= new Date(invoice.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
+                    <% if(invoice.dueDate) { %>
+                        <p class="text-sm font-semibold text-gray-700">Due Date: <span class="text-gray-900 ml-1"><%= new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
                     <% } %>
+                    <p class="text-sm font-semibold text-gray-700">Status: 
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider 
+                            <%= invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : 
+                               invoice.status === 'Overdue' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+                            <%= invoice.status %>
+                        </span>
+                    </p>
                 </div>
                 <div class="pt-4 border-t border-gray-100 md:border-none">
-                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Estimate Total</span>
-                    <p class="text-3xl font-black text-indigo-600 mt-1">CAD $<%= Number(estimate.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></p>
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Amount Due</span>
+                    <p class="text-3xl font-black text-indigo-600 mt-1">CAD $<%= Number(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></p>
                 </div>
             </div>
         </div>
@@ -201,14 +196,14 @@
                 <table class="w-full text-left table-fixed">
                     <thead>
                         <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                            <th class="pb-5 w-[60%]">Professional Description of Work</th>
+                            <th class="pb-5 w-[60%]">Description of Services</th>
                             <th class="pb-5 text-right px-4 whitespace-nowrap w-[15%]">Rate</th>
                             <th class="pb-5 text-right px-4 whitespace-nowrap w-[10%]">Qty</th>
                             <th class="pb-5 text-right pl-4 whitespace-nowrap w-[15%]">Net Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
-                        <% estimate.items.forEach(item => { %>
+                        <% invoice.items.forEach(item => { %>
                             <tr class="group">
                                 <td class="py-7 pr-8 align-top">
                                     <div class="text-[14px] text-gray-900 font-semibold leading-relaxed whitespace-pre-line tracking-tight break-words">
@@ -229,18 +224,18 @@
                 <div class="w-full md:w-80 space-y-4">
                     <div class="flex justify-between items-center text-[13px] font-medium px-4">
                         <span class="text-gray-400 uppercase tracking-widest text-[10px]">Subtotal</span>
-                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(estimate.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(invoice.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
                     </div>
                     <div class="flex justify-between items-center text-[13px] font-medium px-4">
                         <span class="text-gray-400 uppercase tracking-widest text-[10px]">Taxes (GST 5%)</span>
-                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(estimate.tax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(invoice.tax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
                     </div>
                     
                     <div class="relative overflow-hidden group">
                         <div class="absolute inset-0 bg-indigo-600 rounded-2xl group-hover:scale-105 transition-transform duration-500"></div>
                         <div class="relative p-6 flex justify-between items-center text-white">
                             <span class="font-bold uppercase tracking-widest text-[10px]">Total CAD</span>
-                            <span class="text-3xl font-black tabular-nums tracking-tighter">$<%= Number(estimate.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                            <span class="text-3xl font-black tabular-nums tracking-tighter">$<%= Number(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
                         </div>
                     </div>
                 </div>
@@ -249,23 +244,16 @@
             <!-- Terms & Signoff -->
             <div class="mt-24 pt-12 border-t border-gray-100 flex flex-col md:flex-row gap-12 justify-between items-start">
                 <div class="md:w-3/5 space-y-8">
-                    <% if (estimate.timeEstimate) { %>
-                        <div class="space-y-2">
-                            <span class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] block">Time Estimate</span>
-                            <p class="text-sm text-gray-900 font-bold bg-gray-50/50 inline-block px-3 py-1.5 rounded-lg border border-gray-100"><%= estimate.timeEstimate %></p>
-                        </div>
-                    <% } %>
-                    
-                    <% if (estimate.notes) { %>
+                    <% if (invoice.notes) { %>
                         <div class="space-y-3">
-                            <span class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] block">Terms & Conditions</span>
-                            <p class="text-[13px] text-gray-500 font-medium leading-relaxed italic"><%= estimate.notes %></p>
+                            <span class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] block">Notes & Payment Instructions</span>
+                            <p class="text-[13px] text-gray-500 font-medium leading-relaxed italic"><%= invoice.notes %></p>
                         </div>
                     <% } %>
 
                     <div class="p-6 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
                         <p class="text-[12px] text-indigo-700/80 font-medium leading-relaxed italic">
-                            All work performed and materials supplied are covered and insured by WCB. This estimate remains valid until the expiry date shown above. For further assistance, contact Gurmukh Singh.
+                            Please make checks payable to Mainstreet Roofing LTD. Electronic transfers can be sent to mainstreetroofing604@gmail.com. Thank you for your business!
                         </p>
                     </div>
                 </div>
@@ -290,7 +278,7 @@
     </div>
     
     <div class="mt-16 mb-24 text-center no-print">
-        <p class="text-sm font-semibold text-gray-400 tracking-tight">© <%= new Date().getFullYear() %> Mainstreet Roofing LTD. • Professional Estimates Engine</p>
+        <p class="text-sm font-semibold text-gray-400 tracking-tight">© <%= new Date().getFullYear() %> Mainstreet Roofing LTD. • Professional Invoicing Engine</p>
     </div>
 </body>
 </html>

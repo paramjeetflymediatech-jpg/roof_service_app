@@ -115,6 +115,35 @@
     </a>
 
     <a
+      href="/admin/invoices"
+      class="nav-item <%= title === 'Invoices' || title === 'Create Invoice' || title === 'Edit Invoice' ? 'active' : '' %>"
+    >
+      <span class="icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+          <line x1="16" y1="8" x2="16" y2="8"></line>
+          <line x1="16" y1="12" x2="16" y2="12"></line>
+          <line x1="16" y1="16" x2="16" y2="16"></line>
+          <line x1="7" y1="8" x2="12" y2="8"></line>
+          <line x1="7" y1="12" x2="12" y2="12"></line>
+          <line x1="7" y1="16" x2="12" y2="16"></line>
+        </svg>
+      </span>
+      <span class="label">Invoices</span>
+      <span class="badge-dot"></span>
+    </a>
+
+    <a
       href="/admin/leads"
       class="nav-item <%= title === 'Lead List' || title === 'Add New Lead' || title === 'Edit Lead' ? 'active' : '' %>"
     >

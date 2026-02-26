@@ -6,6 +6,7 @@ const leadController = require("../controllers/lead.controller");
 const { isAuthenticated, isAdmin } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
 const estimateController = require("../controllers/estimate.controller");
+const invoiceController = require("../controllers/invoice.controller");
 
 // Public routes
 router.get("/login", adminController.getLogin);
@@ -358,6 +359,62 @@ router.post(
   isAuthenticated,
   isAdmin,
   estimateController.deleteEstimate,
+);
+
+// Invoice management routes
+router.get(
+  "/invoices",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.getAllInvoices,
+);
+router.get(
+  "/invoices/create",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.getCreateInvoice,
+);
+router.post(
+  "/invoices",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.createInvoice,
+);
+router.get(
+  "/invoices/:id/edit",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.getEditInvoice,
+);
+router.post(
+  "/invoices/:id",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.updateInvoice,
+);
+router.get(
+  "/invoices/:id/preview",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.previewInvoice,
+);
+router.get(
+  "/invoices/generate-from-lead/:leadId",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.generateInvoiceFromLead,
+);
+router.get(
+  "/invoices/generate/:estimateId",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.generateInvoice,
+);
+router.post(
+  "/invoices/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  invoiceController.deleteInvoice,
 );
 
 module.exports = router;

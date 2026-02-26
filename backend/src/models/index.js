@@ -14,6 +14,7 @@ const ServiceCategory = require("./ServiceCategory");
 const Gallery = require("./Gallery");
 const DataDeletionRequest = require("./DataDeletionRequest");
 const Estimate = require("./Estimate");
+const Invoice = require("./Invoice");
 
 // Define associations
 // Lead associations
@@ -58,6 +59,14 @@ User.hasMany(Estimate, { foreignKey: "createdById", as: "estimates" });
 Lead.hasMany(Estimate, { foreignKey: "leadId", as: "estimates" });
 Estimate.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
 
+// Invoice associations
+Invoice.belongsTo(User, { foreignKey: "createdById", as: "createdBy" });
+User.hasMany(Invoice, { foreignKey: "createdById", as: "invoices" });
+Invoice.belongsTo(Estimate, { foreignKey: "estimateId", as: "estimate" });
+Estimate.hasMany(Invoice, { foreignKey: "estimateId", as: "invoices" });
+Lead.hasMany(Invoice, { foreignKey: "leadId", as: "invoices" });
+Invoice.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
+
 // Export sequelize and models
 module.exports = {
   sequelize,
@@ -72,4 +81,5 @@ module.exports = {
   Gallery,
   DataDeletionRequest,
   Estimate,
+  Invoice,
 };
