@@ -793,7 +793,65 @@ const getCreateSeo = async (req, res) => {
 };
 
 // POST /admin/seo - Create new SEO page
+// const postCreateSeo = async (req, res) => {
+//   try {
+//     const {
+//       pageName,
+//       pageTitle,
+//       metaDescription,
+//       metaRobots,
+//       ogTitle,
+//       ogDescription,
+//       ogImage,
+//       canonicalUrl,
+//       schemaMarkup,
+//       googleAnalyticsId,
+//       googleTagManagerId,
+//     } = req.body;
+
+//     // Validation
+//     if (!pageName || !pageTitle || !metaDescription) {
+//       req.flash("error", "Page name, title, and description are required");
+//       return res.redirect("/admin/seo/create");
+//     }
+
+//     // Check if page already exists
+//     const existingPage = await SeoMeta.findOne({
+//       where: { pageName: pageName.toLowerCase() },
+//     });
+//     if (existingPage) {
+//       req.flash("error", "SEO for this page already exists");
+//       return res.redirect("/admin/seo/create");
+//     }
+
+//     // Create new SEO entry
+//     await SeoMeta.create({
+//       pageName: pageName.toLowerCase(),
+//       pageTitle,
+//       metaDescription,
+//       metaRobots: metaRobots || "index, follow",
+//       ogTitle: ogTitle || pageTitle,
+//       ogDescription: ogDescription || metaDescription,
+//       ogImage: ogImage || "",
+//       canonicalUrl: canonicalUrl || "",
+//       schemaMarkup: schemaMarkup || "",
+//       googleAnalyticsId: googleAnalyticsId || "",
+//       googleTagManagerId: googleTagManagerId || "",
+//     });
+
+//     req.flash("success", "SEO page created successfully");
+//     res.redirect("/admin/seo");
+//   } catch (error) {
+//     console.error("Create SEO error:", error);
+//     req.flash("error", "Error creating SEO page");
+//     res.redirect("/admin/seo/create");
+//   }
+// };
+
+// POST /admin/seo - Create new SEO page
 const postCreateSeo = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const {
       pageName,
@@ -809,39 +867,90 @@ const postCreateSeo = async (req, res) => {
       googleTagManagerId,
     } = req.body;
 
-    // Validation
     if (!pageName || !pageTitle || !metaDescription) {
       req.flash("error", "Page name, title, and description are required");
       return res.redirect("/admin/seo/create");
     }
 
-    // Check if page already exists
+    const formattedPageName = pageName.toLowerCase();
+
+    // Check SEO already exists
     const existingPage = await SeoMeta.findOne({
-      where: { pageName: pageName.toLowerCase() },
+      where: { pageName: formattedPageName },
     });
+
     if (existingPage) {
       req.flash("error", "SEO for this page already exists");
       return res.redirect("/admin/seo/create");
     }
 
-    // Create new SEO entry
-    await SeoMeta.create({
-      pageName: pageName.toLowerCase(),
-      pageTitle,
-      metaDescription,
-      metaRobots: metaRobots || "index, follow",
-      ogTitle: ogTitle || pageTitle,
-      ogDescription: ogDescription || metaDescription,
-      ogImage: ogImage || "",
-      canonicalUrl: canonicalUrl || "",
-      schemaMarkup: schemaMarkup || "",
-      googleAnalyticsId: googleAnalyticsId || "",
-      googleTagManagerId: googleTagManagerId || "",
-    });
+    // Create SEO entry
+    await SeoMeta.create(
+      {
+        pageName: formattedPageName,
+        pageTitle,
+        metaDescription,
+        metaRobots: metaRobots || "index, follow",
+        ogTitle: ogTitle || pageTitle,
+        ogDescription: ogDescription || metaDescription,
+        ogImage: ogImage || "",
+        canonicalUrl: canonicalUrl || "",
+        schemaMarkup: schemaMarkup || "",
+        googleAnalyticsId: googleAnalyticsId || "",
+        googleTagManagerId: googleTagManagerId || "",
+      },
+      { transaction }
+    );
+
+    // ✅ If it is a service page
+    if (formattedPageName.startsWith("services/")) {
+      const serviceSlug = formattedPageName.replace("services/", "").trim();
+
+      const existingService = await Service.findOne({
+        where: { slug: serviceSlug },
+      });
+
+      if (!existingService) {
+        await Service.create(
+          {
+            categoryId: null,
+            name: pageTitle,
+            slug: serviceSlug,
+            shortDescription: metaDescription,
+            longDescription: "",
+            icon: "",
+            featuredImageUrl: "",
+            isFeatured: false,
+            basePrice: null,
+            status: "published",
+
+            // 🔥 Save all SEO inside json column
+            seo: {
+              pageTitle: pageTitle,
+              metaDescription: metaDescription,
+              metaRobots: metaRobots || "index, follow",
+              ogTitle: ogTitle || pageTitle,
+              ogDescription: ogDescription || metaDescription,
+              ogImage: ogImage || "",
+              canonicalUrl: canonicalUrl || "",
+              schemaMarkup: schemaMarkup || "",
+              googleAnalyticsId: googleAnalyticsId || "",
+              googleTagManagerId: googleTagManagerId || "",
+            },
+
+            whyChooseUs: [],
+          },
+          { transaction }
+        );
+      }
+    }
+
+    await transaction.commit();
 
     req.flash("success", "SEO page created successfully");
     res.redirect("/admin/seo");
   } catch (error) {
+    await transaction.rollback();
     console.error("Create SEO error:", error);
     req.flash("error", "Error creating SEO page");
     res.redirect("/admin/seo/create");
@@ -878,7 +987,78 @@ const getEditSeo = async (req, res) => {
 };
 
 // POST /admin/seo/:id - Update SEO meta tags
+// const postUpdateSeo = async (req, res) => {
+//   try {
+//     const {
+//       pageName,
+//       pageTitle,
+//       metaDescription,
+//       metaRobots,
+//       ogTitle,
+//       ogDescription,
+//       ogImage,
+//       canonicalUrl,
+//       schemaMarkup,
+//       googleAnalyticsId,
+//       googleTagManagerId,
+//     } = req.body;
+//     const seoId = req.params.id;
+
+//     // Validation
+//     if (!pageName || !pageTitle || !metaDescription) {
+//       req.flash("error", "Page name, title and meta description are required");
+//       return res.redirect(`/admin/seo/${seoId}/edit`);
+//     }
+
+//     // Find and update SEO page
+//     const seoPage = await SeoMeta.findByPk(seoId);
+//     if (!seoPage) {
+//       req.flash("error", "SEO page not found");
+//       return res.redirect("/admin/seo");
+//     }
+
+//     // Check if new pageName already exists for other records
+//     if (pageName.toLowerCase() !== seoPage.pageName.toLowerCase()) {
+//       const existingPage = await SeoMeta.findOne({
+//         where: {
+//           pageName: pageName.toLowerCase(),
+//           id: { [Op.ne]: seoId },
+//         },
+//       });
+//       if (existingPage) {
+//         req.flash("error", "SEO for this page already exists");
+//         return res.redirect(`/admin/seo/${seoId}/edit`);
+//       }
+//     }
+
+//     await SeoMeta.update(
+//       {
+//         pageName: pageName.toLowerCase(),
+//         pageTitle,
+//         metaDescription,
+//         metaRobots: metaRobots || "index, follow",
+//         ogTitle: ogTitle || pageTitle,
+//         ogDescription: ogDescription || metaDescription,
+//         ogImage: ogImage || "",
+//         canonicalUrl: canonicalUrl || "",
+//         schemaMarkup: schemaMarkup || "",
+//         googleAnalyticsId: googleAnalyticsId || "",
+//         googleTagManagerId: googleTagManagerId || "",
+//       },
+//       { where: { id: seoId } },
+//     );
+
+//     req.flash("success", "SEO meta tags updated successfully");
+//     res.redirect("/admin/seo");
+//   } catch (error) {
+//     console.error("Update SEO error:", error);
+//     req.flash("error", "Error updating SEO meta tags");
+//     res.redirect(`/admin/seo/${req.params.id}/edit`);
+//   }
+// };
 const postUpdateSeo = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const {
       pageName,
@@ -893,38 +1073,44 @@ const postUpdateSeo = async (req, res) => {
       googleAnalyticsId,
       googleTagManagerId,
     } = req.body;
+
     const seoId = req.params.id;
 
-    // Validation
     if (!pageName || !pageTitle || !metaDescription) {
       req.flash("error", "Page name, title and meta description are required");
       return res.redirect(`/admin/seo/${seoId}/edit`);
     }
 
-    // Find and update SEO page
+    const formattedPageName = pageName.toLowerCase();
+
     const seoPage = await SeoMeta.findByPk(seoId);
     if (!seoPage) {
       req.flash("error", "SEO page not found");
       return res.redirect("/admin/seo");
     }
 
-    // Check if new pageName already exists for other records
-    if (pageName.toLowerCase() !== seoPage.pageName.toLowerCase()) {
+    // Check duplicate pageName
+    if (formattedPageName !== seoPage.pageName.toLowerCase()) {
       const existingPage = await SeoMeta.findOne({
         where: {
-          pageName: pageName.toLowerCase(),
+          pageName: formattedPageName,
           id: { [Op.ne]: seoId },
         },
       });
+
       if (existingPage) {
         req.flash("error", "SEO for this page already exists");
         return res.redirect(`/admin/seo/${seoId}/edit`);
       }
     }
 
-    await SeoMeta.update(
+    // Save old values before update
+    const oldPageName = seoPage.pageName;
+
+    // Update SeoMeta
+    await seoPage.update(
       {
-        pageName: pageName.toLowerCase(),
+        pageName: formattedPageName,
         pageTitle,
         metaDescription,
         metaRobots: metaRobots || "index, follow",
@@ -936,12 +1122,53 @@ const postUpdateSeo = async (req, res) => {
         googleAnalyticsId: googleAnalyticsId || "",
         googleTagManagerId: googleTagManagerId || "",
       },
-      { where: { id: seoId } },
+      { transaction }
     );
+
+    // ✅ SERVICE SYNC LOGIC
+    if (
+      formattedPageName.startsWith("services/") ||
+      oldPageName.startsWith("services/")
+    ) {
+      const oldSlug = oldPageName.replace("services/", "").trim();
+      const newSlug = formattedPageName.replace("services/", "").trim();
+
+      const service = await Service.findOne({
+        where: { slug: oldSlug },
+        transaction,
+      });
+
+      if (service) {
+        await service.update(
+          {
+            name: pageTitle,
+            slug: newSlug,
+            shortDescription: metaDescription,
+            status: "published",
+            seo: {
+              pageTitle,
+              metaDescription,
+              metaRobots: metaRobots || "index, follow",
+              ogTitle: ogTitle || pageTitle,
+              ogDescription: ogDescription || metaDescription,
+              ogImage: ogImage || "",
+              canonicalUrl: canonicalUrl || "",
+              schemaMarkup: schemaMarkup || "",
+              googleAnalyticsId: googleAnalyticsId || "",
+              googleTagManagerId: googleTagManagerId || "",
+            },
+          },
+          { transaction }
+        );
+      }
+    }
+
+    await transaction.commit();
 
     req.flash("success", "SEO meta tags updated successfully");
     res.redirect("/admin/seo");
   } catch (error) {
+    await transaction.rollback();
     console.error("Update SEO error:", error);
     req.flash("error", "Error updating SEO meta tags");
     res.redirect(`/admin/seo/${req.params.id}/edit`);
