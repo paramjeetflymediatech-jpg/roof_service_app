@@ -899,35 +899,24 @@ const postCreateSeo = async (req, res) => {
         googleAnalyticsId: googleAnalyticsId || "",
         googleTagManagerId: googleTagManagerId || "",
       },
-      { transaction }
+      { transaction },
     );
 
     // ✅ If it is a service page
     if (formattedPageName.startsWith("services/")) {
       const serviceSlug = formattedPageName.replace("services/", "").trim();
 
-      const existingService = await Service.findOne({
+      const service = await Service.findOne({
         where: { slug: serviceSlug },
+        transaction,
       });
 
-      if (!existingService) {
-        await Service.create(
+      if (service) {
+        await service.update(
           {
-            categoryId: null,
-            name: pageTitle,
-            slug: serviceSlug,
-            shortDescription: metaDescription,
-            longDescription: "",
-            icon: "",
-            featuredImageUrl: "",
-            isFeatured: false,
-            basePrice: null,
-            status: "published",
-
-            // 🔥 Save all SEO inside json column
             seo: {
-              pageTitle: pageTitle,
-              metaDescription: metaDescription,
+              pageTitle,
+              metaDescription,
               metaRobots: metaRobots || "index, follow",
               ogTitle: ogTitle || pageTitle,
               ogDescription: ogDescription || metaDescription,
@@ -937,14 +926,11 @@ const postCreateSeo = async (req, res) => {
               googleAnalyticsId: googleAnalyticsId || "",
               googleTagManagerId: googleTagManagerId || "",
             },
-
-            whyChooseUs: [],
           },
-          { transaction }
+          { transaction },
         );
       }
     }
-
     await transaction.commit();
 
     req.flash("success", "SEO page created successfully");
@@ -1122,7 +1108,7 @@ const postUpdateSeo = async (req, res) => {
         googleAnalyticsId: googleAnalyticsId || "",
         googleTagManagerId: googleTagManagerId || "",
       },
-      { transaction }
+      { transaction },
     );
 
     // ✅ SERVICE SYNC LOGIC
@@ -1130,21 +1116,16 @@ const postUpdateSeo = async (req, res) => {
       formattedPageName.startsWith("services/") ||
       oldPageName.startsWith("services/")
     ) {
-      const oldSlug = oldPageName.replace("services/", "").trim();
-      const newSlug = formattedPageName.replace("services/", "").trim();
+      const serviceSlug = formattedPageName.replace("services/", "").trim();
 
       const service = await Service.findOne({
-        where: { slug: oldSlug },
+        where: { slug: serviceSlug },
         transaction,
       });
 
       if (service) {
         await service.update(
           {
-            name: pageTitle,
-            slug: newSlug,
-            shortDescription: metaDescription,
-            status: "published",
             seo: {
               pageTitle,
               metaDescription,
@@ -1158,7 +1139,7 @@ const postUpdateSeo = async (req, res) => {
               googleTagManagerId: googleTagManagerId || "",
             },
           },
-          { transaction }
+          { transaction },
         );
       }
     }
