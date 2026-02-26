@@ -196,6 +196,9 @@
                                                             class="px-6 py-4 text-left font-medium text-white uppercase tracking-wider">
                                                             Status</th>
                                                         <th
+                                                            class="px-6 py-4 text-left font-medium text-white uppercase tracking-wider">
+                                                            Flow</th>
+                                                        <th
                                                             class="px-6 py-4 text-left font-medium text-white uppercase tracking-wider hidden xl:table-cell">
                                                             Received</th>
                                                         <th
@@ -250,10 +253,23 @@
                                                                         </span>
                                                                     </td>
                                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <span class="badge badge-<%= lead.status %>">
-                                                                            <%= lead.status.replace('_', ' '
-                                                                                ).toUpperCase() %>
+                                                                        <span class="badge badge-<%= (lead.status || '').toLowerCase() %>">
+                                                                            <%= (lead.status || '').replace('_', ' ').toUpperCase() %>
                                                                         </span>
+                                                                    </td>
+                                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                                        <div class="flex items-center gap-2">
+                                                                            <% if (lead.estimates && lead.estimates.length > 0) { %>
+                                                                                <a href="/admin/estimates/<%= lead.estimates[0].id %>/preview" target="_blank" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition" title="View Estimate">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                                                </a>
+                                                                            <% } %>
+                                                                            <% if (lead.invoices && lead.invoices.length > 0) { %>
+                                                                                <a href="/admin/invoices/<%= lead.invoices[0].id %>/preview" target="_blank" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition" title="View Invoice">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                                                </a>
+                                                                            <% } %>
+                                                                        </div>
                                                                     </td>
                                                                     <td
                                                                         class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">

@@ -63,7 +63,15 @@ const InvoiceController = {
   async getAllInvoices(req, res) {
     try {
       const invoices = await Invoice.findAll({
-        include: [{ model: User, as: "createdBy", attributes: ["name"] }],
+        include: [
+          { model: User, as: "createdBy", attributes: ["name"] },
+          { model: Lead, as: "lead", attributes: ["id", "name"] },
+          {
+            model: Estimate,
+            as: "estimate",
+            attributes: ["id", "estimateNumber"],
+          },
+        ],
         order: [["createdAt", "DESC"]],
       });
 

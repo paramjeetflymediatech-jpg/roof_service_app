@@ -12,7 +12,10 @@ const EstimateController = {
   async getAllEstimates(req, res) {
     try {
       const estimates = await Estimate.findAll({
-        include: [{ model: User, as: "createdBy", attributes: ["name"] }],
+        include: [
+          { model: User, as: "createdBy", attributes: ["name"] },
+          { model: Invoice, as: "invoices", attributes: ["id", "status"] },
+        ],
         order: [["createdAt", "DESC"]],
       });
 

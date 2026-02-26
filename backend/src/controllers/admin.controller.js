@@ -156,10 +156,13 @@ const getLeadList = async (req, res) => {
 
     const totalLeads = await Lead.count();
     const leads = await Lead.findAll({
+      include: [
+        { model: Estimate, as: "estimates", attributes: ["id", "status"] },
+        { model: Invoice, as: "invoices", attributes: ["id", "status"] },
+      ],
       order: [["createdAt", "DESC"]],
       limit: limit,
       offset: offset,
-      raw: true,
     });
 
     const totalPages = Math.ceil(totalLeads / limit);
@@ -167,7 +170,7 @@ const getLeadList = async (req, res) => {
     res.render("admin/leads/list", {
       title: "Lead List",
       userName: req.session.userName,
-      leads,
+      leads: leads.map((l) => l.get({ plain: false })), // Keep as model instances or use get({plain: true}) carefully with associations
       currentPage: page,
       totalPages,
       totalLeads,
