@@ -13,6 +13,7 @@ const Blog = require("./Blog");
 const ServiceCategory = require("./ServiceCategory");
 const Gallery = require("./Gallery");
 const DataDeletionRequest = require("./DataDeletionRequest");
+const Estimate = require("./Estimate");
 
 // Define associations
 // Lead associations
@@ -49,6 +50,14 @@ User.hasMany(Job, { foreignKey: "assignedById", as: "assignedJobs" });
 // Lead job association
 Lead.hasMany(Job, { foreignKey: "leadId", as: "jobs" });
 
+// Estimate associations
+Estimate.belongsTo(User, { foreignKey: "createdById", as: "createdBy" });
+User.hasMany(Estimate, { foreignKey: "createdById", as: "estimates" });
+
+// Lead-Estimate association
+Lead.hasMany(Estimate, { foreignKey: "leadId", as: "estimates" });
+Estimate.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
+
 // Export sequelize and models
 module.exports = {
   sequelize,
@@ -62,4 +71,5 @@ module.exports = {
   ServiceCategory,
   Gallery,
   DataDeletionRequest,
+  Estimate,
 };

@@ -5,6 +5,7 @@ const blogController = require("../controllers/blog.controller");
 const leadController = require("../controllers/lead.controller");
 const { isAuthenticated, isAdmin } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
+const estimateController = require("../controllers/estimate.controller");
 
 // Public routes
 router.get("/login", adminController.getLogin);
@@ -313,6 +314,50 @@ router.post(
   isAuthenticated,
   isAdmin,
   deletionRequestController.rejectDeletionRequest,
+);
+
+// Estimate management routes
+router.get(
+  "/estimates",
+  isAuthenticated,
+  isAdmin,
+  estimateController.getAllEstimates,
+);
+router.get(
+  "/estimates/create",
+  isAuthenticated,
+  isAdmin,
+  estimateController.getCreateEstimate,
+);
+router.post(
+  "/estimates",
+  isAuthenticated,
+  isAdmin,
+  estimateController.createEstimate,
+);
+router.get(
+  "/estimates/:id/edit",
+  isAuthenticated,
+  isAdmin,
+  estimateController.getEditEstimate,
+);
+router.post(
+  "/estimates/:id",
+  isAuthenticated,
+  isAdmin,
+  estimateController.updateEstimate,
+);
+router.get(
+  "/estimates/:id/preview",
+  isAuthenticated,
+  isAdmin,
+  estimateController.previewEstimate,
+);
+router.post(
+  "/estimates/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  estimateController.deleteEstimate,
 );
 
 module.exports = router;
