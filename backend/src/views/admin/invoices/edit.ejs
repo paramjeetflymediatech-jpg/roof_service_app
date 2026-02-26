@@ -85,7 +85,7 @@
                                                 <input type="number" name="items[<%= index %>][rate]" step="0.01" required value="<%= item.rate %>" class="item-rate w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                             </div>
                                             <div class="col-span-1 md:col-span-2">
-                                                <input type="number" name="items[<%= index %>][qty]" step="1" required value="<%= item.qty %>" class="item-qty w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                                <input type="number" name="items[<%= index %>][qty]" step="0.01" required value="<%= item.qty %>" class="item-qty w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                             </div>
                                             <div class="col-span-1 md:col-span-2 text-right self-center pr-2">
                                                 <span class="item-amount text-sm font-semibold text-gray-900">$<%= Number(item.amount || 0).toFixed(2) %></span>
