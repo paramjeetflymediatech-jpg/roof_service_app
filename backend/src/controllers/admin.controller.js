@@ -7,6 +7,7 @@ const {
   Gallery,
   Job,
   JobLog,
+  Invoice,
 } = require("../models");
 const fs = require("fs");
 const path = require("path");
@@ -442,6 +443,11 @@ const getLeadDetail = async (req, res) => {
           model: User,
           as: "assignedTo",
           attributes: ["name", "email", "phone"],
+        },
+        {
+          model: Invoice,
+          as: "invoices",
+          attributes: ["id", "invoiceNumber"],
         },
       ],
     });
