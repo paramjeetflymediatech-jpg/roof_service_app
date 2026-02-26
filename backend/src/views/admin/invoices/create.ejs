@@ -138,7 +138,7 @@
                                         <div class="flex items-center justify-between mb-3">
                                             <div class="flex items-center gap-2 text-blue-700">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                <span class="text-sm font-semibold">Tracked Labor</span>
+                                                <span class="text-sm font-semibold">Tracked </span>
                                             </div>
                                             <span class="text-base font-bold text-blue-700"><%= workHours %> Hours</span>
                                         </div>
@@ -172,7 +172,7 @@
                                         <input type="number" id="manualLaborRate" value="100" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                     </div>
                                     <button type="button" id="calculateManualHoursBtn" class="w-full py-2 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition-all">
-                                        Calculate & Add Labor
+                                        Calculate & Add 
                                     </button>
                                 </div>
                                 
@@ -301,7 +301,7 @@
                 calculateTotals();
             });
 
-            // Add Labor from tracked hours
+            // Add  from tracked hours
             const addLaborAsItemBtn = document.getElementById('addLaborAsItemBtn');
             const trackedLaborRateInput = document.getElementById('trackedLaborRate');
             const trackedLaborTotalDisplay = document.getElementById('trackedLaborTotal');
@@ -328,7 +328,7 @@
                     inputs.forEach(input => {
                         const name = input.getAttribute('name');
                         if (name.includes('description')) {
-                            input.value = 'Labor - Tracked Work Hours';
+                            input.value = ' - Tracked Work Hours';
                         }
                         if (name.includes('qty')) {
                             input.value = hours;
@@ -342,7 +342,7 @@
                     itemsContainer.appendChild(newRow);
                     calculateTotals();
                     if (window.showToast) {
-                        window.showToast('Labor hours added to invoice items.', 'success');
+                        window.showToast(' hours added to invoice items.', 'success');
                     }
                 });
             }
@@ -391,7 +391,7 @@
                     inputs.forEach(input => {
                         const name = input.getAttribute('name');
                         if (name.includes('description')) {
-                            input.value = `Labor (${start} - ${end})`;
+                            input.value = ` (${start} - ${end})`;
                         }
                         if (name.includes('qty')) {
                             input.value = hours;
@@ -405,7 +405,7 @@
                     itemsContainer.appendChild(newRow);
                     calculateTotals();
                     if (window.showToast) {
-                        window.showToast(`Manual labor period (${hours} hrs @ $${rate}/hr) added.`, 'success');
+                        window.showToast(`Manual  period (${hours} hrs @ $${rate}/hr) added.`, 'success');
                     }
                 });
             }
