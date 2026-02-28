@@ -77,7 +77,7 @@ const ClientMyQuotesScreen = () => {
 
       const { items, pages } = response.data;
       const clientLeads = Array.isArray(items) ? items : [];
-
+      console.log(clientLeads, 'leeads')
       const mapped = clientLeads.map(lead => ({
         id: String(lead.id),
         service: lead.serviceType || 'Roof Service',
@@ -94,6 +94,8 @@ const ClientMyQuotesScreen = () => {
           lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
         employeeStartTime: lead.employeeStartTime || null,
         employeeEndTime: lead.employeeEndTime || null,
+        actualHours: lead.actualHours || lead.actual_hours || 0,
+        actual_hours: lead.actual_hours || lead.actualHours || 0,
         // Keep raw data for editing
         raw: lead,
       }));
@@ -336,8 +338,8 @@ const ClientMyQuotesScreen = () => {
               {loading
                 ? 'Please wait while we fetch your data'
                 : activeTab !== 'All'
-                ? `No ${activeTab.toLowerCase()} quotes found`
-                : 'Request a quote to get started'}
+                  ? `No ${activeTab.toLowerCase()} quotes found`
+                  : 'Request a quote to get started'}
             </Text>
             {!loading && (
               <Button

@@ -15,6 +15,7 @@ const Gallery = require("./Gallery");
 const DataDeletionRequest = require("./DataDeletionRequest");
 const Estimate = require("./Estimate");
 const Invoice = require("./Invoice");
+const JobWorkSession = require("./JobWorkSession");
 
 // Define associations
 // Lead associations
@@ -34,6 +35,14 @@ Service.hasMany(Lead, { foreignKey: "serviceId", as: "leads" });
 User.hasMany(Lead, { foreignKey: "assignedToId", as: "assignedLeads" });
 User.hasMany(Lead, { foreignKey: "userId", as: "userLeads" });
 
+// JobWorkSession associations
+JobWorkSession.belongsTo(Job, { foreignKey: "jobId", as: "job" });
+JobWorkSession.belongsTo(User, { foreignKey: "userId", as: "user" });
+JobWorkSession.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
+
+// Lead associations
+Lead.hasMany(JobWorkSession, { foreignKey: "leadId", as: "workSessions" });
+
 // Job associations
 Job.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
 Job.belongsTo(User, { foreignKey: "employeeId", as: "employee" });
@@ -43,10 +52,16 @@ Job.hasMany(JobLog, { foreignKey: "jobId", as: "logs" });
 // JobLog associations
 JobLog.belongsTo(Job, { foreignKey: "jobId", as: "job" });
 JobLog.belongsTo(User, { foreignKey: "userId", as: "user" });
+JobLog.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
+
+// Lead associations (extended)
+Lead.hasMany(JobLog, { foreignKey: "leadId", as: "logs" });
 
 // User job associations
 User.hasMany(Job, { foreignKey: "employeeId", as: "employeeJobs" });
 User.hasMany(Job, { foreignKey: "assignedById", as: "assignedJobs" });
+
+Job.hasMany(JobWorkSession, { foreignKey: "jobId", as: "workSessions" });
 
 // Lead job association
 Lead.hasMany(Job, { foreignKey: "leadId", as: "jobs" });
@@ -82,4 +97,5 @@ module.exports = {
   DataDeletionRequest,
   Estimate,
   Invoice,
+  JobWorkSession,
 };

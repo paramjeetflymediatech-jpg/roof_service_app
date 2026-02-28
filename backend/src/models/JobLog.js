@@ -23,6 +23,14 @@ const JobLog = sequelize.define('JobLog', {
       key: 'id',
     },
   },
+  leadId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'leads',
+      key: 'id',
+    },
+  },
   action: {
     type: DataTypes.STRING(100),
     allowNull: false,
@@ -49,6 +57,7 @@ const JobLog = sequelize.define('JobLog', {
 JobLog.associate = (models) => {
   JobLog.belongsTo(models.Job, { foreignKey: 'jobId', as: 'job' });
   JobLog.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  JobLog.belongsTo(models.Lead, { foreignKey: 'leadId', as: 'lead' });
 };
 
 module.exports = JobLog;

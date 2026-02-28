@@ -119,6 +119,7 @@ const AdminLeadsScreen = ({ route }) => {
             : null,
         employeeNotes: item.employeeNotes || null,
         completionImages: item.completionImages || null,
+        actualHours: item.actualHours || item.actual_hours || null,
       }));
 
       if (shouldAppend) {
@@ -205,8 +206,8 @@ const AdminLeadsScreen = ({ route }) => {
             {item.service.toLowerCase().includes('repair')
               ? '🔧'
               : item.service.toLowerCase().includes('install')
-              ? '🏠'
-              : '📋'}
+                ? '🏠'
+                : '📋'}
           </Text>
         </View>
         <View style={styles.headerTextContainer}>
@@ -274,6 +275,14 @@ const AdminLeadsScreen = ({ route }) => {
               <View style={styles.detailRow}>
                 <Text style={styles.detailIcon}>📤</Text>
                 <Text style={styles.detailText}>Out: {item.outTime}</Text>
+              </View>
+            )}
+            {item.actualHours && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailIcon}>⏲️</Text>
+                <Text style={styles.detailText}>
+                  Total Work: {item.actualHours} hrs
+                </Text>
               </View>
             )}
           </>
@@ -439,7 +448,7 @@ const AdminLeadsScreen = ({ route }) => {
           <Text style={styles.navIcon}>📊</Text>
           <Text style={styles.navLabel}>Dashboard</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+        <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>📋</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>
             Leads

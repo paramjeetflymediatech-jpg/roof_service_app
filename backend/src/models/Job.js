@@ -39,6 +39,7 @@ const Job = sequelize.define(
         "pending",
         "accepted",
         "in_progress",
+        "paused",
         "completed",
         "cancelled",
       ),
@@ -138,6 +139,10 @@ Job.associate = (models) => {
   Job.belongsTo(models.User, { foreignKey: "employeeId", as: "employee" });
   Job.belongsTo(models.User, { foreignKey: "assignedById", as: "assignedBy" });
   Job.hasMany(models.JobLog, { foreignKey: "jobId", as: "logs" });
+  Job.hasMany(models.JobWorkSession, {
+    foreignKey: "jobId",
+    as: "workSessions",
+  });
 };
 
 module.exports = Job;

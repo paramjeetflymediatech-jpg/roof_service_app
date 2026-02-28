@@ -276,13 +276,42 @@ exports.getLeads = async (req, res, next) => {
             as: "user",
             attributes: ["id", "name", "email"],
           },
+          {
+            model: Job,
+            as: "jobs",
+          },
+          {
+            model: require("../models").JobWorkSession,
+            as: "workSessions",
+          },
         ],
       }),
       Lead.count({ where }),
     ]);
-
     const items = leads.map((lead) => {
       const json = lead.toJSON();
+
+      // Calculate actualHours from jobs array
+      if (json.jobs && json.jobs.length > 0) {
+        // We pick the first one or sum all? Usually there's one active job.
+        // Let's sum across all jobs for this lead for total work hours transparency.
+        // let totalDuration = 0;
+        // json.jobs.forEach(job => {
+        //   (job.workSessions || []).forEach(session => {
+        //     totalDuration += parseFloat(session.duration) || 0;
+        //   });
+        // });
+
+        // json.actualHours = totalDuration.toFixed(2);
+        // json.actual_hours = json.actualHours;
+
+        // Also attach to the first job for convenience if needed by legacy UI
+        if (json.jobs[0]) {
+          // json.jobs[0].actualHours = json.actualHours;
+          json.actualHours = json?.jobs[0].actualHours || 0;
+        }
+      }
+
       if (json.assignedTo) {
         json.assignedEmployee = {
           id: json.assignedTo.id,
@@ -328,6 +357,16 @@ exports.getLeadById = async (req, res, next) => {
             },
           ],
         },
+        {
+          model: Job,
+          as: "jobs",
+          include: [
+            {
+              model: require("../models").JobWorkSession,
+              as: "workSessions",
+            },
+          ],
+        },
       ],
     });
 
@@ -335,6 +374,24 @@ exports.getLeadById = async (req, res, next) => {
 
     // Format decimals and ensure items are parsed if needed
     const jsonLead = lead.toJSON();
+    jsonLead.actualHours = jsonLead?.jobs[0].actualHours;
+    // Calculate actualHours from jobs array
+    // if (jsonLead.jobs && jsonLead.jobs.length > 0) {
+    //   let totalDuration = 0;
+    //   jsonLead.jobs.forEach(job => {
+    //     (job.workSessions || []).forEach(session => {
+    //       totalDuration += parseFloat(session.duration) || 0;
+    //     });
+    //   });
+
+    //   jsonLead.actualHours = totalDuration.toFixed(2);
+    //   jsonLead.actual_hours = jsonLead.actualHours;
+
+    //   // Also attach to the first job for convenience
+    //   if (jsonLead.jobs[0]) {
+    //     jsonLead.actualHours = jsonLead.actualHours;
+    //   }
+    // }
     const invoices = await Invoice.findAll({
       where: { estimate_id: jsonLead.id },
       include: [
@@ -361,7 +418,6 @@ exports.getLeadById = async (req, res, next) => {
         return est;
       });
     }
-
     res.json(jsonLead);
   } catch (err) {
     next(err);
@@ -464,8 +520,7 @@ exports.assignLead = async (req, res, next) => {
 
     const dayEnd = new Date(scheduled);
     dayEnd.setHours(23, 59, 59, 999);
-    console.log(dayStart, "dayStart");
-    console.log(dayEnd, "dayEnd");
+
     const existingJobs = await Job.findAll({
       where: {
         employeeId,
@@ -474,7 +529,6 @@ exports.assignLead = async (req, res, next) => {
       },
       raw: true,
     });
-    console.log(existingJobs, "existingJobs");
     const hasClash = existingJobs.some((job) => {
       // Prioritize explicit timeSlot field in database, fallback to deriving from scheduled_date
       const existingSlot =
@@ -484,7 +538,6 @@ exports.assignLead = async (req, res, next) => {
           : null);
       return existingSlot === newSlot;
     });
-    console.log(hasClash, "hasclashj");
 
     if (hasClash) {
       return res.status(400).json({

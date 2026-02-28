@@ -18,6 +18,8 @@ router.get('/:id', jwtAuth, isEmployeeOrAdmin, jobController.getJobById);
 router.put('/:id', jwtAuth, isEmployeeOrAdmin, jobController.updateJob);
 router.put('/:id/status', jwtAuth, isEmployeeOrAdmin, jobController.updateJobStatus);
 router.post('/:id/start', jwtAuth, isEmployeeOrAdmin, jobController.startJob);
+router.post('/:id/pause', jwtAuth, isEmployeeOrAdmin, jobController.pauseJob);
+router.post('/:id/resume', jwtAuth, isEmployeeOrAdmin, jobController.resumeJob);
 router.post('/:id/complete', jwtAuth, isEmployeeOrAdmin, jobController.completeJob);
 router.get('/:id/logs', jwtAuth, isEmployeeOrAdmin, jobController.getJobLogs);
 

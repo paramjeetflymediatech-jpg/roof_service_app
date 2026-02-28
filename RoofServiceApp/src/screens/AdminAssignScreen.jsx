@@ -344,6 +344,13 @@ const AdminAssignScreen = ({ route }) => {
                       : 'Not Completed'
                   }
                 />
+                {(selectedQuote.actualHours || selectedQuote.actual_hours) && (
+                  <InfoItem
+                    icon="⏲️"
+                    label="Total Work"
+                    value={`${selectedQuote.actualHours || selectedQuote.actual_hours} hrs`}
+                  />
+                )}
               </View>
             </View>
           </>

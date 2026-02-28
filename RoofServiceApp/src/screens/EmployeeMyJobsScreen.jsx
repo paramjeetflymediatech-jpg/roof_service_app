@@ -107,6 +107,8 @@ const EmployeeMyJobsScreen = () => {
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,
           afterImages: job.afterImages,
+          actualHours: job.actualHours || job.actual_hours || 0,
+          actual_hours: job.actual_hours || job.actualHours || 0,
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });
@@ -228,6 +230,14 @@ const EmployeeMyJobsScreen = () => {
             {item.preferredDate || 'Not scheduled'}
           </Text>
         </View>
+        {item.actualHours > 0 && (
+          <View style={styles.jobDetailItem}>
+            <Text style={styles.detailIcon}>⏲️</Text>
+            <Text style={styles.detailText}>
+              {item.actualHours} hrs worked
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -327,7 +337,7 @@ const EmployeeMyJobsScreen = () => {
           <Text style={styles.navIcon}>🏠</Text>
           <Text style={styles.navLabel}>Home</Text>
         </TouchableOpacity>
-        <View style={styles.navItem} onPress={() => {}}>
+        <View style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>💼</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>Jobs</Text>
         </View>

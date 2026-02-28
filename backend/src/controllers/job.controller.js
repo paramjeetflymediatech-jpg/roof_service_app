@@ -1,5 +1,13 @@
-const { Job, JobLog, Lead, User } = require("../models");
+const { Job, JobLog, Lead, User, JobWorkSession } = require("../models");
 const { Op } = require("sequelize");
+
+const combineDateWithTime = (date, hhmm) => {
+  if (!hhmm || !date) return date;
+  const newDate = new Date(date);
+  const [h, m] = hhmm.split(':').map(Number);
+  newDate.setHours(h, m, 0, 0);
+  return newDate;
+};
 
 // Get all jobs (admin)
 exports.getAllJobs = async (req, res) => {
@@ -93,6 +101,11 @@ exports.getJobById = async (req, res) => {
           include: [{ model: User, as: "user", attributes: ["id", "name"] }],
           order: [["createdAt", "DESC"]],
         },
+        {
+          model: JobWorkSession,
+          as: "workSessions",
+          order: [["startTime", "ASC"]],
+        },
       ],
     });
 
@@ -100,7 +113,21 @@ exports.getJobById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
 
-    res.json({ success: true, data: job });
+    // Calculate actualHours from sessions if not a final value yet or for consistency
+    const allSessions = await JobWorkSession.findAll({
+      where: { jobId: job.id },
+    });
+    const totalDuration = allSessions.reduce(
+      (sum, session) => sum + (parseFloat(session.duration) || 0),
+      0
+    );
+
+    // Create a plain object to add calculated field
+    const jobData = job.get({ plain: true });
+    jobData.actualHours = job.status === 'completed' ? (job.actualHours || totalDuration.toFixed(2)) : totalDuration.toFixed(2);
+    jobData.actual_hours = jobData.actualHours; // Provide alias for user
+
+    res.json({ success: true, data: jobData });
   } catch (error) {
     console.error("Get job error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch job" });
@@ -332,9 +359,25 @@ exports.getEmployeeJobs = async (req, res) => {
       offset: offset,
     });
 
+    // Calculate actualHours for each job
+    const jobsWithHours = await Promise.all(rows.map(async (job) => {
+      const allSessions = await JobWorkSession.findAll({
+        where: { jobId: job.id },
+      });
+      const totalDuration = allSessions.reduce(
+        (sum, session) => sum + (parseFloat(session.duration) || 0),
+        0
+      );
+
+      const jobData = job.get({ plain: true });
+      jobData.actualHours = job.status === 'completed' ? (job.actualHours || totalDuration.toFixed(2)) : totalDuration.toFixed(2);
+      jobData.actual_hours = jobData.actualHours; // Alias
+      return jobData;
+    }));
+
     res.json({
       success: true,
-      data: rows,
+      data: jobsWithHours,
       total: count,
       page: parseInt(page),
       pages: Math.ceil(count / limit),
@@ -365,30 +408,42 @@ exports.startJob = async (req, res) => {
 
     const oldStatus = job.status;
     const now = new Date();
-    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(
+    const { startTime } = req.body; // Accept manual start time HH:MM
+
+    const startTimeDate = startTime ? combineDateWithTime(now, startTime) : now;
+    const hhmm = startTime || `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes(),
     ).padStart(2, "0")}`;
 
     await job.update({
       status: "in_progress",
-      startTime: now,
+      startTime: job.startTime || startTimeDate,
+    });
+
+    // Create a new work session
+    await JobWorkSession.create({
+      jobId: job.id,
+      leadId: job.leadId,
+      userId: req.user.id,
+      startTime: startTimeDate,
     });
 
     // Create job log
     await JobLog.create({
       jobId: job.id,
+      leadId: job.leadId,
       userId: req.user.id,
       action: "job_started",
       oldStatus,
       newStatus: "in_progress",
-      notes: "Employee started the job",
+      notes: startTime ? `Employee started the job (manual time: ${startTime})` : "Employee started the job",
     });
 
-    // Update lead status and store human-readable start time as well
+    // Update lead status
     await Lead.update(
       {
         status: "in_progress",
-        inTime: now,
+        inTime: job.startTime || startTimeDate,
         employeeStartTime: hhmm,
       },
       { where: { id: job.leadId } },
@@ -405,6 +460,156 @@ exports.startJob = async (req, res) => {
   } catch (error) {
     console.error("Start job error:", error);
     res.status(500).json({ success: false, message: "Failed to start job" });
+  }
+};
+
+// Pause job (employee)
+exports.pauseJob = async (req, res) => {
+  try {
+    const job = await Job.findByPk(req.params.id);
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    if (job.employeeId !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    if (job.status === "paused") {
+      return res.json({ success: true, data: job, message: "Job already paused" });
+    }
+
+    if (job.status !== "in_progress") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Job is not in progress" });
+    }
+
+    const now = new Date();
+    const oldStatus = job.status;
+
+    // Find the active session
+    const activeSession = await JobWorkSession.findOne({
+      where: {
+        jobId: job.id,
+        endTime: null,
+      },
+      order: [["startTime", "DESC"]],
+    });
+
+    if (activeSession) {
+      const startTime = new Date(activeSession.startTime);
+      const durationMs = now - startTime;
+      const durationHours = durationMs / (1000 * 60 * 60);
+
+      await activeSession.update({
+        endTime: now,
+        duration: durationHours,
+      });
+    }
+
+    await job.update({ status: "paused" });
+
+    // Create job log
+    await JobLog.create({
+      jobId: job.id,
+      leadId: job.leadId,
+      userId: req.user.id,
+      action: "job_paused",
+      oldStatus,
+      newStatus: "paused",
+      notes: "Employee paused the job",
+    });
+
+    // Update lead status
+    await Lead.update(
+      { status: "paused" },
+      { where: { id: job.leadId } }
+    );
+
+    const updatedJob = await Job.findByPk(req.params.id, {
+      include: [
+        { model: Lead, as: "lead" },
+        { model: User, as: "employee", attributes: ["id", "name"] },
+        { model: JobWorkSession, as: "workSessions" },
+      ],
+    });
+
+    res.json({ success: true, data: updatedJob, message: "Job paused" });
+  } catch (error) {
+    console.error("Pause job error:", error);
+    res.status(500).json({ success: false, message: "Failed to pause job" });
+  }
+};
+
+// Resume job (employee)
+exports.resumeJob = async (req, res) => {
+  try {
+    const job = await Job.findByPk(req.params.id);
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    if (job.employeeId !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    if (job.status === "in_progress") {
+      return res.json({ success: true, data: job, message: "Job already in progress" });
+    }
+
+    if (job.status !== "paused") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Job is not paused" });
+    }
+
+    const now = new Date();
+    const oldStatus = job.status;
+
+    await job.update({ status: "in_progress" });
+
+    // Create a new work session
+    await JobWorkSession.create({
+      jobId: job.id,
+      leadId: job.leadId,
+      userId: req.user.id,
+      startTime: now,
+    });
+
+    // Create job log
+    await JobLog.create({
+      jobId: job.id,
+      leadId: job.leadId,
+      userId: req.user.id,
+      action: "job_resumed",
+      oldStatus,
+      newStatus: "in_progress",
+      notes: "Employee resumed the job",
+    });
+
+    // Update lead status
+    await Lead.update(
+      { status: "in_progress" },
+      { where: { id: job.leadId } }
+    );
+
+    const updatedJob = await Job.findByPk(req.params.id, {
+      include: [
+        { model: Lead, as: "lead" },
+        { model: User, as: "employee", attributes: ["id", "name"] },
+        { model: JobWorkSession, as: "workSessions" },
+      ],
+    });
+
+    res.json({ success: true, data: updatedJob, message: "Job resumed" });
+  } catch (error) {
+    console.error("Resume job error:", error);
+    res.status(500).json({ success: false, message: "Failed to resume job" });
   }
 };
 
@@ -431,12 +636,78 @@ exports.completeJob = async (req, res) => {
       materialsUsed,
       laborCost,
       materialCost,
+      inTime: manualInTime, // HH:MM from frontend
+      outTime: manualOutTime, // HH:MM from frontend
     } = req.body;
     const totalCost =
       (parseFloat(laborCost) || 0) + (parseFloat(materialCost) || 0);
 
     const oldStatus = job.status;
     const now = new Date();
+
+    // 1. End any active session, using manualOutTime if provided
+    const activeSession = await JobWorkSession.findOne({
+      where: {
+        jobId: job.id,
+        endTime: null,
+      },
+      order: [["startTime", "DESC"]],
+    });
+
+    const completionTime = manualOutTime ? combineDateWithTime(now, manualOutTime) : now;
+
+    if (activeSession) {
+      const startTime = new Date(activeSession.startTime);
+      const durationMs = completionTime - startTime;
+      const durationHours = Math.max(0, durationMs / (1000 * 60 * 60));
+
+      await activeSession.update({
+        endTime: completionTime,
+        duration: durationHours,
+      });
+    }
+
+    // 2. Adjust Today's Earliest Session if manualInTime is provided
+    if (manualInTime) {
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(now);
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const firstSessionToday = await JobWorkSession.findOne({
+        where: {
+          jobId: job.id,
+          startTime: { [Op.between]: [todayStart, todayEnd] }
+        },
+        order: [['startTime', 'ASC']]
+      });
+
+      if (firstSessionToday) {
+        const adjustedStart = combineDateWithTime(firstSessionToday.startTime, manualInTime);
+        const currentEndTime = firstSessionToday.endTime ? new Date(firstSessionToday.endTime) : completionTime;
+        const durationMs = currentEndTime - adjustedStart;
+        const durationHours = Math.max(0, durationMs / (1000 * 60 * 60));
+
+        await firstSessionToday.update({
+          startTime: adjustedStart,
+          duration: durationHours
+        });
+      }
+    }
+
+    // 3. Calculate total hours from all sessions
+    let calculatedHours = actualHours;
+    if (calculatedHours === undefined || calculatedHours === null) {
+      const allSessions = await JobWorkSession.findAll({
+        where: { jobId: job.id },
+      });
+      const totalDuration = allSessions.reduce(
+        (sum, session) => sum + (parseFloat(session.duration) || 0),
+        0
+      );
+      calculatedHours = totalDuration.toFixed(2);
+    }
+
     const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes(),
     ).padStart(2, "0")}`;
@@ -446,7 +717,7 @@ exports.completeJob = async (req, res) => {
       endTime: now,
       completionNotes,
       afterImages,
-      actualHours,
+      actualHours: calculatedHours,
       materialsUsed,
       laborCost,
       materialCost,
@@ -467,10 +738,12 @@ exports.completeJob = async (req, res) => {
     await Lead.update(
       {
         status: "completed",
-        outTime: now,
+        outTime: completionTime,
         completionImages: afterImages,
         employeeNotes: completionNotes || null,
-        employeeEndTime: hhmm,
+        employeeEndTime: manualOutTime || `${String(completionTime.getHours()).padStart(2, "0")}:${String(
+          completionTime.getMinutes(),
+        ).padStart(2, "0")}`,
       },
       { where: { id: job.leadId } },
     );

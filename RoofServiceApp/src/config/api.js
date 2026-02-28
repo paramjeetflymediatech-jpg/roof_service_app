@@ -109,7 +109,9 @@ export const api = {
   getEmployeeJobs: (employeeId, params = {}) =>
     apiClient.get(`/jobs/employee/${employeeId}`, { params }),
   getMyJobs: (params = {}) => apiClient.get('/jobs/my-jobs', { params }),
-  startJob: jobId => apiClient.post(`/jobs/${jobId}/start`),
+  startJob: (jobId, data) => apiClient.post(`/jobs/${jobId}/start`, data),
+  pauseJob: jobId => apiClient.post(`/jobs/${jobId}/pause`),
+  resumeJob: jobId => apiClient.post(`/jobs/${jobId}/resume`),
   completeJob: (jobId, data) => apiClient.post(`/jobs/${jobId}/complete`, data),
   getJobLogs: jobId => apiClient.get(`/jobs/${jobId}/logs`),
   getEmployeeStats: employeeId =>
@@ -130,14 +132,8 @@ export const api = {
   getGalleryFolders: () => apiClient.get('/gallery/folders'),
   getGalleryCategories: params =>
     apiClient.get('/gallery/categories', { params }),
-  createGalleryItem: data =>
-    apiClient.post('/gallery', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-  updateGalleryItem: (id, data) =>
-    apiClient.put(`/gallery/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  createGalleryItem: data => apiClient.post('/gallery', data),
+  updateGalleryItem: (id, data) => apiClient.put(`/gallery/${id}`, data),
   deleteGalleryItem: id => apiClient.delete(`/gallery/${id}`),
 
   // Image upload

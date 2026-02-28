@@ -27,7 +27,9 @@ const Gallery = sequelize.define(
     },
   },
   {
+    tableName: "gallery",
     timestamps: true,
+    underscored: true,
   },
 );
 

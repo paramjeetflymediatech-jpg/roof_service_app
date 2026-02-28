@@ -83,6 +83,8 @@ const ClientLeadDetailScreen = () => {
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
           clientImages: apiLead.clientImages || initialLead.clientImages,
+          actualHours: apiLead.actualHours || initialLead.actualHours,
+          actual_hours: apiLead.actual_hours || initialLead.actual_hours,
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
           preferedDate: apiLead.preferredDate
             ? formatDateLocal(apiLead.preferredDate)
@@ -170,6 +172,8 @@ const ClientLeadDetailScreen = () => {
     employeeEndTime,
     completionImages,
     clientImages,
+    actualHours,
+    actual_hours,
   } = lead;
 
   const assignedEmployeeName = employee?.name || lead.assignedEmployeeName;
@@ -271,11 +275,10 @@ const ClientLeadDetailScreen = () => {
                 </View>
 
                 {/* Amount row */}
-                {estTotal && (
+                {!!estTotal && (
                   <View style={styles.amountRow}>
                     <Text style={styles.amountLabel}>Total Amount</Text>
                     <Text style={styles.amountValue}>{estTotal}</Text>
-
                   </View>
                 )}
 
@@ -299,7 +302,7 @@ const ClientLeadDetailScreen = () => {
                         inv.totalAmount != null
                           ? `$${parseFloat(inv.totalAmount).toFixed(2)}`
                           : null;
-                      return (<>
+                      return (
                         <View key={iidx} style={styles.invoiceCard}>
                           <View style={styles.invoiceCardLeft}>
                             <Text style={styles.invoiceIconText}>🧾</Text>
@@ -313,7 +316,7 @@ const ClientLeadDetailScreen = () => {
 
                           </View>
                           <View style={styles.invoiceCardRight}>
-                            {invTotal && (
+                            {!!invTotal && (
                               <Text style={styles.invoiceAmountText}>{invTotal}</Text>
                             )}
                             <View
@@ -328,7 +331,7 @@ const ClientLeadDetailScreen = () => {
                             </View>
 
                           </View>
-                          <View  >
+                          <View>
                             <TouchableOpacity
                               style={styles.viewInvoiceBtn}
                               activeOpacity={0.8}
@@ -337,15 +340,12 @@ const ClientLeadDetailScreen = () => {
                             >
                               {downloadingId === `invoice-${inv.id}` ? (
                                 <ActivityIndicator size="small" color={COLORS.white} />
-                              ) : (<>
+                              ) : (
                                 <Text style={styles.viewInvoiceBtnText}>⬇ Download Invoice PDF</Text>
-                              </>
                               )}
                             </TouchableOpacity>
                           </View>
                         </View>
-                      </>
-
                       );
                     })}
                   </View>
@@ -381,12 +381,21 @@ const ClientLeadDetailScreen = () => {
           <Text style={styles.detailValue}>No employee assigned yet.</Text>
         )}
 
-        {(employeeStartTime || employeeEndTime) && (
+        {!!(employeeStartTime || employeeEndTime) && (
           <View style={[styles.detailRow, { marginTop: verticalScale(8) }]}>
             <Text style={styles.detailLabel}>Work Time:</Text>
             <Text style={styles.detailValue}>
               {employeeStartTime || '--:--'}
               {employeeEndTime ? ` - ${employeeEndTime}` : ''}
+            </Text>
+          </View>
+        )}
+
+        {!!(actualHours || actual_hours) && (
+          <View style={[styles.detailRow, { marginTop: verticalScale(4) }]}>
+            <Text style={styles.detailLabel}>Total Work:</Text>
+            <Text style={styles.detailValue}>
+              {(actualHours || actual_hours)} hrs
             </Text>
           </View>
         )}
@@ -504,7 +513,7 @@ const ClientLeadDetailScreen = () => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </ScrollView >
   );
 };
 

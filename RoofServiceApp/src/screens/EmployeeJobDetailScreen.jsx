@@ -25,6 +25,7 @@ const isValidHHMM = value => TIME_REGEX.test(value.trim());
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
   const { job } = useRoute().params || {};
+  console.log(job, 'ss')
   const [currentJob, setCurrentJob] = useState(job);
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
@@ -39,6 +40,7 @@ const EmployeeJobDetailScreen = () => {
   const isPending = jobStatus === 'assigned' || jobStatus === 'pending';
   const isAccepted = jobStatus === 'accepted';
   const isInProgress = jobStatus === 'in_progress';
+  const isPaused = jobStatus === 'paused';
   const isCompleted = jobStatus === 'completed';
 
   const handleSaveLeadDetails = async () => {
@@ -75,7 +77,7 @@ const EmployeeJobDetailScreen = () => {
   const handleClockIn = async () => {
     setLoading(true);
     try {
-      const response = await api.startJob(currentJob.id);
+      const response = await api.startJob(currentJob.id, { startTime: inTime });
       const updatedJob = response.data?.data || response.data || {};
       const start = updatedJob.inTime || new Date().toISOString();
       const startDate = new Date(start);
@@ -109,6 +111,34 @@ const EmployeeJobDetailScreen = () => {
       Alert.alert('Accepted', 'Job accepted successfully.');
     } catch (error) {
       Alert.alert('Error', 'Failed to accept job.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePauseJob = async () => {
+    setLoading(true);
+    try {
+      const response = await api.pauseJob(currentJob.id);
+      const updatedJob = response.data?.data || response.data || {};
+      setCurrentJob(prev => ({ ...prev, ...updatedJob }));
+      Alert.alert('Paused', 'Job timer paused.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pause job.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResumeJob = async () => {
+    setLoading(true);
+    try {
+      const response = await api.resumeJob(currentJob.id);
+      const updatedJob = response.data?.data || response.data || {};
+      setCurrentJob(prev => ({ ...prev, ...updatedJob }));
+      Alert.alert('Resumed', 'Job timer resumed.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to resume job.');
     } finally {
       setLoading(false);
     }
@@ -180,6 +210,8 @@ const EmployeeJobDetailScreen = () => {
       await api.completeJob(currentJob.id, {
         completionNotes: notes,
         afterImages: completionImages,
+        inTime: inTime,
+        outTime: outTime,
       });
 
       // ALSO: Automatically add these images to the Gallery with location info
@@ -277,7 +309,9 @@ const EmployeeJobDetailScreen = () => {
                 styles.statusBadge,
                 isCompleted
                   ? { backgroundColor: COLORS.success }
-                  : { backgroundColor: COLORS.primary },
+                  : isPaused
+                    ? { backgroundColor: '#FFA500' } // Orange for paused
+                    : { backgroundColor: COLORS.primary },
               ]}
             >
               <Text style={styles.statusText}>
@@ -321,6 +355,16 @@ const EmployeeJobDetailScreen = () => {
               </Text>
             </View>
           </View>
+
+          {currentJob.actualHours ? (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoIcon}>⏲️</Text>
+              <View>
+                <Text style={styles.infoLabel}>Total Work Hours</Text>
+                <Text style={styles.infoValue}>{currentJob.actualHours} hrs</Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
         {/* Client Images Section */}
@@ -358,37 +402,37 @@ const EmployeeJobDetailScreen = () => {
         {((currentJob?.afterImages && currentJob.afterImages.length > 0) ||
           (currentJob?.lead?.completionImages &&
             currentJob.lead.completionImages.length > 0)) && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Work Photos</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.imageScroll}
-            >
-              {(
-                currentJob.afterImages ||
-                currentJob.lead.completionImages ||
-                []
-              ).map((img, index) => {
-                const url = img.url || img.uri;
-                const imageUrl = url.startsWith('http')
-                  ? url
-                  : `${SERVER_URL}/${url}`;
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => openImageModal(imageUrl)}
-                  >
-                    <Image
-                      source={{ uri: imageUrl }}
-                      style={styles.detailImage}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Work Photos</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imageScroll}
+              >
+                {(
+                  currentJob.afterImages ||
+                  currentJob.lead.completionImages ||
+                  []
+                ).map((img, index) => {
+                  const url = img.url || img.uri;
+                  const imageUrl = url.startsWith('http')
+                    ? url
+                    : `${SERVER_URL}/${url}`;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => openImageModal(imageUrl)}
+                    >
+                      <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.detailImage}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
 
         {/* Timeline / Progress */}
         <View style={styles.sectionContainer}>
@@ -398,11 +442,11 @@ const EmployeeJobDetailScreen = () => {
             <TimelineItem
               title="Accepted"
               active={isAccepted}
-              completed={isInProgress || isCompleted}
+              completed={isInProgress || isPaused || isCompleted}
             />
             <TimelineItem
               title="In Progress"
-              active={isInProgress}
+              active={isInProgress || isPaused}
               completed={isCompleted}
             />
             <TimelineItem
@@ -434,8 +478,26 @@ const EmployeeJobDetailScreen = () => {
             />
           )}
 
-          {isInProgress && (
+          {isPaused && (
+            <Button
+              title="Resume Work"
+              onPress={handleResumeJob}
+              loading={loading}
+              style={{ marginBottom: 12 }}
+            />
+          )}
+
+          {(isInProgress || isPaused) && (
             <View style={styles.progressActions}>
+              {isInProgress && (
+                <Button
+                  title="Pause Work (Take a Rest)"
+                  onPress={handlePauseJob}
+                  loading={loading}
+                  variant="secondary"
+                  style={{ marginBottom: 16 }}
+                />
+              )}
               <View style={styles.clockRow}>
                 <View style={styles.clockInput}>
                   <Text style={styles.clockLabel}>Start Time</Text>
@@ -504,6 +566,11 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.completedTimeText}>
                 Work Time: {inTime} - {outTime}
               </Text>
+              {currentJob.actualHours ? (
+                <Text style={styles.completedTimeText}>
+                  Total Work Hours: {currentJob.actualHours} hrs
+                </Text>
+              ) : null}
               <Text style={styles.completedTimeText}>Job Date: {job.date}</Text>
               <Text style={styles.completedTimeText}>
                 Completed Date: {job.completedDate}

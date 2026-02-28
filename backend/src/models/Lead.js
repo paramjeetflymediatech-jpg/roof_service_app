@@ -73,7 +73,7 @@ const Lead = sequelize.define('Lead', {
   },
   // Mobile app status flow: new -> pending -> reviewed -> approved -> assigned -> in_progress -> completed
   status: {
-    type: DataTypes.ENUM('pending', 'reviewed', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'reviewed', 'paused', 'approved', 'rejected', 'assigned', 'in_progress', 'completed', 'cancelled'),
     defaultValue: 'pending',
   },
   assignedToId: {
@@ -139,6 +139,9 @@ Lead.associate = (models) => {
   Lead.belongsTo(models.Service, { foreignKey: 'serviceId', as: 'service' });
   Lead.belongsTo(models.User, { foreignKey: 'assignedToId', as: 'assignedTo' });
   Lead.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  Lead.hasMany(models.Job, { foreignKey: 'leadId', as: 'jobs' });
+  Lead.hasMany(models.JobWorkSession, { foreignKey: 'leadId', as: 'workSessions' });
+  Lead.hasMany(models.JobLog, { foreignKey: 'leadId', as: 'logs' });
 };
 
 module.exports = Lead;
