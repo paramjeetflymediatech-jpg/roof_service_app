@@ -10,6 +10,9 @@ const galleryRoutes = require("./gallery.routes");
 const categoryRoutes = require("./category.routes");
 const uploadRoutes = require("./upload.routes");
 const dataDeletionRoutes = require("./dataDeletion.routes");
+const pdfRoutes = require("./pdf.routes");
+const estimateApiRoutes = require("./estimate.api.routes");
+const invoiceApiRoutes = require("./invoice.api.routes");
 
 const router = express.Router();
 
@@ -23,5 +26,8 @@ router.use("/gallery", galleryRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/data-deletion", dataDeletionRoutes);
+router.use("/", pdfRoutes);
+router.use("/estimates", estimateApiRoutes);
+router.use("/invoices", invoiceApiRoutes);
 
 module.exports = router;

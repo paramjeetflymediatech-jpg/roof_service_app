@@ -7,9 +7,11 @@ import {
   Image,
   ActivityIndicator,
   Linking,
+  Alert,
   Modal,
   TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
@@ -38,6 +40,23 @@ const ClientLeadDetailScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [currentImages, setCurrentImages] = useState([]);
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  const downloadPDF = async (type, id, label) => {
+    if (downloadingId) return;
+    try {
+      setDownloadingId(`${type}-${id}`);
+      const userData = await AsyncStorage.getItem('user');
+      const token = userData ? JSON.parse(userData).token : '';
+      const url = `${SERVER_URL}/api/${type}s/${id}/pdf?token=${token}`;
+      await Linking.openURL(url);
+    } catch (err) {
+      console.log('PDF error:', err);
+      Alert.alert('Error', `Could not download ${label} PDF. Please try again.`);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -48,9 +67,13 @@ const ClientLeadDetailScreen = () => {
         const res = await api.getLeadById(initialLead.id);
         const apiLead = res.data || {};
         // Merge API lead fields into existing mapped lead shape
+        const invoices = apiLead?.invoices || initialLead.invoices;
+        const estimates = apiLead?.estimates || initialLead.estimates;
         const mergedLead = {
           ...(initialLead || {}),
           status: apiLead.status || initialLead.status,
+          estimates: estimates,
+          invoices: invoices,
           message:
             apiLead.message || apiLead.description || initialLead.message,
           employeeStartTime:
@@ -190,6 +213,149 @@ const ClientLeadDetailScreen = () => {
         )}
       </Card>
 
+      {lead.estimates && lead.estimates.length > 0 && (
+        <Card title="Estimates & Invoices" style={styles.card}>
+          {lead.estimates.map((est, idx) => {
+            const estStatus = est.status
+              ? est.status.toString().replace(/_/g, ' ')
+              : 'pending';
+            const estStatusColor =
+              est.status === 'approved'
+                ? COLORS.success
+                : est.status === 'rejected'
+                  ? COLORS.error
+                  : COLORS.warning;
+            const estTotal =
+              est.totalAmount != null
+                ? `$${parseFloat(est.totalAmount).toFixed(2)}`
+                : null;
+            return (
+              <View key={idx} style={styles.estimateCard}>
+                {/* Estimate header row */}
+                <View style={styles.estimateHeader}>
+                  <View style={styles.estimateHeaderLeft}>
+                    <View style={styles.estimateIconBadge}>
+                      <Text style={styles.estimateIconText}>📋</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.estimateNumLabel}>ESTIMATE</Text>
+                      {/* <Text style={styles.estimateNumberText}>
+                        #{est.estimateNumber || idx + 1}
+                      </Text> */}
+
+                    </View>
+                  </View>
+                  <View
+                    style={[
+                      styles.estStatusBadge,
+                      { backgroundColor: estStatusColor + '20', borderColor: estStatusColor },
+                    ]}
+                  >
+                    <Text style={[styles.estStatusText, { color: estStatusColor }]}>
+                      {estStatus}
+                    </Text>
+                  </View>
+                  {/* Download Estimate PDF button */}
+                  <TouchableOpacity
+                    style={styles.viewEstimateBtn}
+                    activeOpacity={0.8}
+                    disabled={!!downloadingId}
+                    onPress={() => downloadPDF('estimate', est.id, 'Estimate')}
+                  >
+                    {downloadingId === `estimate-${est.id}` ? (
+                      <ActivityIndicator size="small" color={COLORS.white} />
+                    ) : (
+                      <Text style={styles.viewEstimateBtnText}>⬇ Download Estimate PDF</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Amount row */}
+                {estTotal && (
+                  <View style={styles.amountRow}>
+                    <Text style={styles.amountLabel}>Total Amount</Text>
+                    <Text style={styles.amountValue}>{estTotal}</Text>
+
+                  </View>
+                )}
+
+
+
+                {/* Nested Invoices */}
+                {est.invoices && est.invoices.length > 0 && (
+                  <View style={styles.invoicesSection}>
+                    <Text style={styles.invoicesSectionLabel}>Invoices</Text>
+                    {est.invoices.map((inv, iidx) => {
+                      const invStatus = inv.status
+                        ? inv.status.toString().replace(/_/g, ' ')
+                        : 'pending';
+                      const invStatusColor =
+                        inv.status === 'paid'
+                          ? COLORS.success
+                          : inv.status === 'overdue'
+                            ? COLORS.error
+                            : COLORS.info;
+                      const invTotal =
+                        inv.totalAmount != null
+                          ? `$${parseFloat(inv.totalAmount).toFixed(2)}`
+                          : null;
+                      return (<>
+                        <View key={iidx} style={styles.invoiceCard}>
+                          <View style={styles.invoiceCardLeft}>
+                            <Text style={styles.invoiceIconText}>🧾</Text>
+                            <View>
+                              <Text style={styles.invoiceNumLabel}>INVOICE</Text>
+                              {/* <Text style={styles.invoiceNumberText}>
+                                #{inv.invoiceNumber || iidx + 1}
+                              </Text> */}
+
+                            </View>
+
+                          </View>
+                          <View style={styles.invoiceCardRight}>
+                            {invTotal && (
+                              <Text style={styles.invoiceAmountText}>{invTotal}</Text>
+                            )}
+                            <View
+                              style={[
+                                styles.invStatusBadge,
+                                { backgroundColor: invStatusColor + '20', borderColor: invStatusColor },
+                              ]}
+                            >
+                              <Text style={[styles.invStatusText, { color: invStatusColor }]}>
+                                {invStatus}
+                              </Text>
+                            </View>
+
+                          </View>
+                          <View  >
+                            <TouchableOpacity
+                              style={styles.viewInvoiceBtn}
+                              activeOpacity={0.8}
+                              disabled={!!downloadingId}
+                              onPress={() => downloadPDF('invoice', inv.id, 'Invoice')}
+                            >
+                              {downloadingId === `invoice-${inv.id}` ? (
+                                <ActivityIndicator size="small" color={COLORS.white} />
+                              ) : (<>
+                                <Text style={styles.viewInvoiceBtnText}>⬇ Download Invoice PDF</Text>
+                              </>
+                              )}
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </>
+
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </Card>
+      )}
+
       <Card title="Assigned Employee" style={styles.card}>
         {assignedEmployeeName ? (
           <>
@@ -200,9 +366,7 @@ const ClientLeadDetailScreen = () => {
             {assignedEmployeePhone && (
               <TouchableOpacity
                 style={[styles.contactCard, { marginRight: moderateScale(10) }]}
-                onPress={() =>
-                  Linking.openURL(`tel:${assignedEmployeePhone}`)
-                }
+                onPress={() => Linking.openURL(`tel:${assignedEmployeePhone}`)}
               >
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Phone: </Text>
@@ -427,6 +591,179 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginTop: verticalScale(16),
+  },
+  contactCard: {
+    marginTop: verticalScale(4),
+  },
+  // ── Estimate card ──────────────────────────────────────
+  estimateCard: {
+    backgroundColor: '#f8faff',
+    borderRadius: moderateScale(14),
+    padding: moderateScale(14),
+    marginBottom: verticalScale(12),
+    borderWidth: 1,
+    borderColor: COLORS.primary + '25',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  estimateHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(10),
+  },
+  estimateHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: moderateScale(10),
+  },
+  estimateIconBadge: {
+    width: moderateScale(38),
+    height: moderateScale(38),
+    borderRadius: moderateScale(10),
+    backgroundColor: COLORS.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  estimateIconText: {
+    fontSize: moderateScale(18),
+  },
+  estimateNumLabel: {
+    fontSize: moderateScale(9),
+    fontWeight: '700',
+    color: COLORS.textLight,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  estimateNumberText: {
+    fontSize: moderateScale(15),
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  estStatusBadge: {
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(4),
+    borderRadius: moderateScale(20),
+    borderWidth: 1,
+  },
+  estStatusText: {
+    fontSize: moderateScale(11),
+    fontWeight: '700',
+    textTransform: 'capitalize',
+  },
+  amountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary + '08',
+    borderRadius: moderateScale(8),
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(8),
+    marginBottom: verticalScale(10),
+  },
+  amountLabel: {
+    fontSize: moderateScale(12),
+    color: COLORS.textLight,
+    fontWeight: '500',
+  },
+  amountValue: {
+    fontSize: moderateScale(16),
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  viewEstimateBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: moderateScale(10),
+    padding: verticalScale(5),
+    alignItems: 'center',
+    marginBottom: verticalScale(4),
+  },
+  viewEstimateBtnText: {
+    color: COLORS.white,
+    fontSize: moderateScale(12),
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  // ── Invoices section inside estimate ───────────────────
+  invoicesSection: {
+    marginTop: verticalScale(12),
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingTop: verticalScale(10),
+    gap: verticalScale(8),
+  },
+  invoicesSectionLabel: {
+    fontSize: moderateScale(11),
+    fontWeight: '700',
+    color: COLORS.textLight,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: verticalScale(4),
+  },
+  invoiceCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#e8f5f0',
+    borderRadius: moderateScale(10),
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(10),
+    borderWidth: 1,
+    borderColor: COLORS.success + '30',
+  },
+  invoiceCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: moderateScale(8),
+  },
+  invoiceIconText: {
+    fontSize: moderateScale(18),
+  },
+  invoiceNumLabel: {
+    fontSize: moderateScale(9),
+    fontWeight: '700',
+    color: COLORS.textLight,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  invoiceNumberText: {
+    fontSize: moderateScale(14),
+    fontWeight: '700',
+    color: '#1a6b4a',
+  },
+  invoiceCardRight: {
+    alignItems: 'flex-end',
+    gap: verticalScale(4),
+  },
+  invoiceAmountText: {
+    fontSize: moderateScale(14),
+    fontWeight: '700',
+    color: '#1a6b4a',
+  },
+  invStatusBadge: {
+    paddingHorizontal: moderateScale(8),
+    paddingVertical: verticalScale(2),
+    borderRadius: moderateScale(20),
+    borderWidth: 1,
+  },
+  invStatusText: {
+    fontSize: moderateScale(10),
+    fontWeight: '700',
+    textTransform: 'capitalize',
+  },
+  viewInvoiceBtn: {
+    backgroundColor: COLORS.success,
+    borderRadius: moderateScale(8),
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(5),
+  },
+  viewInvoiceBtnText: {
+    color: COLORS.white,
+    fontSize: moderateScale(12),
+    fontWeight: '700',
   },
   errorContainer: {
     flex: 1,

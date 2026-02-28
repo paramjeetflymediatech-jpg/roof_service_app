@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
@@ -32,10 +33,32 @@ const AdminAssignScreen = ({ route }) => {
   const [busyEmployeeIds, setBusyEmployeeIds] = useState([]); // employees already booked for selected date/slot
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [leadEstimate, setLeadEstimate] = useState(null);
+  const [leadInvoice, setLeadInvoice] = useState(null);
+  const [docsLoading, setDocsLoading] = useState(false);
 
   useEffect(() => {
     loadEmployees();
+    if (quote?.id) fetchLeadDocuments(quote.id);
   }, []);
+
+  const fetchLeadDocuments = async (leadId) => {
+    setDocsLoading(true);
+    try {
+      const [estRes, invRes] = await Promise.all([
+        api.getEstimates({ leadId }),
+        api.getInvoices({ leadId }),
+      ]);
+      const estData = estRes.data?.data || estRes.data || [];
+      const invData = invRes.data?.data || invRes.data || [];
+      setLeadEstimate(Array.isArray(estData) && estData.length > 0 ? estData[0] : null);
+      setLeadInvoice(Array.isArray(invData) && invData.length > 0 ? invData[0] : null);
+    } catch (e) {
+      console.log('fetchLeadDocuments error:', e);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const updateAvailability = async () => {
@@ -467,7 +490,7 @@ const AdminAssignScreen = ({ route }) => {
                     onPress={() =>
                       openImageModal(
                         `${SERVER_URL}/${img.url}` ||
-                          `${SERVER_URL}/${img.uri}`,
+                        `${SERVER_URL}/${img.uri}`,
                       )
                     }
                   >
@@ -552,6 +575,98 @@ const AdminAssignScreen = ({ route }) => {
             />
           ) : null}
         </View>
+
+        {/* Documents Section */}
+        <Text style={styles.sectionTitle}>📄 Documents</Text>
+        {docsLoading ? (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          </View>
+        ) : (
+          <View style={styles.docsRow}>
+            {/* Estimate card */}
+            {leadEstimate ? (
+              <TouchableOpacity
+                style={[styles.docBtn, styles.docBtnLinked]}
+                onPress={() =>
+                  navigation.navigate('AdminCreateEstimate', { estimate: leadEstimate })
+                }
+              >
+                <View style={[styles.docIcon, { backgroundColor: '#eef2ff' }]}>
+                  <Text style={styles.docIconText}>📋</Text>
+                </View>
+                <Text style={styles.docBtnTitle}>Estimate</Text>
+                <Text style={[styles.docBtnSub, { color: COLORS.primary, fontWeight: '700' }]}>
+                  #{leadEstimate.estimateNumber}
+                </Text>
+                <Text style={styles.docLinkedBadge}>{leadEstimate.status}</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.docBtn}
+                onPress={() =>
+                  navigation.navigate('AdminCreateEstimate', {
+                    leadId: selectedQuote.id,
+                    prefill: {
+                      clientName: selectedQuote.clientName,
+                      clientEmail: selectedQuote.email,
+                      clientPhone: selectedQuote.phone,
+                      clientAddress: selectedQuote.address,
+                    },
+                  })
+                }
+              >
+                <View style={[styles.docIcon, { backgroundColor: '#eef2ff' }]}>
+                  <Text style={styles.docIconText}>📋</Text>
+                </View>
+                <Text style={styles.docBtnTitle}>Create Estimate</Text>
+                <Text style={styles.docBtnSub}>Quote for this lead</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Invoice card */}
+            {leadInvoice ? (
+              <TouchableOpacity
+                style={[styles.docBtn, styles.docBtnLinked]}
+                onPress={() =>
+                  navigation.navigate('AdminCreateInvoice', { invoice: leadInvoice })
+                }
+              >
+                <View style={[styles.docIcon, { backgroundColor: '#f0fdf4' }]}>
+                  <Text style={styles.docIconText}>🧾</Text>
+                </View>
+                <Text style={styles.docBtnTitle}>Invoice</Text>
+                <Text style={[styles.docBtnSub, { color: '#1a4a2e', fontWeight: '700' }]}>
+                  #{leadInvoice.invoiceNumber}
+                </Text>
+                <Text style={[styles.docLinkedBadge, { backgroundColor: '#e8f5e9', color: '#1a4a2e' }]}>
+                  {leadInvoice.status}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.docBtn}
+                onPress={() =>
+                  navigation.navigate('AdminCreateInvoice', {
+                    leadId: selectedQuote.id,
+                    prefill: {
+                      clientName: selectedQuote.clientName,
+                      clientEmail: selectedQuote.email,
+                      clientPhone: selectedQuote.phone,
+                      clientAddress: selectedQuote.address,
+                    },
+                  })
+                }
+              >
+                <View style={[styles.docIcon, { backgroundColor: '#f0fdf4' }]}>
+                  <Text style={styles.docIconText}>🧾</Text>
+                </View>
+                <Text style={styles.docBtnTitle}>Create Invoice</Text>
+                <Text style={styles.docBtnSub}>Bill for this lead</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ScrollView>
 
       <Modal
@@ -852,6 +967,59 @@ const styles = StyleSheet.create({
   modalImage: {
     width: '100%',
     height: '80%',
+  },
+  docsRow: {
+    flexDirection: 'row',
+    gap: moderateScale(14),
+    marginBottom: verticalScale(30),
+  },
+  docBtn: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(14),
+    padding: moderateScale(16),
+    alignItems: 'center',
+    ...SHADOWS.small,
+  },
+  docIcon: {
+    width: moderateScale(48),
+    height: moderateScale(48),
+    borderRadius: moderateScale(24),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(8),
+  },
+  docIconText: {
+    fontSize: moderateScale(22),
+  },
+  docBtnTitle: {
+    fontSize: moderateScale(13),
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: verticalScale(2),
+  },
+  docBtnSub: {
+    fontSize: moderateScale(10),
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+  docBtnLinked: {
+    borderWidth: 1.5,
+    borderColor: COLORS.primary + '40',
+    backgroundColor: '#fafbff',
+  },
+  docLinkedBadge: {
+    marginTop: verticalScale(4),
+    fontSize: moderateScale(9),
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    backgroundColor: COLORS.primary + '15',
+    color: COLORS.primary,
+    paddingHorizontal: moderateScale(6),
+    paddingVertical: verticalScale(2),
+    borderRadius: moderateScale(4),
+    overflow: 'hidden',
   },
 });
 

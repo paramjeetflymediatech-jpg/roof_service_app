@@ -255,11 +255,51 @@ const AdminDashboardScreen = () => {
             <Text style={styles.actionSubtext}>Update portfolio</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Row 3: Estimates & Invoices */}
+        <View
+          style={[
+            styles.quickActionsContainer,
+            { marginTop: verticalScale(16) },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('AdminEstimates')}
+          >
+            <View
+              style={[
+                styles.actionIconContainer,
+                { backgroundColor: '#eef2ff' },
+              ]}
+            >
+              <Text style={styles.actionIcon}>📋</Text>
+            </View>
+            <Text style={styles.actionText}>Estimates</Text>
+            <Text style={styles.actionSubtext}>Create & manage</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('AdminInvoices')}
+          >
+            <View
+              style={[
+                styles.actionIconContainer,
+                { backgroundColor: '#f0fdf4' },
+              ]}
+            >
+              <Text style={styles.actionIcon}>🧾</Text>
+            </View>
+            <Text style={styles.actionText}>Invoices</Text>
+            <Text style={styles.actionSubtext}>Billing & payments</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Footer navigation */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+        <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>📊</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>
             Dashboard

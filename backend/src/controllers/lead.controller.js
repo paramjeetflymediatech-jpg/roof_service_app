@@ -1,4 +1,4 @@
-const { Lead, Job, User } = require("../models");
+const { Lead, Job, User, Estimate, Invoice } = require("../models");
 const { Op } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
@@ -312,13 +312,57 @@ exports.getLeads = async (req, res, next) => {
   }
 };
 
-// ... existing getLeadById ...
+// ... existing code ...
+
 exports.getLeadById = async (req, res, next) => {
-  // ... (keep existing implementation)
   try {
-    const lead = await Lead.findByPk(req.params.id);
+    const lead = await Lead.findByPk(req.params.id, {
+      include: [
+        {
+          model: Estimate,
+          as: "estimates",
+          include: [
+            {
+              model: Invoice,
+              as: "invoices",
+            },
+          ],
+        },
+      ],
+    });
+
     if (!lead) return res.status(404).json({ message: "Lead not found" });
-    res.json(lead.dataValues || lead);
+
+    // Format decimals and ensure items are parsed if needed
+    const jsonLead = lead.toJSON();
+    const invoices = await Invoice.findAll({
+      where: { estimate_id: jsonLead.id },
+      include: [
+        {
+          model: Estimate,
+          as: "estimate",
+        },
+      ],
+    });
+    jsonLead.invoices = invoices;
+    if (jsonLead.estimates) {
+      jsonLead.estimates = jsonLead.estimates.map((est) => {
+        est.total = parseFloat(est.total || 0);
+        est.subtotal = parseFloat(est.subtotal || 0);
+        est.tax = parseFloat(est.tax || 0);
+        if (est.invoices) {
+          est.invoices = est.invoices.map((inv) => {
+            inv.total = parseFloat(inv.total || 0);
+            inv.subtotal = parseFloat(inv.subtotal || 0);
+            inv.tax = parseFloat(inv.tax || 0);
+            return inv;
+          });
+        }
+        return est;
+      });
+    }
+
+    res.json(jsonLead);
   } catch (err) {
     next(err);
   }

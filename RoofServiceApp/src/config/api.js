@@ -145,6 +145,20 @@ export const api = {
     apiClient.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+
+  // Estimates
+  getEstimates: (params = {}) => apiClient.get('/estimates', { params }),
+  getEstimateById: id => apiClient.get(`/estimates/${id}`),
+  createEstimate: data => apiClient.post('/estimates', data),
+  updateEstimate: (id, data) => apiClient.put(`/estimates/${id}`, data),
+  deleteEstimate: id => apiClient.delete(`/estimates/${id}`),
+
+  // Invoices
+  getInvoices: (params = {}) => apiClient.get('/invoices', { params }),
+  getInvoiceById: id => apiClient.get(`/invoices/${id}`),
+  createInvoice: data => apiClient.post('/invoices', data),
+  updateInvoice: (id, data) => apiClient.put(`/invoices/${id}`, data),
+  deleteInvoice: id => apiClient.delete(`/invoices/${id}`),
 };
 
 export default apiClient;
