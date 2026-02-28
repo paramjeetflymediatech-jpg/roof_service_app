@@ -7,7 +7,7 @@ import { getSeoData } from "../lib/api/seo";
 
 export async function getServerSideProps() {
   try {
-    const data = await getSeoData("data_deletion");
+    const data = await getSeoData("data-deletion");
     return {
       props: {
         seoData: data.success ? data.data : null,
