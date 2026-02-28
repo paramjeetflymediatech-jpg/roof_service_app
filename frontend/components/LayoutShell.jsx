@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker } from "react-icons/hi";
+import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker, HiChevronDown } from "react-icons/hi";
 import {
   FaFacebook,
   FaTwitter,
@@ -118,7 +118,7 @@ export default function LayoutShell({ children }) {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex gap-8 items-center">
-              {NAV_LINKS.map((link) => {
+              {NAV_LINKS.filter((link) => link.showInHeader !== false).map((link) => {
                 if (link.label === "Services") {
                   return (
                     <div key={link.href} className="relative">
@@ -129,6 +129,9 @@ export default function LayoutShell({ children }) {
                         className="text-gray-700 hover:text-primary-600 font-medium flex items-center gap-1"
                       >
                         {link.label}
+                        <HiChevronDown
+                          className={`transition-transform duration-200 ${desktopServicesOpen ? "rotate-180" : "rotate-0"}`}
+                        />
                       </button>
                       <div
                         className={`absolute left-0 mt-0 w-[600px] bg-white rounded-lg shadow-xl transition-all duration-200 z-50 p-4 ${desktopServicesOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
@@ -215,6 +218,9 @@ export default function LayoutShell({ children }) {
                           className="w-full border-b py-2 text-gray-700 flex justify-between items-center"
                         >
                           {link.label}
+                          <HiChevronDown
+                            className={`transition-transform duration-200 ${servicesDropdownOpen ? "rotate-180" : "rotate-0"}`}
+                          />
                         </button>
                         {servicesDropdownOpen && (
                           <div className="bg-gray-50 py-2">

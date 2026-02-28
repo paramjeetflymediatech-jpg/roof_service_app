@@ -2,8 +2,28 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 import apiClient from "../lib/apiClient";
 import LayoutShell from "../components/LayoutShell";
+import SeoHead from "../components/SeoHead";
+import { getSeoData } from "../lib/api/seo";
 
-export default function DataDeletion() {
+export async function getServerSideProps() {
+  try {
+    const data = await getSeoData("data_deletion");
+    return {
+      props: {
+        seoData: data.success ? data.data : null,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching SEO data:", error);
+    return {
+      props: {
+        seoData: null,
+      },
+    };
+  }
+}
+
+export default function DataDeletion({ seoData }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -54,6 +74,7 @@ export default function DataDeletion() {
 
   return (
     <LayoutShell>
+      <SeoHead pageName="data-deletion" initialSeoData={seoData} />
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -135,11 +156,10 @@ export default function DataDeletion() {
 
                 {message.text && (
                   <div
-                    className={`mb-6 p-4 rounded-lg ${
-                      message.type === "success"
+                    className={`mb-6 p-4 rounded-lg ${message.type === "success"
                         ? "bg-green-50 border border-green-200 text-green-800"
                         : "bg-red-50 border border-red-200 text-red-800"
-                    }`}
+                      }`}
                   >
                     {message.text}
                   </div>
@@ -253,7 +273,7 @@ export default function DataDeletion() {
               </section>
             </div>
 
-        
+
           </div>
         </div>
       </div>
