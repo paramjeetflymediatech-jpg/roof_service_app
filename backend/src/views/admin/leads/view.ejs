@@ -1,552 +1,965 @@
 <%- include('../../partials/header') %>
 
-<body <% if (typeof error !=='undefined' && error && error.length> 0) { %>data-flash-error="<%= error %>"<% } %>
-    <% if (typeof success !=='undefined' && success && success.length> 0) { %>data-flash-success="<%= success %>"<% } %>
-    >
+    <body <% if (typeof error !=='undefined' && error && error.length> 0) { %>data-flash-error="<%= error %>"<% } %>
+                <% if (typeof success !=='undefined' && success && success.length> 0) { %>data-flash-success="<%=
+                        success %>"<% } %>
+                            >
 
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
+                            <!-- Toast Container -->
+                            <div id="toast-container"></div>
 
-    <div class="admin-wrapper">
-        <%- include('../../partials/sidebar') %>
+                            <div class="admin-wrapper">
+                                <%- include('../../partials/sidebar') %>
 
-        <main class="main-content">
-            <%- include('../../partials/top-header') %>
+                                    <main class="main-content">
+                                        <%- include('../../partials/top-header') %>
 
-            <div class="content">
-                <div class="max-w-4xl mx-auto">
-                    <!-- Back Button -->
-                    <div class="mb-6 flex justify-between items-center">
-                        <a href="/admin/leads" class="text-indigo-600 hover:text-indigo-900 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="19" y1="12" x2="5" y2="12"></line>
-                                <polyline points="12 19 5 12 12 5"></polyline>
-                            </svg>
-                            Back to Lead List
-                        </a>
+                                            <div class="content">
+                                                <div class="max-w-4xl mx-auto">
+                                                    <!-- Back Button -->
+                                                    <div class="mb-6 flex justify-between items-center">
+                                                        <a href="/admin/leads"
+                                                            class="text-indigo-600 hover:text-indigo-900 flex items-center gap-2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20"
+                                                                height="20" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2">
+                                                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                                                <polyline points="12 19 5 12 12 5"></polyline>
+                                                            </svg>
+                                                            Back to Lead List
+                                                        </a>
 
-                        <div class="flex gap-2">
-                            <!-- Approve Button -->
-                            <% if (lead.status === 'pending' || lead.status === 'new' || lead.status === 'quoted') { %>
-                            <form action="/admin/leads/<%= lead.id %>/approve" method="POST" onsubmit="return confirm('Are you sure you want to approve this lead?');">
-                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                    Approve Lead
-                                </button>
-                            </form>
-                            <% } %>
+                                                        <div class="flex gap-2">
+                                                            <!-- Approve Button -->
+                                                            <% if (lead.status==='pending' || lead.status==='new' ||
+                                                                lead.status==='quoted' ) { %>
+                                                                <form action="/admin/leads/<%= lead.id %>/approve"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('Are you sure you want to approve this lead?');">
+                                                                    <button type="submit"
+                                                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="20" height="20" viewBox="0 0 24 24"
+                                                                            fill="none" stroke="currentColor"
+                                                                            stroke-width="2" stroke-linecap="round"
+                                                                            stroke-linejoin="round">
+                                                                            <polyline points="20 6 9 17 4 12">
+                                                                            </polyline>
+                                                                        </svg>
+                                                                        Approve Lead
+                                                                    </button>
+                                                                </form>
+                                                                <% } %>
 
-                            <!-- Create Estimate Button -->
-                            <a href="/admin/estimates/create?leadId=<%= lead.id %>" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                                Create Estimate
-                            </a>
+                                                                    <!-- Create Estimate Button -->
+                                                                    <a href="/admin/estimates/create?leadId=<%= lead.id %>"
+                                                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="20" height="20" viewBox="0 0 24 24"
+                                                                            fill="none" stroke="currentColor"
+                                                                            stroke-width="2" stroke-linecap="round"
+                                                                            stroke-linejoin="round">
+                                                                            <path
+                                                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                                                            </path>
+                                                                            <polyline points="14 2 14 8 20 8">
+                                                                            </polyline>
+                                                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                                            <polyline points="10 9 9 9 8 9"></polyline>
+                                                                        </svg>
+                                                                        Create Estimate
+                                                                    </a>
 
-                            <!-- Generate Invoice Button (for completed leads) -->
-                            <% if (lead.status && lead.status.toLowerCase() === 'completed') { %>
-                                <% if (!lead.invoices || lead.invoices.length === 0) { %>
-                                    <a href="/admin/invoices/generate-from-lead/<%= lead.id %>" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                                            <polyline points="10 9 9 9 8 9"></polyline>
-                                        </svg>
-                                        Generate Invoice
-                                    </a>
-                                <% } else { %>
-                                    <a href="/admin/invoices/<%= lead.invoices[0].id %>/preview" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        View Existing Invoice
-                                    </a>
-                                <% } %>
-                            <% } %>
+                                                                    <!-- Generate Invoice Button (for completed leads) -->
+                                                                    <% if (lead.status &&
+                                                                        lead.status.toLowerCase()==='completed' ) { %>
+                                                                        <% if (!lead.invoices ||
+                                                                            lead.invoices.length===0) { %>
+                                                                            <a href="/admin/invoices/generate-from-lead/<%= lead.id %>"
+                                                                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="20" height="20"
+                                                                                    viewBox="0 0 24 24" fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    stroke-width="2"
+                                                                                    stroke-linecap="round"
+                                                                                    stroke-linejoin="round">
+                                                                                    <path
+                                                                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                                                                    </path>
+                                                                                    <polyline points="14 2 14 8 20 8">
+                                                                                    </polyline>
+                                                                                    <line x1="16" y1="13" x2="8"
+                                                                                        y2="13"></line>
+                                                                                    <line x1="16" y1="17" x2="8"
+                                                                                        y2="17"></line>
+                                                                                    <polyline points="10 9 9 9 8 9">
+                                                                                    </polyline>
+                                                                                </svg>
+                                                                                Generate Invoice
+                                                                            </a>
+                                                                            <% } else { %>
+                                                                                <a href="/admin/invoices/<%= lead.invoices[0].id %>/preview"
+                                                                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                        width="20" height="20"
+                                                                                        viewBox="0 0 24 24" fill="none"
+                                                                                        stroke="currentColor"
+                                                                                        stroke-width="2"
+                                                                                        stroke-linecap="round"
+                                                                                        stroke-linejoin="round">
+                                                                                        <path
+                                                                                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
+                                                                                        </path>
+                                                                                        <circle cx="12" cy="12" r="3">
+                                                                                        </circle>
+                                                                                    </svg>
+                                                                                    View Existing Invoice
+                                                                                </a>
+                                                                                <% } %>
+                                                                                    <% } %>
 
-                            <!-- Edit Button -->
-                            <a href="/admin/leads/<%= lead.id %>/edit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                                Edit Details
-                            </a>
-                        </div>
-                    </div>
+                                                                                        <!-- Edit Button -->
+                                                                                        <a href="/admin/leads/<%= lead.id %>/edit"
+                                                                                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                                width="20" height="20"
+                                                                                                viewBox="0 0 24 24"
+                                                                                                fill="none"
+                                                                                                stroke="currentColor"
+                                                                                                stroke-width="2"
+                                                                                                stroke-linecap="round"
+                                                                                                stroke-linejoin="round">
+                                                                                                <path
+                                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                                                </path>
+                                                                                                <path
+                                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                                                </path>
+                                                                                            </svg>
+                                                                                            Edit Details
+                                                                                        </a>
+                                                        </div>
+                                                    </div>
 
-                    <!-- Associated Estimates & Invoices (Flow Section) -->
-                    <% if ((lead.estimates && lead.estimates.length > 0) || (lead.invoices && lead.invoices.length > 0)) { %>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-6 border-t border-gray-100">
-                        <!-- Estimates Column -->
-                        <% if (lead.estimates && lead.estimates.length > 0) { %>
-                        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                Associated Estimates
-                            </h3>
-                            <div class="space-y-3">
-                                <% lead.estimates.forEach(est => { %>
-                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-indigo-300 transition-all">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900"><%= est.estimateNumber %></span>
-                                        <span class="text-[10px] text-gray-400 font-medium uppercase"><%= est.status %> • $<%= est.total %></span>
-                                    </div>
-                                    <a href="/admin/estimates/<%= est.id %>/preview" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                </div>
-                                <% }) %>
-                            </div>
-                        </div>
-                        <% } %>
+                                                    <!-- Associated Estimates & Invoices (Flow Section) -->
+                                                    <% if ((lead.estimates && lead.estimates.length> 0) ||
+                                                        (lead.invoices && lead.invoices.length > 0)) { %>
+                                                        <div
+                                                            class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-6 border-t border-gray-100">
+                                                            <!-- Estimates Column -->
+                                                            <% if (lead.estimates && lead.estimates.length> 0) { %>
+                                                                <div
+                                                                    class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                                                    <h3
+                                                                        class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16" viewBox="0 0 24 24"
+                                                                            fill="none" stroke="currentColor"
+                                                                            stroke-width="2" stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                            class="text-indigo-500">
+                                                                            <path
+                                                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                                                            </path>
+                                                                            <polyline points="14 2 14 8 20 8">
+                                                                            </polyline>
+                                                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                                            <polyline points="10 9 9 9 8 9"></polyline>
+                                                                        </svg>
+                                                                        Associated Estimates
+                                                                    </h3>
+                                                                    <div class="space-y-3">
+                                                                        <% lead.estimates.forEach(est=> { %>
+                                                                            <div
+                                                                                class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-indigo-300 transition-all">
+                                                                                <div class="flex flex-col">
+                                                                                    <span
+                                                                                        class="text-sm font-bold text-gray-900">
+                                                                                        <%= est.estimateNumber %>
+                                                                                    </span>
+                                                                                    <span
+                                                                                        class="text-[10px] text-gray-400 font-medium uppercase">
+                                                                                        <%= est.status %> • $<%=
+                                                                                                est.total %>
+                                                                                    </span>
+                                                                                </div>
+                                                                                <a href="/admin/estimates/<%= est.id %>/preview"
+                                                                                    class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                        width="18" height="18"
+                                                                                        viewBox="0 0 24 24" fill="none"
+                                                                                        stroke="currentColor"
+                                                                                        stroke-width="2"
+                                                                                        stroke-linecap="round"
+                                                                                        stroke-linejoin="round">
+                                                                                        <path
+                                                                                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
+                                                                                        </path>
+                                                                                        <circle cx="12" cy="12" r="3">
+                                                                                        </circle>
+                                                                                    </svg>
+                                                                                </a>
+                                                                            </div>
+                                                                            <% }) %>
+                                                                    </div>
+                                                                </div>
+                                                                <% } %>
 
-                        <!-- Invoices Column -->
-                        <% if (lead.invoices && lead.invoices.length > 0) { %>
-                        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                Associated Invoices
-                            </h3>
-                            <div class="space-y-3">
-                                <% lead.invoices.forEach(inv => { %>
-                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-emerald-300 transition-all">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900"><%= inv.invoiceNumber %></span>
-                                        <span class="text-[10px] text-gray-400 font-medium uppercase font-bold text-emerald-600">Generated</span>
-                                    </div>
-                                    <a href="/admin/invoices/<%= inv.id %>/preview" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                </div>
-                                <% }) %>
-                            </div>
-                        </div>
-                        <% } %>
-                    </div>
-                    <% } %>
+                                                                    <!-- Invoices Column -->
+                                                                    <% if (lead.invoices && lead.invoices.length> 0) {
+                                                                        %>
+                                                                        <div
+                                                                            class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                                                            <h3
+                                                                                class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="16" height="16"
+                                                                                    viewBox="0 0 24 24" fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    stroke-width="2"
+                                                                                    stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    class="text-emerald-500">
+                                                                                    <path
+                                                                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                                                                    </path>
+                                                                                    <polyline points="14 2 14 8 20 8">
+                                                                                    </polyline>
+                                                                                    <line x1="16" y1="13" x2="8"
+                                                                                        y2="13"></line>
+                                                                                    <line x1="16" y1="17" x2="8"
+                                                                                        y2="17"></line>
+                                                                                    <polyline points="10 9 9 9 8 9">
+                                                                                    </polyline>
+                                                                                </svg>
+                                                                                Associated Invoices
+                                                                            </h3>
+                                                                            <div class="space-y-3">
+                                                                                <% lead.invoices.forEach(inv=> { %>
+                                                                                    <div
+                                                                                        class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-emerald-300 transition-all">
+                                                                                        <div class="flex flex-col">
+                                                                                            <span
+                                                                                                class="text-sm font-bold text-gray-900">
+                                                                                                <%= inv.invoiceNumber %>
+                                                                                            </span>
+                                                                                            <span
+                                                                                                class="text-[10px] text-gray-400 font-medium uppercase font-bold text-emerald-600">Generated</span>
+                                                                                        </div>
+                                                                                        <a href="/admin/invoices/<%= inv.id %>/preview"
+                                                                                            class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                                width="18" height="18"
+                                                                                                viewBox="0 0 24 24"
+                                                                                                fill="none"
+                                                                                                stroke="currentColor"
+                                                                                                stroke-width="2"
+                                                                                                stroke-linecap="round"
+                                                                                                stroke-linejoin="round">
+                                                                                                <path
+                                                                                                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
+                                                                                                </path>
+                                                                                                <circle cx="12" cy="12"
+                                                                                                    r="3"></circle>
+                                                                                            </svg>
+                                                                                        </a>
+                                                                                    </div>
+                                                                                    <% }) %>
+                                                                            </div>
+                                                                        </div>
+                                                                        <% } %>
+                                                        </div>
+                                                        <% } %>
 
-                    <!-- Lead Details Card -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <!-- Header -->
-                        <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900"><%= lead.name %></h2>
-                                <p class="text-sm text-gray-500 mt-1">Submitted on <%= new Date(lead.createdAt).toLocaleDateString() %> at <%= new Date(lead.createdAt).toLocaleTimeString() %></p>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-sm font-medium
+                                                            <!-- Lead Details Card -->
+                                                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                                                <!-- Header -->
+                                                                <div
+                                                                    class="px-8 py-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
+                                                                    <div>
+                                                                        <h2 class="text-2xl font-bold text-gray-900">
+                                                                            <%= lead.name %>
+                                                                        </h2>
+                                                                        <p class="text-sm text-gray-500 mt-1">Submitted
+                                                                            on <%= new
+                                                                                Date(lead.createdAt).toLocaleDateString()
+                                                                                %> at <%= new
+                                                                                    Date(lead.createdAt).toLocaleTimeString()
+                                                                                    %>
+                                                                        </p>
+                                                                    </div>
+                                                                    <span class="px-3 py-1 rounded-full text-sm font-medium
                                 <%= lead.status === 'pending' ? 'bg-blue-100 text-blue-800' :
                                    lead.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
                                    lead.status === 'quoted' ? 'bg-purple-100 text-purple-800' :
                                    lead.status === 'approved' ? 'bg-green-100 text-green-800' :
                                    lead.status === 'completed' ? 'bg-green-800 text-white' :
                                    'bg-gray-100 text-gray-800' %>">
-                                <%= lead.status.replace('_', ' ').toUpperCase() %>
-                            </span>
-                        </div>
+                                                                        <%= lead.status.replace('_', ' ' ).toUpperCase()
+                                                                            %>
+                                                                    </span>
+                                                                </div>
 
-                        <div class="p-8 space-y-8">
-                            <!-- Contact Information -->
-                            <section>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Contact Information</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Email</p>
-                                        <p class="font-medium text-gray-900"><a href="mailto:<%= lead.email %>" class="text-indigo-600 hover:underline"><%= lead.email %></a></p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Phone</p>
-                                        <p class="font-medium text-gray-900"><a href="tel:<%= lead.phone %>" class="text-indigo-600 hover:underline"><%= lead.phone %></a></p>
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <p class="text-sm text-gray-500">Address</p>
-                                        <p class="font-medium text-gray-900">
-                                            <% if (lead.address) { %>
-                                                <%= lead.address %><%= lead.city ? ', ' + lead.city : '' %>
-                                            <% } else { %>
-                                                <span class="text-gray-400 italic">Not provided</span>
-                                            <% } %>
-                                        </p>
-                                    </div>
-                                </div>
-                            </section>
+                                                                <div class="p-8 space-y-8">
+                                                                    <!-- Contact Information -->
+                                                                    <section>
+                                                                        <h3
+                                                                            class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
+                                                                            Contact Information</h3>
+                                                                        <div
+                                                                            class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                            <div>
+                                                                                <p class="text-sm text-gray-500">Email
+                                                                                </p>
+                                                                                <p class="font-medium text-gray-900"><a
+                                                                                        href="mailto:<%= lead.email %>"
+                                                                                        class="text-indigo-600 hover:underline">
+                                                                                        <%= lead.email %>
+                                                                                    </a></p>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p class="text-sm text-gray-500">Phone
+                                                                                </p>
+                                                                                <p class="font-medium text-gray-900"><a
+                                                                                        href="tel:<%= lead.phone %>"
+                                                                                        class="text-indigo-600 hover:underline">
+                                                                                        <%= lead.phone %>
+                                                                                    </a></p>
+                                                                            </div>
+                                                                            <div class="md:col-span-2">
+                                                                                <p class="text-sm text-gray-500">Address
+                                                                                </p>
+                                                                                <p class="font-medium text-gray-900">
+                                                                                    <% if (lead.address) { %>
+                                                                                        <%= lead.address %>
+                                                                                            <%= lead.city ? ', ' +
+                                                                                                lead.city : '' %>
+                                                                                                <% } else { %>
+                                                                                                    <span
+                                                                                                        class="text-gray-400 italic">Not
+                                                                                                        provided</span>
+                                                                                                    <% } %>
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </section>
 
-                            <!-- Service Details -->
-                            <section>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Service Request Details</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Service Type</p>
-                                        <p class="font-medium text-gray-900"><%= lead.serviceType || 'Not specified' %></p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Preferred Date</p>
-                                        <p class="font-medium text-gray-900"><%= lead.preferredDate ? new Date(lead.preferredDate).toLocaleDateString() : 'Not specified' %></p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Lead Type</p>
-                                        <p class="font-medium text-gray-900 uppercase"><%= lead.leadType || 'General' %></p>
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <p class="text-sm text-gray-500">Message / Notes</p>
-                                        <div class="mt-1 p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 whitespace-pre-wrap"><%= lead.message || 'No message provided.' %></div>
-                                    </div>
-                                    <% if (lead.assignedTo) { %>
-                                    <div class="md:col-span-2 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                                        <p class="text-sm text-blue-500 font-semibold mb-2">Assigned Employee</p>
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
-                                                <%= lead.assignedTo.name.charAt(0).toUpperCase() %>
+                                                                    <!-- Service Details -->
+                                                                    <section>
+                                                                        <h3
+                                                                            class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
+                                                                            Service Request Details</h3>
+                                                                        <div
+                                                                            class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                            <div>
+                                                                                <p class="text-sm text-gray-500">Service
+                                                                                    Type</p>
+                                                                                <p class="font-medium text-gray-900">
+                                                                                    <%= lead.serviceType
+                                                                                        || 'Not specified' %>
+                                                                                </p>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p class="text-sm text-gray-500">
+                                                                                    Preferred Date</p>
+                                                                                <p class="font-medium text-gray-900">
+                                                                                    <%= lead.preferredDate ? new
+                                                                                        Date(lead.preferredDate).toLocaleDateString()
+                                                                                        : 'Not specified' %>
+                                                                                </p>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p class="text-sm text-gray-500">Lead
+                                                                                    Type</p>
+                                                                                <p
+                                                                                    class="font-medium text-gray-900 uppercase">
+                                                                                    <%= lead.leadType || 'General' %>
+                                                                                </p>
+                                                                            </div>
+                                                                            <div class="md:col-span-2">
+                                                                                <p class="text-sm text-gray-500">Message
+                                                                                    / Notes</p>
+                                                                                <div
+                                                                                    class="mt-1 p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 whitespace-pre-wrap">
+                                                                                    <%= lead.message
+                                                                                        || 'No message provided.' %>
+                                                                                </div>
+                                                                            </div>
+                                                                            <% if (lead.assignedTo) { %>
+                                                                                <div
+                                                                                    class="md:col-span-2 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                                                                    <p
+                                                                                        class="text-sm text-blue-500 font-semibold mb-2">
+                                                                                        Assigned Employee</p>
+                                                                                    <div
+                                                                                        class="flex items-center gap-3">
+                                                                                        <div
+                                                                                            class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
+                                                                                            <%= lead.assignedTo.name.charAt(0).toUpperCase()
+                                                                                                %>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <p
+                                                                                                class="font-medium text-blue-900">
+                                                                                                <%= lead.assignedTo.name
+                                                                                                    %>
+                                                                                            </p>
+                                                                                            <p
+                                                                                                class="text-sm text-blue-700">
+                                                                                                <%= lead.assignedTo.email
+                                                                                                    %> | <%=
+                                                                                                        lead.assignedTo.phone
+                                                                                                        %>
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <% } %>
+                                                                        </div>
+                                                                    </section>
+
+                                                                    <!-- Images -->
+                                                                    <% if (lead.clientImages && (typeof
+                                                                        lead.clientImages==='string' ?
+                                                                        JSON.parse(lead.clientImages).length> 0 :
+                                                                        lead.clientImages.length > 0)) { %>
+                                                                        <section>
+                                                                            <h3
+                                                                                class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
+                                                                                Attached Images</h3>
+                                                                            <div
+                                                                                class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                                <% let images=[]; try { if (typeof
+                                                                                    lead.clientImages==='string' ) {
+                                                                                    images=JSON.parse(lead.clientImages);
+                                                                                    } else if
+                                                                                    (Array.isArray(lead.clientImages)) {
+                                                                                    images=lead.clientImages; } }
+                                                                                    catch(e) { images=[] } %>
+                                                                                    <% images.forEach(img=> { %>
+                                                                                        <div
+                                                                                            class="relative group aspect-square">
+                                                                                            <img src="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + '/' + img.url %>"
+                                                                                                alt="Client Image"
+                                                                                                class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
+                                                                                            <a href="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + '/' + img.url %>"
+                                                                                                target="_blank"
+                                                                                                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                                                                                                <svg class="w-8 h-8 text-white drop-shadow-lg"
+                                                                                                    fill="none"
+                                                                                                    stroke="currentColor"
+                                                                                                    viewBox="0 0 24 24">
+                                                                                                    <path
+                                                                                                        stroke-linecap="round"
+                                                                                                        stroke-linejoin="round"
+                                                                                                        stroke-width="2"
+                                                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                                                                    </path>
+                                                                                                    <path
+                                                                                                        stroke-linecap="round"
+                                                                                                        stroke-linejoin="round"
+                                                                                                        stroke-width="2"
+                                                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                                                                    </path>
+                                                                                                </svg>
+                                                                                            </a>
+                                                                                        </div>
+                                                                                        <% }); %>
+                                                                            </div>
+                                                                        </section>
+                                                                        <% } %>
+
+                                                                            <!-- Employee Work Details -->
+                                                                            <% if (lead.status==='completed' ||
+                                                                                lead.status==='in_progress' ||
+                                                                                lead.employeeNotes ||
+                                                                                (lead.completionImages && (typeof
+                                                                                lead.completionImages==='string' ?
+                                                                                JSON.parse(lead.completionImages).length>
+                                                                                0 : lead.completionImages.length > 0)))
+                                                                                { %>
+                                                                                <section
+                                                                                    class="pt-6 border-t border-gray-100">
+                                                                                    <h3
+                                                                                        class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                                                                                        Work Completion Details</h3>
+                                                                                    <div
+                                                                                        class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                                        <% if (lead.inTime ||
+                                                                                            lead.outTime ||
+                                                                                            lead.employeeStartTime ||
+                                                                                            lead.employeeEndTime) { %>
+                                                                                            <div>
+                                                                                                <p
+                                                                                                    class="text-sm text-gray-500">
+                                                                                                    Work Hours</p>
+                                                                                                <div
+                                                                                                    class="flex flex-col gap-2 mt-1">
+                                                                                                    <% if (lead.inTime)
+                                                                                                        { %>
+                                                                                                        <span
+                                                                                                            class="px-2 py-1 bg-green-50 text-green-700 rounded text-sm font-medium border border-green-100 w-fit">
+                                                                                                            Start: <%=
+                                                                                                                new
+                                                                                                                Date(lead.inTime).toLocaleString('en-US',
+                                                                                                                {
+                                                                                                                month: 'short'
+                                                                                                                ,
+                                                                                                                day: 'numeric'
+                                                                                                                ,
+                                                                                                                year: 'numeric'
+                                                                                                                ,
+                                                                                                                hour: 'numeric'
+                                                                                                                ,
+                                                                                                                minute: 'numeric'
+                                                                                                                ,
+                                                                                                                hour12:
+                                                                                                                true })
+                                                                                                                %>
+                                                                                                        </span>
+                                                                                                        <% } else if
+                                                                                                            (lead.employeeStartTime)
+                                                                                                            { %>
+                                                                                                            <span
+                                                                                                                class="px-2 py-1 bg-green-50 text-green-700 rounded text-sm font-medium border border-green-100 w-fit">
+                                                                                                                Start:
+                                                                                                                <%= lead.employeeStartTime
+                                                                                                                    %>
+                                                                                                            </span>
+                                                                                                            <% } %>
+
+                                                                                                                <% if
+                                                                                                                    (lead.outTime)
+                                                                                                                    { %>
+                                                                                                                    <span
+                                                                                                                        class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium border border-blue-100 w-fit">
+                                                                                                                        End:
+                                                                                                                        <%= new
+                                                                                                                            Date(lead.outTime).toLocaleString('en-US',
+                                                                                                                            {
+                                                                                                                            month: 'short'
+                                                                                                                            ,
+                                                                                                                            day: 'numeric'
+                                                                                                                            ,
+                                                                                                                            year: 'numeric'
+                                                                                                                            ,
+                                                                                                                            hour: 'numeric'
+                                                                                                                            ,
+                                                                                                                            minute: 'numeric'
+                                                                                                                            ,
+                                                                                                                            hour12:
+                                                                                                                            true
+                                                                                                                            })
+                                                                                                                            %>
+                                                                                                                    </span>
+                                                                                                                    <% } else
+                                                                                                                        if
+                                                                                                                        (lead.employeeEndTime)
+                                                                                                                        {
+                                                                                                                        %>
+                                                                                                                        <span
+                                                                                                                            class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium border border-blue-100 w-fit">
+                                                                                                                            End:
+                                                                                                                            <%= lead.employeeEndTime
+                                                                                                                                %>
+                                                                                                                        </span>
+                                                                                                                        <% }
+                                                                                                                            %>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <% } %>
+
+                                                                                                <% if
+                                                                                                    (lead.employeeNotes)
+                                                                                                    { %>
+                                                                                                    <div
+                                                                                                        class="md:col-span-2">
+                                                                                                        <p
+                                                                                                            class="text-sm text-gray-500 mb-1">
+                                                                                                            Employee
+                                                                                                            Notes</p>
+                                                                                                        <div
+                                                                                                            class="p-4 bg-yellow-50 rounded-lg border border-yellow-100 text-gray-700 whitespace-pre-wrap">
+                                                                                                            <%= lead.employeeNotes
+                                                                                                                %>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <% } %>
+                                                                                    </div>
+
+                                                                                    <!-- Completion Images -->
+                                                                                    <% if (lead.completionImages &&
+                                                                                        (typeof
+                                                                                        lead.completionImages==='string'
+                                                                                        ?
+                                                                                        JSON.parse(lead.completionImages).length>
+                                                                                        0 : lead.completionImages.length
+                                                                                        > 0)) { %>
+                                                                                        <div class="mt-6">
+                                                                                            <p
+                                                                                                class="text-sm text-gray-500 mb-3">
+                                                                                                Completion Photos</p>
+                                                                                            <div
+                                                                                                class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                                                <% let compImages=[];
+                                                                                                    try { if (typeof
+                                                                                                    lead.completionImages==='string'
+                                                                                                    ) {
+                                                                                                    compImages=JSON.parse(lead.completionImages);
+                                                                                                    } else if
+                                                                                                    (Array.isArray(lead.completionImages))
+                                                                                                    {
+                                                                                                    compImages=lead.completionImages;
+                                                                                                    } } catch(e) {
+                                                                                                    compImages=[] } %>
+                                                                                                    <%
+                                                                                                        compImages.forEach(img=>
+                                                                                                        { %>
+                                                                                                        <div
+                                                                                                            class="relative group aspect-square">
+                                                                                                            <img src="<%= img.uri.startsWith('http') ? img.uri : process.env.BACKEND_URL + '/' + img.uri %>"
+                                                                                                                alt="Completion Image"
+                                                                                                                class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
+                                                                                                            <a href="<%= img.uri.startsWith('http') ? img.uri : process.env.BACKEND_URL + '/' + img.uri %>"
+                                                                                                                target="_blank"
+                                                                                                                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                                                                                                                <svg class="w-8 h-8 text-white drop-shadow-lg"
+                                                                                                                    fill="none"
+                                                                                                                    stroke="currentColor"
+                                                                                                                    viewBox="0 0 24 24">
+                                                                                                                    <path
+                                                                                                                        stroke-linecap="round"
+                                                                                                                        stroke-linejoin="round"
+                                                                                                                        stroke-width="2"
+                                                                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                                                                                    </path>
+                                                                                                                    <path
+                                                                                                                        stroke-linecap="round"
+                                                                                                                        stroke-linejoin="round"
+                                                                                                                        stroke-width="2"
+                                                                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                                                                                    </path>
+                                                                                                                </svg>
+                                                                                                            </a>
+                                                                                                        </div>
+                                                                                                        <% }); %>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <% } %>
+                                                                                </section>
+                                                                                <% } %>
+
+                                                                                    <% if (lead.status==='approved' ||
+                                                                                        (lead.status !=='completed' &&
+                                                                                        lead.status !=='closed_lost' ))
+                                                                                        { %>
+                                                                                        <section
+                                                                                            class="pt-6 border-t border-gray-100">
+                                                                                            <h3
+                                                                                                class="text-lg font-semibold text-gray-900 mb-4">
+                                                                                                Actions</h3>
+                                                                                            <div
+                                                                                                class="flex flex-wrap gap-4">
+                                                                                                <% if
+                                                                                                    (lead.status==='approved'
+                                                                                                    && !lead.assignedTo)
+                                                                                                    { %>
+                                                                                                    <button
+                                                                                                        onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')"
+                                                                                                        class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm transition flex items-center gap-2">
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="20"
+                                                                                                            height="20"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill="none"
+                                                                                                            stroke="currentColor"
+                                                                                                            stroke-width="2"
+                                                                                                            stroke-linecap="round"
+                                                                                                            stroke-linejoin="round">
+                                                                                                            <path
+                                                                                                                d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+                                                                                                            </path>
+                                                                                                            <circle
+                                                                                                                cx="8.5"
+                                                                                                                cy="7"
+                                                                                                                r="4">
+                                                                                                            </circle>
+                                                                                                            <line
+                                                                                                                x1="20"
+                                                                                                                y1="8"
+                                                                                                                x2="20"
+                                                                                                                y2="14">
+                                                                                                            </line>
+                                                                                                            <line
+                                                                                                                x1="23"
+                                                                                                                y1="11"
+                                                                                                                x2="17"
+                                                                                                                y2="11">
+                                                                                                            </line>
+                                                                                                        </svg>
+                                                                                                        Assign Employee
+                                                                                                    </button>
+                                                                                                    <% } %>
+
+                                                                                                        <% if
+                                                                                                            (lead.assignedTo)
+                                                                                                            { %>
+                                                                                                            <button
+                                                                                                                onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')"
+                                                                                                                class="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 shadow-sm transition flex items-center gap-2">
+                                                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                                                    width="20"
+                                                                                                                    height="20"
+                                                                                                                    viewBox="0 0 24 24"
+                                                                                                                    fill="none"
+                                                                                                                    stroke="currentColor"
+                                                                                                                    stroke-width="2"
+                                                                                                                    stroke-linecap="round"
+                                                                                                                    stroke-linejoin="round">
+                                                                                                                    <path
+                                                                                                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+                                                                                                                    </path>
+                                                                                                                    <circle
+                                                                                                                        cx="9"
+                                                                                                                        cy="7"
+                                                                                                                        r="4">
+                                                                                                                    </circle>
+                                                                                                                    <path
+                                                                                                                        d="M23 21v-2a4 4 0 0 0-3-3.87">
+                                                                                                                    </path>
+                                                                                                                    <path
+                                                                                                                        d="M16 3.13a4 4 0 0 1 0 7.75">
+                                                                                                                    </path>
+                                                                                                                </svg>
+                                                                                                                Re-Assign
+                                                                                                                Employee
+                                                                                                            </button>
+                                                                                                            <% } %>
+                                                                                            </div>
+                                                                                        </section>
+                                                                                        <% } %>
+                                                                </div>
+                                                            </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="font-medium text-blue-900"><%= lead.assignedTo.name %></p>
-                                                <p class="text-sm text-blue-700"><%= lead.assignedTo.email %> | <%= lead.assignedTo.phone %></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <% } %>
-                                </div>
-                            </section>
-
-                            <!-- Images -->
-                            <% if (lead.clientImages && (typeof lead.clientImages === 'string' ? JSON.parse(lead.clientImages).length > 0 : lead.clientImages.length > 0)) { %>
-                            <section>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Attached Images</h3>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <% 
-                                    let images = []; 
-                                    try { 
-                                        if (typeof lead.clientImages === 'string') {
-                                            images = JSON.parse(lead.clientImages);
-                                        } else if (Array.isArray(lead.clientImages)) {
-                                            images = lead.clientImages;
-                                        }
-                                    } catch(e) { images = [] } 
-                                    %>
-                                    <% images.forEach(img => { %>
-                                        <div class="relative group aspect-square">
-                                            <img src="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + '/' + img.url %>" 
-                                                 alt="Client Image" 
-                                                 class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
-                                            <a href="<%= img.url.startsWith('http') ? img.url : process.env.BACKEND_URL + '/' + img.url %>" 
-                                               target="_blank"
-                                               class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                                                <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    <% }); %>
-                                </div>
-                            </section>
-                            <% } %>
-
-                            <!-- Employee Work Details -->
-                            <% if (lead.status === 'completed' || lead.status === 'in_progress' || lead.employeeNotes || (lead.completionImages && (typeof lead.completionImages === 'string' ? JSON.parse(lead.completionImages).length > 0 : lead.completionImages.length > 0))) { %>
-                            <section class="pt-6 border-t border-gray-100">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Work Completion Details</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <% if (lead.inTime || lead.outTime || lead.employeeStartTime || lead.employeeEndTime) { %>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Work Hours</p>
-                                        <div class="flex flex-col gap-2 mt-1">
-                                            <% if (lead.inTime) { %>
-                                                <span class="px-2 py-1 bg-green-50 text-green-700 rounded text-sm font-medium border border-green-100 w-fit">
-                                                    Start: <%= new Date(lead.inTime).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %>
-                                                </span>
-                                            <% } else if (lead.employeeStartTime) { %>
-                                                <span class="px-2 py-1 bg-green-50 text-green-700 rounded text-sm font-medium border border-green-100 w-fit">
-                                                    Start: <%= lead.employeeStartTime %>
-                                                </span>
-                                            <% } %>
-
-                                            <% if (lead.outTime) { %>
-                                                <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium border border-blue-100 w-fit">
-                                                    End: <%= new Date(lead.outTime).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %>
-                                                </span>
-                                            <% } else if (lead.employeeEndTime) { %>
-                                                <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium border border-blue-100 w-fit">
-                                                    End: <%= lead.employeeEndTime %>
-                                                </span>
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                    <% } %>
-
-                                    <% if (lead.employeeNotes) { %>
-                                    <div class="md:col-span-2">
-                                        <p class="text-sm text-gray-500 mb-1">Employee Notes</p>
-                                        <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100 text-gray-700 whitespace-pre-wrap"><%= lead.employeeNotes %></div>
-                                    </div>
-                                    <% } %>
-                                </div>
-
-                                <!-- Completion Images -->
-                                <% if (lead.completionImages && (typeof lead.completionImages === 'string' ? JSON.parse(lead.completionImages).length > 0 : lead.completionImages.length > 0)) { %>
-                                <div class="mt-6">
-                                    <p class="text-sm text-gray-500 mb-3">Completion Photos</p>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <% 
-                                        let compImages = []; 
-                                        try { 
-                                            if (typeof lead.completionImages === 'string') {
-                                                compImages = JSON.parse(lead.completionImages);
-                                            } else if (Array.isArray(lead.completionImages)) {
-                                                compImages = lead.completionImages;
-                                            }
-                                        } catch(e) { compImages = [] } 
-                                        %>
-                                        <% compImages.forEach(img => { %>
-                                            <div class="relative group aspect-square">
-                                                <img src="<%= img.uri.startsWith('http') ? img.uri : process.env.BACKEND_URL + '/' + img.uri %>" 
-                                                     alt="Completion Image" 
-                                                     class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
-                                                <a href="<%= img.uri.startsWith('http') ? img.uri : process.env.BACKEND_URL + '/' + img.uri %>" 
-                                                   target="_blank"
-                                                   class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                                                    <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                    </svg>
-                                                </a>
-                                            </div>
-                                        <% }); %>
-                                    </div>
-                                </div>
-                                <% } %>
-                            </section>
-                            <% } %>
-                            
-                            <% if (lead.status === 'approved' || (lead.status !== 'completed' && lead.status !== 'closed_lost')) { %>
-                            <section class="pt-6 border-t border-gray-100">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
-                                <div class="flex flex-wrap gap-4">
-                                     <% if (lead.status === 'approved' && !lead.assignedTo) { %>
-                                        <button onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm transition flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                                <circle cx="8.5" cy="7" r="4"></circle>
-                                                <line x1="20" y1="8" x2="20" y2="14"></line>
-                                                <line x1="23" y1="11" x2="17" y2="11"></line>
-                                            </svg>
-                                            Assign Employee
-                                        </button>
-                                     <% } %>
-                                     
-                                     <% if (lead.assignedTo) { %>
-                                        <button onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 shadow-sm transition flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                                <circle cx="9" cy="7" r="4"></circle>
-                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                            </svg>
-                                            Re-Assign Employee
-                                        </button>
-                                     <% } %>
-                                </div>
-                            </section>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-            </div>
-           <div id="assignModal" 
-     class="fixed inset-0 z-[9999] hidden 
+                                            <div id="assignModal" class="fixed inset-0 z-[9999] hidden 
             bg-black/50 
             flex items-center justify-center 
             p-8">
 
-    <div class="relative w-full max-w-2xl 
+                                                <div class="relative w-full max-w-2xl 
                 bg-white rounded-xl shadow-xl  p-8
                 max-h-[90vh] overflow-y-auto">
-                                <div class="mt-3">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Assign Lead</h3>
-                                        <button id="closeModalBtn" type="button" class="text-gray-400 hover:text-gray-500">
-                                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="px-2 py-2">
-                                        <p class="text-sm text-gray-500 mb-6">Assign <span id="leadNameSpan" class="font-bold text-gray-900"></span> to an employee.</p>
-                                        
-                                        <form id="assignForm">
-                                            <input type="hidden" id="assignLeadId">
-                                            <input type="hidden" id="selectedEmployeeId">
-                                            
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                                <div>
-                                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="assignDate">
-                                                        Select Date
-                                                    </label>
-                                                    <input class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                                        id="assignDate" type="date" required>
-                                                </div>
+                                                    <div class="mt-3">
+                                                        <div class="flex justify-between items-center mb-4">
+                                                            <h3 class="text-lg leading-6 font-medium text-gray-900"
+                                                                id="modalTitle">Assign Lead</h3>
+                                                            <button id="closeModalBtn" type="button"
+                                                                class="text-gray-400 hover:text-gray-500">
+                                                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                                                    stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
 
-                                                <div>
-                                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="assignSlot">
-                                                        Select Time Slot
-                                                    </label>
-                                                    <select class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        id="assignSlot" required>
-                                                        <option value="">Choose a slot...</option>
-                                                        <option value="morning">Morning (9 AM - 12 PM)</option>
-                                                        <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
-                                                        <option value="evening">Evening (5 PM - 8 PM)</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+                                                        <div class="px-2 py-2">
+                                                            <p class="text-sm text-gray-500 mb-6">Assign <span
+                                                                    id="leadNameSpan"
+                                                                    class="font-bold text-gray-900"></span> to an
+                                                                employee.</p>
 
-                                            <div class="mb-6">
-                                                <div class="flex justify-between items-center mb-2">
-                                                    <label class="block text-gray-700 text-sm font-bold">
-                                                        Select Employee
-                                                    </label>
-                                                    <span id="loadingEmployees" class="text-xs text-blue-600 hidden flex items-center gap-1">
-                                                        <svg class="animate-spin h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></cx>
-                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Checking availability...
-                                                    </span>
-                                                </div>
-                                                
-                                                <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
-                                                    <div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                                                        Select a date and time slot to view available employees
+                                                            <form id="assignForm">
+                                                                <input type="hidden" id="assignLeadId">
+                                                                <input type="hidden" id="selectedEmployeeId">
+
+                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                                                    <div>
+                                                                        <label
+                                                                            class="block text-gray-700 text-sm font-bold mb-2"
+                                                                            for="assignDate">
+                                                                            Select Date
+                                                                        </label>
+                                                                        <input
+                                                                            class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                                            id="assignDate" type="date" required>
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <label
+                                                                            class="block text-gray-700 text-sm font-bold mb-2"
+                                                                            for="assignSlot">
+                                                                            Select Time Slot
+                                                                        </label>
+                                                                        <select
+                                                                            class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                                            id="assignSlot" required>
+                                                                            <option value="">Choose a slot...</option>
+                                                                            <option value="morning">Morning (9 AM - 12
+                                                                                PM)</option>
+                                                                            <option value="afternoon">Afternoon (1 PM -
+                                                                                5 PM)</option>
+                                                                            <option value="evening">Evening (5 PM - 8
+                                                                                PM)</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="mb-6">
+                                                                    <div class="flex justify-between items-center mb-2">
+                                                                        <label
+                                                                            class="block text-gray-700 text-sm font-bold">
+                                                                            Select Employee
+                                                                        </label>
+                                                                        <span id="loadingEmployees"
+                                                                            class="text-xs text-blue-600 hidden flex items-center gap-1">
+                                                                            <svg class="animate-spin h-3 w-3 text-blue-600"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none" viewBox="0 0 24 24">
+                                                                                <circle class="opacity-25" cx="12"
+                                                                                    cy="12" r="10" stroke="currentColor"
+                                                                                    stroke-width="4">
+                                                                                    </cx>
+                                                                                    <path class="opacity-75"
+                                                                                        fill="currentColor"
+                                                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                                                    </path>
+                                                                            </svg>
+                                                                            Checking availability...
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div id="employeeGrid"
+                                                                        class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                                                                        <div
+                                                                            class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                                                            Select a date and time slot to view
+                                                                            available employees
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="flex gap-3 pt-4 border-t border-gray-100">
+                                                                    <button id="closeModalBtnFooter" type="button"
+                                                                        class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                        Cancel
+                                                                    </button>
+                                                                    <button id="assignSubmitBtn" type="submit" disabled
+                                                                        class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                                        Assign & Approve
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div class="flex gap-3 pt-4 border-t border-gray-100">
-                                                <button id="closeModalBtnFooter" type="button" class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                                                    Cancel
-                                                </button>
-                                                <button id="assignSubmitBtn" type="submit" disabled class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                    Assign & Approve
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+                                    </main>
                             </div>
-                        </div>
-        </main>
-    </div>
 
-    <!-- Re-use the assignment modal from list.ejs (needs to be included or duplicated) -->
-    <!-- For simplicity, I'll duplicate the modal here since partials might not be set up for modals yet -->
-    <!-- Assignment F -->
-                        
+                            <!-- Re-use the assignment modal from list.ejs (needs to be included or duplicated) -->
+                            <!-- For simplicity, I'll duplicate the modal here since partials might not be set up for modals yet -->
+                            <!-- Assignment F -->
 
-                        <script src="/js/toast.js"></script>
-                        <script>
-                            const modal = document.getElementById('assignModal');
-                            const closeBtn = document.getElementById('closeModalBtn');
-                            const closeBtnFooter = document.getElementById('closeModalBtnFooter');
-                            const dateInput = document.getElementById('assignDate');
-                            const slotInput = document.getElementById('assignSlot');
-                            const employeeGrid = document.getElementById('employeeGrid');
-                            const form = document.getElementById('assignForm');
-                            const loadingMsg = document.getElementById('loadingEmployees');
-                            const selectedEmployeeInput = document.getElementById('selectedEmployeeId');
-                            const submitBtn = document.getElementById('assignSubmitBtn');
 
-                            // Set min date to today
-                            const today = new Date().toISOString().split('T')[0];
-                            dateInput.min = today;
+                            <script src="/js/toast.js"></script>
+                            <script>
+                                const modal = document.getElementById('assignModal');
+                                const closeBtn = document.getElementById('closeModalBtn');
+                                const closeBtnFooter = document.getElementById('closeModalBtnFooter');
+                                const dateInput = document.getElementById('assignDate');
+                                const slotInput = document.getElementById('assignSlot');
+                                const employeeGrid = document.getElementById('employeeGrid');
+                                const form = document.getElementById('assignForm');
+                                const loadingMsg = document.getElementById('loadingEmployees');
+                                const selectedEmployeeInput = document.getElementById('selectedEmployeeId');
+                                const submitBtn = document.getElementById('assignSubmitBtn');
 
-                            function openAssignModal(leadId, leadName) {
-                                document.getElementById('assignLeadId').value = leadId;
-                                document.getElementById('leadNameSpan').innerText = leadName;
-                                // Reset form
-                                dateInput.value = '';
-                                slotInput.value = '';
-                                selectedEmployeeInput.value = '';
-                                submitBtn.disabled = true;
-                                employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">Select a date and time slot to view available employees</div>';
-                                modal.classList.remove('hidden');
-                            }
+                                // Set min date to today
+                                const today = new Date().toISOString().split('T')[0];
+                                dateInput.min = today;
 
-                            function closeModal() {
-                                modal.classList.add('hidden');
-                            }
-
-                            closeBtn.onclick = closeModal;
-                            closeBtnFooter.onclick = closeModal;
-
-                            window.onclick = function(event) {
-                                if (event.target == modal) {
-                                    closeModal();
+                                function openAssignModal(leadId, leadName) {
+                                    document.getElementById('assignLeadId').value = leadId;
+                                    document.getElementById('leadNameSpan').innerText = leadName;
+                                    // Reset form
+                                    dateInput.value = '';
+                                    slotInput.value = '';
+                                    selectedEmployeeInput.value = '';
+                                    submitBtn.disabled = true;
+                                    employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">Select a date and time slot to view available employees</div>';
+                                    modal.classList.remove('hidden');
                                 }
-                            }
 
-                            function selectEmployee(id, name) {
-                                // Deselect all
-                                document.querySelectorAll('.employee-card').forEach(card => {
-                                    card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-                                    card.classList.add('bg-white', 'hover:bg-gray-50');
-                                });
-                                
-                                // Select clicked
-                                const selectedCard = document.getElementById(`emp-card-${id}`);
-                                if (selectedCard) {
-                                    selectedCard.classList.remove('bg-white', 'hover:bg-gray-50');
-                                    selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-                                    
-                                    selectedEmployeeInput.value = id;
-                                    submitBtn.disabled = false;
-                                    submitBtn.textContent = `Assign to ${name}`;
+                                function closeModal() {
+                                    modal.classList.add('hidden');
                                 }
-                            }
 
-                            async function fetchAvailableEmployees() {
-                                const date = dateInput.value;
-                                const slot = slotInput.value;
+                                closeBtn.onclick = closeModal;
+                                closeBtnFooter.onclick = closeModal;
 
-                                if (!date || !slot) return;
+                                window.onclick = function (event) {
+                                    if (event.target == modal) {
+                                        closeModal();
+                                    }
+                                }
 
-                                loadingMsg.classList.remove('hidden');
-                                employeeGrid.innerHTML = '<div class="col-span-full py-8 flex justify-center"><svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-                                
-                                // Reset selection
-                                selectedEmployeeInput.value = '';
-                                submitBtn.disabled = true;
-                                submitBtn.textContent = 'Assign & Approve';
+                                function selectEmployee(id, name) {
+                                    // Deselect all
+                                    document.querySelectorAll('.employee-card').forEach(card => {
+                                        card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                                        card.classList.add('bg-white', 'hover:bg-gray-50');
+                                    });
 
-                                try {
-                                    const response = await fetch(`/admin/available-employees?date=${date}&slot=${slot}`);
-                                    const data = await response.json();
+                                    // Select clicked
+                                    const selectedCard = document.getElementById(`emp-card-${id}`);
+                                    if (selectedCard) {
+                                        selectedCard.classList.remove('bg-white', 'hover:bg-gray-50');
+                                        selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
 
-                                    if (data.success && data.items.length > 0) {
-                                        employeeGrid.innerHTML = '';
-                                        data.items.forEach(emp => {
-                                            const isAvailable = emp.isAvailable;
-                                            const initial = emp.name.charAt(0).toUpperCase();
-                                            
-                                            const card = document.createElement('div');
-                                            card.id = `emp-card-${emp.id}`;
-                                            card.className = `employee-card p-3 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 ${isAvailable ? 'bg-white hover:bg-gray-50 hover:shadow-sm' : 'bg-gray-50 opacity-60 cursor-not-allowed'}`;
-                                            
-                                            if (isAvailable) {
-                                                card.onclick = () => selectEmployee(emp.id, emp.name);
-                                            }
+                                        selectedEmployeeInput.value = id;
+                                        submitBtn.disabled = false;
+                                        submitBtn.textContent = `Assign to ${name}`;
+                                    }
+                                }
 
-                                            card.innerHTML = `
+                                async function fetchAvailableEmployees() {
+                                    const date = dateInput.value;
+                                    const slot = slotInput.value;
+
+                                    if (!date || !slot) return;
+
+                                    loadingMsg.classList.remove('hidden');
+                                    employeeGrid.innerHTML = '<div class="col-span-full py-8 flex justify-center"><svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+                                    // Reset selection
+                                    selectedEmployeeInput.value = '';
+                                    submitBtn.disabled = true;
+                                    submitBtn.textContent = 'Assign & Approve';
+
+                                    try {
+                                        const response = await fetch(`/admin/available-employees?date=${date}&slot=${slot}`);
+                                        const data = await response.json();
+
+                                        if (data.success && data.items.length > 0) {
+                                            employeeGrid.innerHTML = '';
+                                            data.items.forEach(emp => {
+                                                const isAvailable = emp.isAvailable;
+                                                const initial = emp.name.charAt(0).toUpperCase();
+
+                                                const card = document.createElement('div');
+                                                card.id = `emp-card-${emp.id}`;
+                                                card.className = `employee-card p-3 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 ${isAvailable ? 'bg-white hover:bg-gray-50 hover:shadow-sm' : 'bg-gray-50 opacity-60 cursor-not-allowed'}`;
+
+                                                if (isAvailable) {
+                                                    card.onclick = () => selectEmployee(emp.id, emp.name);
+                                                }
+
+                                                card.innerHTML = `
                                                 <div class="flex items-center gap-3">
                                                     <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${isAvailable ? 'bg-blue-600' : 'bg-gray-400'}">
                                                         ${initial}
@@ -562,248 +975,268 @@
                                                     </div>
                                                 </div>
                                             `;
-                                            employeeGrid.appendChild(card);
-                                        });
-                                    } else {
-                                        employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No employees found.</div>';
-                                    }
-                                } catch (error) {
-                                    console.error('Error fetching employees:', error);
-                                    employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading employees. Please try again.</div>';
-                                } finally {
-                                    loadingMsg.classList.add('hidden');
-                                }
-                            }
-
-                            dateInput.addEventListener('change', fetchAvailableEmployees);
-                            slotInput.addEventListener('change', fetchAvailableEmployees);
-
-                            form.addEventListener('submit', async (e) => {
-                                e.preventDefault();
-                                const leadId = document.getElementById('assignLeadId').value;
-                                const employeeId = selectedEmployeeInput.value;
-                                const date = dateInput.value;
-                                const timeSlot = slotInput.value;
-                                
-                                let hour = 9;
-                                if (timeSlot === 'afternoon') hour = 13;
-                                if (timeSlot === 'evening') hour = 18;
-                                
-                                const scheduledDate = new Date(date);
-                                scheduledDate.setHours(hour, 0, 0, 0);
-
-                                if (!employeeId) {
-                                    showToast('Please select an employee', 'error');
-                                    return;
-                                }
-
-                                try {
-                                    const response = await fetch(`/admin/leads/${leadId}/assign`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            employeeId,
-                                            status: 'assigned',
-                                            scheduledDate: scheduledDate.toISOString(),
-                                        })
-                                    });
-                                    
-                                    const result = await response.json();
-
-                                    if (result.success) {
-                                        showToast('Lead assigned successfully', 'success');
-                                        setTimeout(() => window.location.reload(), 1500);
-                                    } else {
-                                        showToast(result.message || 'Assignment failed', 'error');
-                                    }
-                                } catch (error) {
-                                    console.error('Assignment error:', error);
-                                    showToast('An error occurred', 'error');
-                                }
-                            });
-                        </script>
-
-
-                        <!-- Assignment modal -->
-                        <div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto h-full w-full flex items-center justify-center px-4">
-                            <div class="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-                                <div class="mt-3">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Assign Lead</h3>
-                                        <button id="closeModalBtn" type="button" class="text-gray-400 hover:text-gray-500">
-                                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="px-2 py-2">
-                                        <p class="text-sm text-gray-500 mb-6">Assign <span id="leadNameSpan" class="font-bold text-gray-900"></span> to an employee.</p>
-                                        
-                                        <form id="assignForm">
-                                            <input type="hidden" id="assignLeadId">
-                                            <input type="hidden" id="selectedEmployeeId">
-                                            
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                                <div>
-                                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="assignDate">
-                                                        Select Date
-                                                    </label>
-                                                    <input class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                                        id="assignDate" type="date" required>
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="assignSlot">
-                                                        Select Time Slot
-                                                    </label>
-                                                    <select class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        id="assignSlot" required>
-                                                        <option value="">Choose a slot...</option>
-                                                        <option value="morning">Morning (9 AM - 12 PM)</option>
-                                                        <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
-                                                        <option value="evening">Evening (5 PM - 8 PM)</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-6">
-                                                <div class="flex justify-between items-center mb-2">
-                                                    <label class="block text-gray-700 text-sm font-bold">
-                                                        Select Employee
-                                                    </label>
-                                                    <span id="loadingEmployees" class="text-xs text-blue-600 hidden flex items-center gap-1">
-                                                        <svg class="animate-spin h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Checking availability...
-                                                    </span>
-                                                </div>
-                                                
-                                                <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
-                                                    <div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                                                        Select a date and time slot to view available employees
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex gap-3 pt-4 border-t border-gray-100">
-                                                <button id="closeModalBtnFooter" type="button" class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                                                    Cancel
-                                                </button>
-                                                <button id="assignSubmitBtn" type="submit" disabled class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                    Assign & Approve
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const assignModalEl = document.getElementById('assignModal');
-                                const closeBtn = document.getElementById('closeModalBtn');
-                                const closeBtnFooter = document.getElementById('closeModalBtnFooter');
-                                const dateInput = document.getElementById('assignDate');
-                                const slotInput = document.getElementById('assignSlot');
-                                const employeeGrid = document.getElementById('employeeGrid');
-                                const form = document.getElementById('assignForm');
-                                const loadingMsg = document.getElementById('loadingEmployees');
-                                const selectedEmployeeInput = document.getElementById('selectedEmployeeId');
-                                const submitBtn = document.getElementById('assignSubmitBtn');
-
-                                // Set min date to today
-                                const today = new Date().toISOString().split('T')[0];
-                                if (dateInput) dateInput.min = today;
-
-                                window.openAssignModal = function(leadId, leadName) {
-                                    document.getElementById('assignLeadId').value = leadId;
-                                    document.getElementById('leadNameSpan').innerText = leadName;
-                                    // Reset form
-                                    if (dateInput) dateInput.value = '';
-                                    if (slotInput) slotInput.value = '';
-                                    if (selectedEmployeeInput) selectedEmployeeInput.value = '';
-                                    if (submitBtn) {
-                                        submitBtn.disabled = true;
-                                        submitBtn.textContent = 'Assign & Approve';
-                                    }
-                                    if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">Select a date and time slot to view available employees</div>';
-                                    if (assignModalEl) assignModalEl.classList.remove('hidden');
-                                }
-
-                                function closeModal() {
-                                    if (assignModalEl) assignModalEl.classList.add('hidden');
-                                }
-
-                                if (closeBtn) closeBtn.onclick = closeModal;
-                                if (closeBtnFooter) closeBtnFooter.onclick = closeModal;
-
-                                window.onclick = function(event) {
-                                    if (event.target == assignModalEl) {
-                                        closeModal();
+                                                employeeGrid.appendChild(card);
+                                            });
+                                        } else {
+                                            employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No employees found.</div>';
+                                        }
+                                    } catch (error) {
+                                        console.error('Error fetching employees:', error);
+                                        employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading employees. Please try again.</div>';
+                                    } finally {
+                                        loadingMsg.classList.add('hidden');
                                     }
                                 }
 
-                                window.selectEmployee = function(id, name) {
-                                    // Deselect all
-                                    document.querySelectorAll('.employee-card').forEach(card => {
-                                        card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-                                        card.classList.add('bg-white', 'hover:bg-gray-50');
-                                    });
-                                    
-                                    // Select clicked
-                                    const selectedCard = document.getElementById(`emp-card-${id}`);
-                                    if (selectedCard) {
-                                        selectedCard.classList.remove('bg-white', 'hover:bg-gray-50');
-                                        selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-                                        
-                                        selectedEmployeeInput.value = id;
-                                        submitBtn.disabled = false;
-                                        submitBtn.textContent = `Assign to ${name}`;
-                                    }
-                                }
+                                dateInput.addEventListener('change', fetchAvailableEmployees);
+                                slotInput.addEventListener('change', fetchAvailableEmployees);
 
-                                async function fetchAvailableEmployees() {
+                                form.addEventListener('submit', async (e) => {
+                                    e.preventDefault();
+                                    const leadId = document.getElementById('assignLeadId').value;
+                                    const employeeId = selectedEmployeeInput.value;
                                     const date = dateInput.value;
-                                    const slot = slotInput.value;
+                                    const timeSlot = slotInput.value;
 
-                                    if (!date || !slot) return;
+                                    let hour = 9;
+                                    if (timeSlot === 'afternoon') hour = 13;
+                                    if (timeSlot === 'evening') hour = 18;
 
-                                    if (loadingMsg) loadingMsg.classList.remove('hidden');
-                                    if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full py-8 flex justify-center"><svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-                                    
-                                    // Reset selection
-                                    selectedEmployeeInput.value = '';
-                                    if (submitBtn) {
-                                        submitBtn.disabled = true;
-                                        submitBtn.textContent = 'Assign & Approve';
+                                    const scheduledDate = new Date(date);
+                                    scheduledDate.setHours(hour, 0, 0, 0);
+
+                                    if (!employeeId) {
+                                        showToast('Please select an employee', 'error');
+                                        return;
                                     }
 
                                     try {
-                                        const response = await fetch(`/admin/available-employees?date=${date}&slot=${slot}`);
-                                        const data = await response.json();
+                                        const response = await fetch(`/admin/leads/${leadId}/assign`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                employeeId,
+                                                status: 'assigned',
+                                                scheduledDate: scheduledDate.toISOString(),
+                                            })
+                                        });
 
-                                        if (data.success && data.items.length > 0) {
-                                            employeeGrid.innerHTML = '';
-                                            data.items.forEach(emp => {
-                                                const isAvailable = emp.isAvailable;
-                                                const initial = emp.name.charAt(0).toUpperCase();
-                                                
-                                                const card = document.createElement('div');
-                                                card.id = `emp-card-${emp.id}`;
-                                                card.className = `employee-card p-3 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 ${isAvailable ? 'bg-white hover:bg-gray-50 hover:shadow-sm' : 'bg-gray-50 opacity-60 cursor-not-allowed'}`;
-                                                
-                                                if (isAvailable) {
-                                                    // Use the global function
-                                                    card.setAttribute('onclick', `selectEmployee('${emp.id}', '${emp.name}')`);
-                                                }
+                                        const result = await response.json();
 
-                                                card.innerHTML = `
+                                        if (result.success) {
+                                            showToast('Lead assigned successfully', 'success');
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        } else {
+                                            showToast(result.message || 'Assignment failed', 'error');
+                                        }
+                                    } catch (error) {
+                                        console.error('Assignment error:', error);
+                                        showToast('An error occurred', 'error');
+                                    }
+                                });
+                            </script>
+
+
+                            <!-- Assignment modal -->
+                            <div id="assignModal"
+                                class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto h-full w-full flex items-center justify-center px-4">
+                                <div class="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+                                    <div class="mt-3">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">
+                                                Assign Lead</h3>
+                                            <button id="closeModalBtn" type="button"
+                                                class="text-gray-400 hover:text-gray-500">
+                                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="px-2 py-2">
+                                            <p class="text-sm text-gray-500 mb-6">Assign <span id="leadNameSpan"
+                                                    class="font-bold text-gray-900"></span> to an employee.</p>
+
+                                            <form id="assignForm">
+                                                <input type="hidden" id="assignLeadId">
+                                                <input type="hidden" id="selectedEmployeeId">
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                                    <div>
+                                                        <label class="block text-gray-700 text-sm font-bold mb-2"
+                                                            for="assignDate">
+                                                            Select Date
+                                                        </label>
+                                                        <input
+                                                            class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            id="assignDate" type="date" required>
+                                                    </div>
+
+                                                    <div>
+                                                        <label class="block text-gray-700 text-sm font-bold mb-2"
+                                                            for="assignSlot">
+                                                            Select Time Slot
+                                                        </label>
+                                                        <select
+                                                            class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            id="assignSlot" required>
+                                                            <option value="">Choose a slot...</option>
+                                                            <option value="morning">Morning (9 AM - 12 PM)</option>
+                                                            <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
+                                                            <option value="evening">Evening (5 PM - 8 PM)</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-6">
+                                                    <div class="flex justify-between items-center mb-2">
+                                                        <label class="block text-gray-700 text-sm font-bold">
+                                                            Select Employee
+                                                        </label>
+                                                        <span id="loadingEmployees"
+                                                            class="text-xs text-blue-600 hidden flex items-center gap-1">
+                                                            <svg class="animate-spin h-3 w-3 text-blue-600"
+                                                                xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                                    stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor"
+                                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                                </path>
+                                                            </svg>
+                                                            Checking availability...
+                                                        </span>
+                                                    </div>
+
+                                                    <div id="employeeGrid"
+                                                        class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                                                        <div
+                                                            class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                                            Select a date and time slot to view available employees
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex gap-3 pt-4 border-t border-gray-100">
+                                                    <button id="closeModalBtnFooter" type="button"
+                                                        class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                        Cancel
+                                                    </button>
+                                                    <button id="assignSubmitBtn" disabled
+                                                        class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        Assign & Approve
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const assignModalEl = document.getElementById('assignModal');
+                                    const closeBtn = document.getElementById('closeModalBtn');
+                                    const closeBtnFooter = document.getElementById('closeModalBtnFooter');
+                                    const dateInput = document.getElementById('assignDate');
+                                    const slotInput = document.getElementById('assignSlot');
+                                    const employeeGrid = document.getElementById('employeeGrid');
+                                    const form = document.getElementById('assignForm');
+                                    const loadingMsg = document.getElementById('loadingEmployees');
+                                    const selectedEmployeeInput = document.getElementById('selectedEmployeeId');
+                                    const submitBtn = document.getElementById('assignSubmitBtn');
+
+                                    // Set min date to today
+                                    const today = new Date().toISOString().split('T')[0];
+                                    if (dateInput) dateInput.min = today;
+
+                                    window.openAssignModal = function (leadId, leadName) {
+                                        document.getElementById('assignLeadId').value = leadId;
+                                        document.getElementById('leadNameSpan').innerText = leadName;
+                                        // Reset form
+                                        if (dateInput) dateInput.value = '';
+                                        if (slotInput) slotInput.value = '';
+                                        if (selectedEmployeeInput) selectedEmployeeInput.value = '';
+                                        if (submitBtn) {
+                                            submitBtn.disabled = true;
+                                            submitBtn.textContent = 'Assign & Approve';
+                                        }
+                                        if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300">Select a date and time slot to view available employees</div>';
+                                        if (assignModalEl) assignModalEl.classList.remove('hidden');
+                                    }
+
+                                    function closeModal() {
+                                        if (assignModalEl) assignModalEl.classList.add('hidden');
+                                    }
+
+                                    if (closeBtn) closeBtn.onclick = closeModal;
+                                    if (closeBtnFooter) closeBtnFooter.onclick = closeModal;
+
+                                    window.onclick = function (event) {
+                                        if (event.target == assignModalEl) {
+                                            closeModal();
+                                        }
+                                    }
+
+                                    window.selectEmployee = function (id, name) {
+                                        // Deselect all
+                                        document.querySelectorAll('.employee-card').forEach(card => {
+                                            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                                            card.classList.add('bg-white', 'hover:bg-gray-50');
+                                        });
+
+                                        // Select clicked
+                                        const selectedCard = document.getElementById(`emp-card-${id}`);
+                                        if (selectedCard) {
+                                            selectedCard.classList.remove('bg-white', 'hover:bg-gray-50');
+                                            selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+
+                                            selectedEmployeeInput.value = id;
+                                            submitBtn.disabled = false;
+                                            submitBtn.textContent = `Assign to ${name}`;
+                                        }
+                                    }
+
+                                    async function fetchAvailableEmployees() {
+                                        const date = dateInput.value;
+                                        const slot = slotInput.value;
+
+                                        if (!date || !slot) return;
+
+                                        if (loadingMsg) loadingMsg.classList.remove('hidden');
+                                        if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full py-8 flex justify-center"><svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+                                        // Reset selection
+                                        selectedEmployeeInput.value = '';
+                                        if (submitBtn) {
+                                            submitBtn.disabled = true;
+                                            submitBtn.textContent = 'Assign & Approve';
+                                        }
+
+                                        try {
+                                            const response = await fetch(`/admin/available-employees?date=${date}&slot=${slot}`);
+                                            const data = await response.json();
+
+                                            if (data.success && data.items.length > 0) {
+                                                employeeGrid.innerHTML = '';
+                                                data.items.forEach(emp => {
+                                                    const isAvailable = emp.isAvailable;
+                                                    const initial = emp.name.charAt(0).toUpperCase();
+
+                                                    const card = document.createElement('div');
+                                                    card.id = `emp-card-${emp.id}`;
+                                                    card.className = `employee-card p-3 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 ${isAvailable ? 'bg-white hover:bg-gray-50 hover:shadow-sm' : 'bg-gray-50 opacity-60 cursor-not-allowed'}`;
+
+                                                    if (isAvailable) {
+                                                        // Use the global function
+                                                        card.setAttribute('onclick', `selectEmployee('${emp.id}', '${emp.name}')`);
+                                                    }
+
+                                                    card.innerHTML = `
                                                     <div class="flex items-center gap-3">
                                                         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${isAvailable ? 'bg-blue-600' : 'bg-gray-400'}">
                                                             ${initial}
@@ -819,70 +1252,76 @@
                                                         </div>
                                                     </div>
                                                 `;
-                                                employeeGrid.appendChild(card);
-                                            });
-                                        } else {
-                                            employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No employees found.</div>';
-                                        }
-                                    } catch (error) {
-                                        console.error('Error fetching employees:', error);
-                                        if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading employees. Please try again.</div>';
-                                    } finally {
-                                        if (loadingMsg) loadingMsg.classList.add('hidden');
-                                    }
-                                }
-
-                                if (dateInput) dateInput.addEventListener('change', fetchAvailableEmployees);
-                                if (slotInput) slotInput.addEventListener('change', fetchAvailableEmployees);
-
-                                if (form) {
-                                    form.addEventListener('submit', async (e) => {
-                                        e.preventDefault();
-                                        const leadId = document.getElementById('assignLeadId').value;
-                                        const employeeId = selectedEmployeeInput.value;
-                                        const date = dateInput.value;
-                                        const timeSlot = slotInput.value;
-                                        
-                                        let hour = 9;
-                                        if (timeSlot === 'afternoon') hour = 13;
-                                        if (timeSlot === 'evening') hour = 18;
-                                        
-                                        const scheduledDate = new Date(date);
-                                        scheduledDate.setHours(hour, 0, 0, 0);
-
-                                        if (!employeeId) {
-                                            showToast('Please select an employee', 'error');
-                                            return;
-                                        }
-
-                                        try {
-                                            const response = await fetch(`/admin/leads/${leadId}/assign`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    employeeId,
-                                                    status: 'assigned',
-                                                    scheduledDate: scheduledDate.toISOString(),
-                                                })
-                                            });
-                                            
-                                            const result = await response.json();
-
-                                            if (result.success) {
-                                                showToast('Lead assigned successfully', 'success');
-                                                setTimeout(() => window.location.reload(), 1500);
+                                                    employeeGrid.appendChild(card);
+                                                });
                                             } else {
-                                                showToast(result.message || 'Assignment failed', 'error');
+                                                employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No employees found.</div>';
                                             }
                                         } catch (error) {
-                                            console.error('Assignment error:', error);
-                                            showToast('An error occurred', 'error');
+                                            console.error('Error fetching employees:', error);
+                                            if (employeeGrid) employeeGrid.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading employees. Please try again.</div>';
+                                        } finally {
+                                            if (loadingMsg) loadingMsg.classList.add('hidden');
                                         }
-                                    });
-                                }
-                            });
-                        </script>
-</body>
-</html>
+                                    }
+                                    let debounceTimer;
+
+                                    function fetchWithDebounce() {
+                                        clearTimeout(debounceTimer);
+                                        debounceTimer = setTimeout(fetchAvailableEmployees, 300);
+                                    }
+
+                                    dateInput?.addEventListener("change", fetchWithDebounce);
+                                    slotInput?.addEventListener("change", fetchWithDebounce);
+                                    if (form) {
+                                        form.addEventListener('submit', async (e) => {
+                                            e.preventDefault();
+                                            const leadId = document.getElementById('assignLeadId').value;
+                                            const employeeId = selectedEmployeeInput.value;
+                                            const date = dateInput.value;
+                                            const timeSlot = slotInput.value;
+
+                                            let hour = 9;
+                                            if (timeSlot === 'afternoon') hour = 13;
+                                            if (timeSlot === 'evening') hour = 18;
+
+                                            const scheduledDate = new Date(date);
+                                            scheduledDate.setHours(hour, 0, 0, 0);
+
+                                            if (!employeeId) {
+                                                showToast('Please select an employee', 'error');
+                                                return;
+                                            }
+
+                                            try {
+                                                const response = await fetch(`/admin/leads/${leadId}/assign`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify({
+                                                        employeeId,
+                                                        status: 'assigned',
+                                                        scheduledDate: scheduledDate.toISOString(),
+                                                    })
+                                                });
+
+                                                const result = await response.json();
+
+                                                if (result.success) {
+                                                    showToast('Lead assigned successfully', 'success');
+                                                    setTimeout(() => window.location.reload(), 1500);
+                                                } else {
+                                                    showToast(result.message || 'Assignment failed', 'error');
+                                                }
+                                            } catch (error) {
+                                                console.error('Assignment error:', error);
+                                                showToast('An error occurred', 'error');
+                                            }
+                                        });
+                                    }
+                                });
+                            </script> -->
+    </body>
+
+    </html>

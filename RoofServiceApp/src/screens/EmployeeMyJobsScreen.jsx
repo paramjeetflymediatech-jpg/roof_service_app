@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
-import { COLORS, JOB_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, JOB_STATUS, FONTS, SHADOWS, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
@@ -107,8 +107,8 @@ const EmployeeMyJobsScreen = () => {
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,
           afterImages: job.afterImages,
-          actualHours: job.actualHours || job.actual_hours || 0,
-          actual_hours: job.actual_hours || job.actualHours || 0,
+          actualHours: hoursToHMS(job.actualHours || job.actual_hours) || '',
+          actual_hours: hoursToHMS(job.actual_hours || job.actualHours) || '',
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });

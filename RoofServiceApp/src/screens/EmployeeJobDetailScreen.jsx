@@ -568,7 +568,7 @@ const EmployeeJobDetailScreen = () => {
               </Text>
               {currentJob.actualHours ? (
                 <Text style={styles.completedTimeText}>
-                  Total Work Hours: {currentJob.actualHours} hrs
+                  Total Work Hours: {currentJob.actualHours}
                 </Text>
               ) : null}
               <Text style={styles.completedTimeText}>Job Date: {job.date}</Text>

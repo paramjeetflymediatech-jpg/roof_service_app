@@ -16,7 +16,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS, FONTS } from '../utils/constants';
+import { COLORS, FONTS ,hoursToHMS } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -83,8 +83,8 @@ const ClientLeadDetailScreen = () => {
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
           clientImages: apiLead.clientImages || initialLead.clientImages,
-          actualHours: apiLead.actualHours || initialLead.actualHours,
-          actual_hours: apiLead.actual_hours || initialLead.actual_hours,
+          actualHours: hoursToHMS(apiLead.actualHours) || initialLead.actualHours || '',
+          actual_hours: hoursToHMS(apiLead.actual_hours) || initialLead.actual_hours || '',
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
           preferedDate: apiLead.preferredDate
             ? formatDateLocal(apiLead.preferredDate)

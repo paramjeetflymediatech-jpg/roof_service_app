@@ -67,11 +67,11 @@ const Job = sequelize.define(
       allowNull: true,
     },
     estimatedHours: {
-      type: DataTypes.DECIMAL(5, 2),
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     actualHours: {
-      type: DataTypes.DECIMAL(5, 2),
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     notes: {

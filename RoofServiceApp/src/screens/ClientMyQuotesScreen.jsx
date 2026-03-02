@@ -16,7 +16,7 @@ import { useAuth } from '../../App';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { api } from '../config/api';
-import { COLORS, LEAD_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, LEAD_STATUS, FONTS, SHADOWS, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
@@ -94,8 +94,8 @@ const ClientMyQuotesScreen = () => {
           lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
         employeeStartTime: lead.employeeStartTime || null,
         employeeEndTime: lead.employeeEndTime || null,
-        actualHours: lead.actualHours || lead.actual_hours || 0,
-        actual_hours: lead.actual_hours || lead.actualHours || 0,
+        actualHours: hoursToHMS(lead.actualHours || lead.actual_hours) || '',
+        actual_hours: hoursToHMS(lead.actual_hours || lead.actualHours) || '',
         // Keep raw data for editing
         raw: lead,
       }));

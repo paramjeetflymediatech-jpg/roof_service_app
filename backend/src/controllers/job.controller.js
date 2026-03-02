@@ -1,5 +1,5 @@
-const { Job, JobLog, Lead, User, JobWorkSession } = require("../models");
 const { Op } = require("sequelize");
+const { Job, JobLog, Lead, User, JobWorkSession, sequelize } = require("../models");
 
 const combineDateWithTime = (date, hhmm) => {
   if (!hhmm || !date) return date;
@@ -409,23 +409,29 @@ exports.startJob = async (req, res) => {
     const oldStatus = job.status;
     const now = new Date();
     const { startTime } = req.body; // Accept manual start time HH:MM
-
     const startTimeDate = startTime ? combineDateWithTime(now, startTime) : now;
     const hhmm = startTime || `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes(),
     ).padStart(2, "0")}`;
 
+    // Prevent duplicate active sessions
+    const activeSession = await JobWorkSession.findOne({
+      where: { jobId: job.id, endTime: null }
+    });
+
+    if (!activeSession) {
+      // Create a new work session
+      await JobWorkSession.create({
+        jobId: job.id,
+        leadId: job.leadId,
+        userId: req.user.id,
+        startTime: startTimeDate,
+      });
+    }
+
     await job.update({
       status: "in_progress",
       startTime: job.startTime || startTimeDate,
-    });
-
-    // Create a new work session
-    await JobWorkSession.create({
-      jobId: job.id,
-      leadId: job.leadId,
-      userId: req.user.id,
-      startTime: startTimeDate,
     });
 
     // Create job log
@@ -436,7 +442,7 @@ exports.startJob = async (req, res) => {
       action: "job_started",
       oldStatus,
       newStatus: "in_progress",
-      notes: startTime ? `Employee started the job (manual time: ${startTime})` : "Employee started the job",
+      notes: job.startTime ? `Employee started the job (manual time: ${job.startTime})` : "Employee started the job",
     });
 
     // Update lead status
@@ -502,15 +508,24 @@ exports.pauseJob = async (req, res) => {
     if (activeSession) {
       const startTime = new Date(activeSession.startTime);
       const durationMs = now - startTime;
-      const durationHours = durationMs / (1000 * 60 * 60);
-
+      const durationSeconds = Math.floor(durationMs / 1000);
       await activeSession.update({
         endTime: now,
-        duration: durationHours,
+        duration: durationSeconds,
       });
     }
+    const allSessions = await JobWorkSession.findAll({
+      where: { jobId: job.id },
+    });
 
-    await job.update({ status: "paused" });
+    const totalDuration = allSessions.reduce(
+      (sum, session) => sum + (parseFloat(session.duration) || 0),
+      0
+    );
+
+    const calculatedHours = Number(totalDuration.toFixed(2));
+
+    await job.update({ status: "paused", actualHours: calculatedHours });
 
     // Create job log
     await JobLog.create({
@@ -520,7 +535,7 @@ exports.pauseJob = async (req, res) => {
       action: "job_paused",
       oldStatus,
       newStatus: "paused",
-      notes: "Employee paused the job",
+      notes: `Employee paused the job ${now}`,
     });
 
     // Update lead status
@@ -589,7 +604,7 @@ exports.resumeJob = async (req, res) => {
       action: "job_resumed",
       oldStatus,
       newStatus: "in_progress",
-      notes: "Employee resumed the job",
+      notes: `Employee resumed the job ${now}`,
     });
 
     // Update lead status
@@ -615,154 +630,205 @@ exports.resumeJob = async (req, res) => {
 
 // Complete job (employee)
 exports.completeJob = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findByPk(req.params.id, { transaction });
 
     if (!job) {
+      await transaction.rollback();
       return res.status(404).json({ success: false, message: "Job not found" });
     }
 
-    // Verify employee owns this job
     if (job.employeeId !== req.user.id && req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ success: false, message: "Not authorized" });
+      await transaction.rollback();
+      return res.status(403).json({ success: false, message: "Not authorized" });
     }
 
     const {
       completionNotes,
       afterImages,
-      actualHours,
       materialsUsed,
       laborCost,
       materialCost,
-      inTime: manualInTime, // HH:MM from frontend
-      outTime: manualOutTime, // HH:MM from frontend
+      manualInTime,   // HH:MM
+      manualOutTime,  // HH:MM
     } = req.body;
-    const totalCost =
-      (parseFloat(laborCost) || 0) + (parseFloat(materialCost) || 0);
 
     const oldStatus = job.status;
     const now = new Date();
 
-    // 1. End any active session, using manualOutTime if provided
-    const activeSession = await JobWorkSession.findOne({
-      where: {
-        jobId: job.id,
-        endTime: null,
-      },
-      order: [["startTime", "DESC"]],
-    });
+    const totalCost =
+      (parseFloat(laborCost) || 0) +
+      (parseFloat(materialCost) || 0);
 
-    const completionTime = manualOutTime ? combineDateWithTime(now, manualOutTime) : now;
+    // 🟢 Determine completion time
+    const completionTime = manualOutTime
+      ? combineDateWithTime(now, manualOutTime)
+      : now;
+
+    // ----------------------------------------------------
+    // 1️⃣ Close Active Session (if any)
+    // ----------------------------------------------------
+    const activeSession = await JobWorkSession.findOne({
+      where: { jobId: job.id, endTime: null },
+      order: [["startTime", "DESC"]],
+      transaction,
+    });
 
     if (activeSession) {
       const startTime = new Date(activeSession.startTime);
       const durationMs = completionTime - startTime;
-      const durationHours = Math.max(0, durationMs / (1000 * 60 * 60));
+      const durationSeconds = Math.floor(durationMs / 1000);
 
-      await activeSession.update({
-        endTime: completionTime,
-        duration: durationHours,
-      });
+      await activeSession.update(
+        {
+          endTime: completionTime,
+          duration: durationSeconds,
+        },
+        { transaction }
+      );
     }
 
-    // 2. Adjust Today's Earliest Session if manualInTime is provided
+    // ----------------------------------------------------
+    // 2️⃣ Adjust First Session Start Time (Manual In Time)
+    // ----------------------------------------------------
     if (manualInTime) {
-      const todayStart = new Date(now);
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date(now);
-      todayEnd.setHours(23, 59, 59, 999);
-
-      const firstSessionToday = await JobWorkSession.findOne({
-        where: {
-          jobId: job.id,
-          startTime: { [Op.between]: [todayStart, todayEnd] }
-        },
-        order: [['startTime', 'ASC']]
+      const firstSession = await JobWorkSession.findOne({
+        where: { jobId: job.id },
+        order: [["startTime", "ASC"]],
+        transaction,
       });
 
-      if (firstSessionToday) {
-        const adjustedStart = combineDateWithTime(firstSessionToday.startTime, manualInTime);
-        const currentEndTime = firstSessionToday.endTime ? new Date(firstSessionToday.endTime) : completionTime;
-        const durationMs = currentEndTime - adjustedStart;
-        const durationHours = Math.max(0, durationMs / (1000 * 60 * 60));
+      if (firstSession) {
+        const adjustedStart = combineDateWithTime(
+          new Date(firstSession.startTime),
+          manualInTime
+        );
+        const endTime = firstSession.endTime
+          ? new Date(firstSession.endTime)
+          : completionTime;
+        const durationMs = endTime - adjustedStart;
+        const durationSeconds = Math.floor(durationMs / 1000);
+        await firstSession.update(
+          {
+            startTime: adjustedStart,
+            duration: durationSeconds,
+          },
+          { transaction }
+        );
+      } else {
+        // If no session exists, create one
+        const adjustedStart = combineDateWithTime(now, manualInTime);
+        const durationMs = completionTime - adjustedStart;
+        const durationSeconds = Math.floor(durationMs / 1000);
 
-        await firstSessionToday.update({
-          startTime: adjustedStart,
-          duration: durationHours
-        });
+        await JobWorkSession.create(
+          {
+            jobId: job.id,
+            leadId: job.leadId,
+            userId: req.user.id,
+            startTime: adjustedStart,
+            endTime: completionTime,
+            duration: durationSeconds,
+            notes: "Auto-created from manual time override",
+          },
+          { transaction }
+        );
       }
     }
 
-    // 3. Calculate total hours from all sessions
-    let calculatedHours = actualHours;
-    if (calculatedHours === undefined || calculatedHours === null) {
-      const allSessions = await JobWorkSession.findAll({
-        where: { jobId: job.id },
-      });
-      const totalDuration = allSessions.reduce(
-        (sum, session) => sum + (parseFloat(session.duration) || 0),
-        0
-      );
-      calculatedHours = totalDuration.toFixed(2);
-    }
-
-    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes(),
-    ).padStart(2, "0")}`;
-
-    await job.update({
-      status: "completed",
-      endTime: now,
-      completionNotes,
-      afterImages,
-      actualHours: calculatedHours,
-      materialsUsed,
-      laborCost,
-      materialCost,
-      totalCost,
+    // ----------------------------------------------------
+    // 3️⃣ Recalculate Total Hours
+    // ----------------------------------------------------
+    const allSessions = await JobWorkSession.findAll({
+      where: { jobId: job.id },
+      transaction,
     });
 
-    // Create job log
-    await JobLog.create({
-      jobId: job.id,
-      userId: req.user.id,
-      action: "job_completed",
-      oldStatus,
-      newStatus: "completed",
-      notes: completionNotes || "Job completed",
-    });
+    const totalDuration = allSessions.reduce(
+      (sum, session) => sum + (parseFloat(session.duration) || 0),
+      0
+    );
 
-    // Update lead status and store human-readable end time as well
+    const calculatedHours = Number(totalDuration.toFixed(2));
+
+    // ----------------------------------------------------
+    // 4️⃣ Update Job
+    // ----------------------------------------------------
+    await job.update(
+      {
+        status: "completed",
+        endTime: completionTime,
+        completionNotes,
+        afterImages,
+        actualHours: calculatedHours,
+        materialsUsed,
+        laborCost,
+        materialCost,
+        totalCost,
+      },
+      { transaction }
+    );
+
+    // ----------------------------------------------------
+    // 5️⃣ Create Job Log
+    // ----------------------------------------------------
+    await JobLog.create(
+      {
+        jobId: job.id,
+        leadId: job.leadId,
+        userId: req.user.id,
+        action: "job_completed",
+        oldStatus,
+        newStatus: "completed",
+        notes: completionNotes || "Job completed",
+      },
+      { transaction }
+    );
+
+    // ----------------------------------------------------
+    // 6️⃣ Update Lead
+    // ----------------------------------------------------
     await Lead.update(
       {
         status: "completed",
         outTime: completionTime,
         completionImages: afterImages,
         employeeNotes: completionNotes || null,
-        employeeEndTime: manualOutTime || `${String(completionTime.getHours()).padStart(2, "0")}:${String(
-          completionTime.getMinutes(),
-        ).padStart(2, "0")}`,
+        employeeEndTime:
+          manualOutTime ||
+          `${String(completionTime.getHours()).padStart(2, "0")}:${String(
+            completionTime.getMinutes()
+          ).padStart(2, "0")}`,
       },
-      { where: { id: job.leadId } },
+      {
+        where: { id: job.leadId },
+        transaction,
+      }
     );
+
+    await transaction.commit();
 
     const updatedJob = await Job.findByPk(req.params.id, {
       include: [
         { model: Lead, as: "lead" },
         { model: User, as: "employee", attributes: ["id", "name"] },
+        { model: JobWorkSession, as: "workSessions" },
       ],
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: updatedJob,
       message: "Job completed successfully",
     });
   } catch (error) {
+    await transaction.rollback();
     console.error("Complete job error:", error);
-    res.status(500).json({ success: false, message: "Failed to complete job" });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to complete job",
+    });
   }
 };
 

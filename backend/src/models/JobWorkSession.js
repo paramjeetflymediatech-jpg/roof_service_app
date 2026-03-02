@@ -41,7 +41,7 @@ const JobWorkSession = sequelize.define('JobWorkSession', {
         allowNull: true,
     },
     duration: {
-        type: DataTypes.DECIMAL(10, 4), // Store duration in decimal hours
+        type: DataTypes.INTEGER,
         allowNull: true,
     },
     notes: {

@@ -104,3 +104,12 @@ export const SCREENS = {
   EMPLOYEE_DASHBOARD: 'EmployeeDashboard',
   EMPLOYEE_JOB_DETAIL: 'EmployeeJobDetail',
 };
+
+export function hoursToHMS(totalSeconds) {
+  totalSeconds = Math.floor(totalSeconds);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  return `${String(h).padStart(2, "0")} h : ${String(m).padStart(2, "0")} m : ${String(s).padStart(2, "0")} s`;
+}

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
-import { COLORS, LEAD_STATUS, FONTS, SHADOWS } from '../utils/constants';
+import { COLORS, LEAD_STATUS, FONTS, SHADOWS, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
@@ -85,7 +85,7 @@ const AdminLeadsScreen = ({ route }) => {
       const rawItems =
         response.data?.items ||
         response.data?.data ||
-        (Array.isArray(response.data) ? response.data : []);
+        (Array.isArray(response.data) ? response.data : []); 
       const normalizedItems = rawItems.map(item => ({
         id: item.id || item._id || item.lead_id,
         clientName: item.clientName || item.client_name || item.name || 'N/A',
@@ -108,7 +108,7 @@ const AdminLeadsScreen = ({ route }) => {
           null,
         assignedEmployee: item.assignedEmployee || item.assignedTo || null,
         employeeStartTime: item.employeeStartTime || null,
-        employeeEndTime: item.employeeEndTime || null,
+        employeeEndTime: item.updatedAt || null,
         inTime:
           item.employeeStartTime != null
             ? `${item.employeeStartTime} - ${formatDateLocal(item.inTime)}`
@@ -119,9 +119,12 @@ const AdminLeadsScreen = ({ route }) => {
             : null,
         employeeNotes: item.employeeNotes || null,
         completionImages: item.completionImages || null,
-        actualHours: item.actualHours || item.actual_hours || null,
+        actualHours: item.actualHours ? hoursToHMS(item.actualHours) : '',
+        actual_hours: item.actual_hours ? hoursToHMS(item.actual_hours) : '',
+        createdAt: formatDateLocal(item.createdAt || item.created_at || item.created_at),
+        updatedAt: formatDateLocal(item.updatedAt || item.updated_at || item.updated_at),
       }));
-
+      console.log(normalizedItems, 'normalizedItems');
       if (shouldAppend) {
         setQuotes(prev => [...prev, ...normalizedItems]);
       } else {

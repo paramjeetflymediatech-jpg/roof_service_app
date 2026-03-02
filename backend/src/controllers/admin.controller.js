@@ -9,6 +9,7 @@ const {
   JobLog,
   Invoice,
   Estimate,
+  JobWorkSession,
 } = require("../models");
 const fs = require("fs");
 const path = require("path");
@@ -502,11 +503,39 @@ const approveLead = async (req, res) => {
 
 // POST /admin/leads/delete-all - Delete all leads
 const deleteAllLeads = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
-    await Lead.destroy({ where: {} });
+    // 1️⃣ Deepest child first
+    await JobWorkSession.destroy({
+      where: {},
+      transaction,
+    });
+
+    // 2️⃣ Then job logs
+    await JobLog.destroy({
+      where: {},
+      transaction,
+    });
+
+    // 3️⃣ Then jobs
+    await Job.destroy({
+      where: {},
+      transaction,
+    });
+
+    // 4️⃣ Finally leads
+    await Lead.destroy({
+      where: {},
+      transaction,
+    });
+
+    await transaction.commit();
+
     req.flash("success", "All leads deleted successfully");
     res.redirect("/admin/leads");
   } catch (error) {
+    await transaction.rollback();
     console.error("Delete all leads error:", error);
     req.flash("error", "Error deleting all leads");
     res.redirect("/admin/leads");
@@ -1849,20 +1878,40 @@ const getJobDetail = async (req, res) => {
 };
 
 const deleteJob = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const { id } = req.params;
-    const job = await Job.findByPk(id);
+
+    const job = await Job.findByPk(id, { transaction });
 
     if (!job) {
+      await transaction.rollback();
       req.flash("error", "Job not found");
       return res.redirect("/admin/jobs");
     }
 
-    await job.destroy();
+    // 1️⃣ Delete deepest children first
+    await JobWorkSession.destroy({
+      where: { job_id: id },
+      transaction,
+    });
+
+    // 2️⃣ Delete job logs
+    await JobLog.destroy({
+      where: { job_id: id },
+      transaction,
+    });
+
+    // 3️⃣ Delete job
+    await job.destroy({ transaction });
+
+    await transaction.commit();
 
     req.flash("success", "Job deleted successfully");
     res.redirect("/admin/jobs");
   } catch (error) {
+    await transaction.rollback();
     console.error("Delete job error:", error);
     req.flash("error", "Error deleting job");
     res.redirect("/admin/jobs");
