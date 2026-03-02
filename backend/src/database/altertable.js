@@ -22,8 +22,10 @@ async function runAlterMigration() {
   try {
     // Add columns only if they do not exist
     const alterQueries = [
-      `ALTER TABLE services
-MODIFY COLUMN short_description TEXT NULL AFTER name;`,
+      `ALTER TABLE services MODIFY COLUMN short_description TEXT NULL AFTER name;`,
+      `ALTER TABLE services CHANGE COLUMN heading heading VARCHAR(255) NULL AFTER long_description;`,
+      `ALTER TABLE services CHANGE COLUMN subHeading sub_heading VARCHAR(255) NULL AFTER heading;`,
+      `ALTER TABLE services CHANGE COLUMN subDescription sub_description TEXT NULL AFTER sub_heading;`,
     ];
     for (const query of alterQueries) {
       await connection.query(query);
