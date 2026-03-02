@@ -14,6 +14,8 @@ import OurProcess from "@/components/OurProcess";
 import SeoHead from "@/components/SeoHead";
 import { getSeoData } from "@/lib/api/seo";
 import apiClient from "@/lib/apiClient";
+import Faq from "@/components/Faq";
+
 
 export async function getServerSideProps() {
   try {
@@ -65,9 +67,11 @@ export default function HomePage({ seoData, services }) {
 
       <OurProcess />
       <FeaturedProjects />
+     
       <div id="testimonials">
         <Testimonials />
       </div>
+ <Faq />
     </Layout>
   );
 }

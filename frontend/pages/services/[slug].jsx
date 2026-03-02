@@ -8,9 +8,10 @@ import { HiPhone } from "react-icons/hi";
 import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
 import { getServiceBySlug } from "@/lib/api/service";
-import { COMPANY_INFO } from "@/lib/constants";
+import { COMPANY_INFO, SERVICE_SUB_FAQS, TILE_ROOF_FAQS, LEAK_REPAIR_FAQS, EPDM_ROOFING_FAQS, WALL_METAL_FAQS, REROOFING_FAQS, ROOF_INSULATION_FAQS, RAIN_STORM_DAMAGE_FAQS, METAL_GUTTERS_FAQS, TORCH_ON_FAQS, METAL_ROOFING_FAQS, NEW_CONSTRUCTION_FAQS } from "@/lib/constants";
+import Faq from "@/components/Faq";
+
 export async function getServerSideProps({ params, req }) {
-  console.log(params, "-----------para,", req.url);
   const { slug } = params;
   const data = await getServiceBySlug(slug, req.url);
 
@@ -45,7 +46,6 @@ export async function getServerSideProps({ params, req }) {
 
 export default function ServiceDetail({ service, seoData }) {
   const router = useRouter();
-  console.log("service", service);
 
   if (router.isFallback) {
     return (
@@ -217,7 +217,35 @@ export default function ServiceDetail({ service, seoData }) {
         </div>
       </div>
 
+      {/* Service Specific FAQs */}
+      {(() => {
+        const faqMap = {
+          'restorations-servicing': { data: SERVICE_SUB_FAQS, title: "Roof Restoration", highlight: "Restoration" },
+          'tile-slate-roofing': { data: TILE_ROOF_FAQS, title: "Tile & Roof Installation", highlight: "Installation" },
+          'leak-repair': { data: LEAK_REPAIR_FAQS, title: "Leak Repair", highlight: "Leak" },
+          'epdm': { data: EPDM_ROOFING_FAQS, title: "EPDM Roofing", highlight: "EPDM" },
+          'wall-metals': { data: WALL_METAL_FAQS, title: "Wall Metal", highlight: "Metal" },
+          'reroofs': { data: REROOFING_FAQS, title: "Reroofing", highlight: "Reroofing" },
+          'insulation': { data: ROOF_INSULATION_FAQS, title: "Roof Insulation", highlight: "Insulation" },
+          'rain-storm-damage': { data: RAIN_STORM_DAMAGE_FAQS, title: "Rain & Storm Damage", highlight: "Storm" },
+          'metal-gutters-downspouts': { data: METAL_GUTTERS_FAQS, title: "Metal Gutters", highlight: "Gutters" },
+          'torch-on-roofing': { data: TORCH_ON_FAQS, title: "Torch-on Roofing", highlight: "Torch-on" },
+          'metal-roofing': { data: METAL_ROOFING_FAQS, title: "Metal Roofing", highlight: "Metal" },
+          'new-construction': { data: NEW_CONSTRUCTION_FAQS, title: "New Construction", highlight: "New" },
+        };
+        const faqInfo = faqMap[service.slug] || { data: SERVICE_SUB_FAQS, title: "Roofing Services", highlight: "Expert" };
+
+        return (
+          <Faq
+            data={faqInfo.data}
+            title={faqInfo.title}
+            highlight={faqInfo.highlight}
+          />
+        );
+      })()}
+
       {/* Navigation Footer */}
+
       <div className="bg-white border-t border-gray-100 py-8">
         <div className="container-custom px-4">
           <Link

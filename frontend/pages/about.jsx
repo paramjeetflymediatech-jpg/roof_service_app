@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HiHome } from 'react-icons/hi';
 import LayoutShell from "@/components/LayoutShell";
-import { COMPANY_INFO } from "@/lib/constants";
-import { useSeo } from '@/hooks/useSeo';
-
 import SeoHead from '@/components/SeoHead';
 import { getSeoData } from '@/lib/api/seo';
+
+import { ABOUT_SERVICES, COST_FACTORS, ABOUT_FAQS, COMPANY_INFO } from "@/lib/constants";
+import Faq from '@/components/Faq';
+import { HiCheckCircle, HiArrowRight } from 'react-icons/hi';
 
 export async function getServerSideProps() {
   try {
@@ -35,7 +36,6 @@ export default function AboutPage({ seoData }) {
       <SeoHead pageName="about" initialSeoData={seoData} />
       {/* Breadcrumb / Hero Section */}
       <section className="relative h-[300px] md:h-[400px] bg-dark-900 overflow-hidden">
-        {/* Dark overlay with background image */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-40"
           style={{ backgroundImage: "url('/assets/roofing-background.jpg')" }}
@@ -46,7 +46,7 @@ export default function AboutPage({ seoData }) {
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"
+            className="text-4xl md:text-6xl font-bold mb-4 tracking-tight uppercase"
           >
             About Us
           </motion.h1>
@@ -57,146 +57,212 @@ export default function AboutPage({ seoData }) {
             transition={{ delay: 0.3 }}
             className="flex items-center gap-2 text-sm md:text-base font-medium"
           >
-            <Link href="/" className="hover:text-amber-500 transition-colors flex items-center gap-1">
+            <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1">
               Home
             </Link>
             <span className="text-gray-400">›</span>
-            <span className="text-amber-500">About Us</span>
+            <span className="text-primary">About Us</span>
           </motion.div>
         </div>
       </section>
 
-      {/* Main Content Section */}
-      <section className="py-24 bg-[#f8f8f8]">
+      {/* Intro Section - Key Services & Options */}
+      <section className="py-20 bg-white">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-            {/* LEFT SIDE: STAGGERED IMAGES */}
-            <div className="relative px-4 pb-12 lg:pb-0">
-              <div className="grid grid-cols-2 gap-4 relative">
-
-                {/* Image 1: Top Left (Blue House) */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  className="rounded-lg overflow-hidden shadow-xl z-20"
-                >
-                  <img
-                    src="/assets/ab-house-blue.jpg"
-                    alt="Mainstreet Roofing Projects"
-                    className="w-full h-[250px] object-cover"
-                  />
-                </motion.div>
-
-                {/* Image 2: Right/Middle (Chimneys) - offset down */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 }}
-                  className="rounded-lg overflow-hidden shadow-xl -mt-6 z-20"
-                >
-                  <img
-                    src="/assets/ab-roof-chimney.jpg"
-                    alt="Professional Roofing Services"
-                    className="w-full h-[320px] object-cover object-center"
-                  />
-                </motion.div>
-
-                {/* Image 3: Bottom Left (Roof Window) - offset up */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
-                  className="rounded-lg overflow-hidden shadow-xl -mt-12 z-20"
-                >
-                  <img
-                    src="/assets/ab-roof-window.jpg"
-                    alt="Expert Workmanship"
-                    className="w-full h-[250px] object-cover"
-                  />
-                </motion.div>
-
-                {/* Gold Circle Icon Decoration */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[80%] z-30">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ type: 'spring', delay: 0.6 }}
-                    className="w-16 h-16 md:w-20 md:h-20 bg-amber-600 rounded-full border-4 border-white shadow-lg flex items-center justify-center"
-                  >
-                    <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 4.84L16.16 12H15v6H9v-6H7.84L12 7.84zM10 16h4v-2h-4v2z" />
-                    </svg>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT SIDE: TEXT CONTENT */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+          <div className="max-w-4xl mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex flex-col gap-6"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 uppercase tracking-tight"
             >
-              <div className="space-y-2">
-                <p className="text-amber-600 font-bold uppercase tracking-[0.2em] text-sm">
-                  Who We Are
-                </p>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-amber-600 leading-tight">
-                  Mainstreet Roofing <br /> is a trusted name in <br /> the roofing industry,
-                </h2>
-              </div>
+              Mainstreet Roofing: <span className="gradient-text">Key Services and Options</span> in Surrey
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-lg text-gray-600 leading-relaxed"
+            >
+              For any of your problems related to your house roofing, we provide the optimal solution for it.
+              Mainstreet roofing provides the most affordable cost roofing repair and restoration in Surrey, BC.
+              We offer our services for residential, commercial and layered buildings with the specialisation
+              of the most cost-effective materials. Our trusted local contractors provide 24/7 repair services
+              for emergencies, leak detection and maintenance to extend the life of the roof.
+            </motion.p>
+          </div>
 
-              <div className="text-gray-600 text-base md:text-lg leading-relaxed flex flex-col gap-4">
-                <p>
-                  specializing in a wide range of services to meet all your roofing needs.
-                  With expertise in reroofs, metal roofing, wall metals, torch on, Edpm,
-                  metal gutters and downspouts, leak repair, and rain and storm damage repairs
-                  — Mainstreet Roofing has you covered from top to bottom.
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ABOUT_SERVICES.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="p-8 bg-gray-50 rounded-3xl border border-gray-100 hover:shadow-xl transition-all duration-300 group"
+              >
+                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                  <HiCheckCircle size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {service.description}
                 </p>
-                <p>
-                  Our team of skilled professionals is dedicated to providing high-quality
-                  workmanship and exceptional customer service on every project we undertake.
-                  Whether you are looking to upgrade your roof with durable metal materials
-                  or need fast and reliable leak repairs after a storm — Mainstreet Roofing has
-                  the knowledge and experience to get the job done right the first time.
-                </p>
-              </div>
-
-              {/* Call to Action or extra info could go here if needed */}
-              <div className="pt-4 flex flex-wrap gap-4">
-                <Link href="/contact" className="btn btn-primary px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-amber-500/20 transition-all">
-                  Get in Touch
-                </Link>
-                <a href={`tel:${COMPANY_INFO.phone}`} className="flex items-center gap-3 text-gray-900 font-bold hover:text-amber-600 transition-colors px-4 py-3">
-                  <div className="w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center text-amber-600">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.72 11.72 0 003.7.59 1 1 0 011 1v3.94a1 1 0 01-1 1A16 16 0 013 4a1 1 0 011-1h3.94a1 1 0 011 1 11.72 11.72 0 00.59 3.7 1 1 0 01-.27 1.11z" /></svg>
-                  </div>
-                  <span>{COMPANY_INFO.phone}</span>
-                </a>
-              </div>
-            </motion.div>
-
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Optional: Mission Section (consistent with previous design but simplified) */}
-      <section className="py-20 bg-white border-t border-gray-100">
-        <div className="container-custom text-center max-w-3xl mx-auto">
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Our Mission</h3>
-          <p className="text-gray-600 text-lg">
-            At Mainstreet Roofing LTD, our mission is to provide superior roofing solutions
-            built on a foundation of quality, integrity, and exceptional service. We strive
-            to protect and enhance the properties of our community, one roof at a time.
-          </p>
+      {/* Cost Factors Section */}
+      <section className="py-20 bg-gray-900 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 -skew-x-12 translate-x-1/4" />
+        <div className="container-custom relative z-10">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-1/2">
+              <motion.h2
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 uppercase tracking-tight"
+              >
+                Major <span className="text-primary">Factors</span> Affecting Cost
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-lg text-gray-400 mb-12"
+              >
+                The major factors which affect the repair and restoration of the roof include the following key aspects.
+                Understanding these helps you make the right investment for your property.
+              </motion.p>
+
+              <div className="space-y-8">
+                {COST_FACTORS.map((factor, index) => (
+                  <motion.div
+                    key={factor.id}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 + 0.2 }}
+                    className="flex gap-6"
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full border border-primary/30 flex items-center justify-center text-primary font-bold">
+                      0{index + 1}
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold mb-2 uppercase tracking-wide text-primary">{factor.title}</h4>
+                      <p className="text-gray-400 leading-relaxed">{factor.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:w-1/2">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-primary blur-[100px] opacity-20" />
+                <img
+                  src="/assets/ab-roof-chimney.jpg"
+                  alt="Roof Complexity"
+                  className="rounded-3xl shadow-2xl relative z-10 border border-white/10"
+                />
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Perfection Section */}
+      <section className="py-24 bg-white">
+        <div className="container-custom">
+          <div className="bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-12 text-primary/5">
+              <HiHome size={200} />
+            </div>
+
+            <div className="relative z-10 max-w-4xl">
+              <motion.h3
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-8 uppercase tracking-wide leading-tight"
+              >
+                Mainstreet Roofing <span className="gradient-text">restores your roof</span> to perfection.
+              </motion.h3>
+
+              <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                >
+                  Your home is your biggest investment, and it is important to protect it with a roof
+                  that stands the test of time and extreme weather. Our team in Surrey is committed to
+                  delivering outstanding expertise in each and every service.
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                >
+                  Mainstreet roofing ensures that your home remains safe, dry and beautiful in the
+                  extreme weather conditions of Surrey at a price that fits your budget. We ensure that
+                  every project, from small residential repairs to major renovations, is handled with proper care and safety.
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="font-bold text-gray-900"
+                >
+                  Don't wait for long; if you see a small fault in the roof, it can lead to big damage
+                  and a lot of expenses. Protect your most valuable investment with a durable roof today.
+                </motion.p>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="mt-12 flex flex-col sm:flex-row gap-6 mt-12"
+              >
+                <Link href="/contact" className="btn btn-primary px-10 py-4 rounded-full font-bold shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2">
+                  FREE INSPECTION <HiArrowRight />
+                </Link>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md text-primary">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.72 11.72 0 003.7.59 1 1 0 011 1v3.94a1 1 0 01-1 1A16 16 0 013 4a1 1 0 011-1h3.94a1 1 0 011 1 11.72 11.72 0 00.59 3.7 1 1 0 01-.27 1.11z" /></svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Call Experts</span>
+                    <span className="text-gray-900 font-bold">{COMPANY_INFO.phone}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About FAQs */}
+      <Faq data={ABOUT_FAQS} title="About Roofing" highlight="Common" />
+
     </LayoutShell>
   );
 }

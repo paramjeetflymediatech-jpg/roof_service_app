@@ -67,27 +67,24 @@ export default function Secondsechome() {
                     {/* RIGHT – CONTENT */}
                     <div className="text-center lg:text-left">
 
-                        <p className="text-yellow-600 font-semibold mb-3 tracking-wide">
+                        {/* <p className="text-yellow-600 font-semibold mb-3 tracking-wide">
                             ABOUT US
-                        </p>
+                        </p> */}
 
-                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
-                            We are a family-run <br className="hidden sm:block" />
-                            business with over
+                        <h2 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-gray-900 leading-tight mb-8">
+                            <span className="text-accent-400">Secure Your House:</span> Strong Roofing Services By Mainstreet Roofing
                         </h2>
 
                         <div className="h-px bg-gray-200 mb-6"></div>
 
-                        <p className="text-gray-600 leading-relaxed mb-6">
-                            20 years of team combined experience in the roofing industry, proudly serving
-                            Accrington, Burnley, Hyndburn, Blackburn, and surrounding areas.
-                            Our team offers a wide range of services, including roof
-                            installations, repairs, and surveys.
+                        <p className="text-gray-600 leading-relaxed mb-6 text-justify">
+                            Worrying about your house’s security from external elements? The professionals of Mainstreet Roofing have you covered in terms of providing you with a strong and durable roof system. By engaging with an expert roofing contractor in Surrey, you can make sure that the roofing system of your residential or commercial areas is secured in a proper and efficient manner, thus providing you with peace of mind regarding the protection of your house from harsh weather conditions such as storms or rain.
+
                         </p>
 
-                        <p className="text-gray-600 leading-relaxed mb-10">
-                            Fully insured and highly skilled, we ensure peace of mind and
-                            high-quality workmanship for all your roofing needs.
+                        <p className="text-gray-600 leading-relaxed mb-10 text-justify">
+                            Our experts are highly qualified and well-trained in providing you with the proper installation of roof systems with the comprehensive use of high-quality materials. From fixing the old damage to installing the new roofs, our commitment to workmanship is strong and firm.
+
                         </p>
 
                         <div className="h-px bg-gray-200 mb-8"></div>

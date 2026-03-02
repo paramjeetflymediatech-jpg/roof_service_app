@@ -24,7 +24,7 @@ export default function Testimonials() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
-                        Don't just take our word for it - hear from our satisfied customers
+                        Build your trust in our trusted roofing group by looking at independent, third-party proof
                     </motion.p>
                 </div>
 

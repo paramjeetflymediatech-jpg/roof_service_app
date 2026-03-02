@@ -61,7 +61,7 @@ async function runMigration() {
         category_id INT,
         name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) NOT NULL UNIQUE,
-        short_description VARCHAR(255),
+        short_description TEXT,
         long_description TEXT,
         icon VARCHAR(255),
         featured_image_url VARCHAR(255),
