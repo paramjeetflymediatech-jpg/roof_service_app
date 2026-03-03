@@ -8,6 +8,7 @@ import { HiPhone } from "react-icons/hi";
 import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
 import { getServiceBySlug } from "@/lib/api/service";
+import RenderDynamicContent from "@/hooks/htmlconversion";
 import { COMPANY_INFO, SERVICE_SUB_FAQS, TILE_ROOF_FAQS, LEAK_REPAIR_FAQS, EPDM_ROOFING_FAQS, WALL_METAL_FAQS, REROOFING_FAQS, ROOF_INSULATION_FAQS, RAIN_STORM_DAMAGE_FAQS, METAL_GUTTERS_FAQS, TORCH_ON_FAQS, METAL_ROOFING_FAQS, NEW_CONSTRUCTION_FAQS } from "@/lib/constants";
 import Faq from "@/components/Faq";
 
@@ -55,45 +56,7 @@ export default function ServiceDetail({ service, seoData }) {
     );
   }
 
-  const renderDynamicContent = (content) => {
-    if (!content) return null;
 
-    try {
-      // Try to parse as JSON
-      const parsed = JSON.parse(content);
-
-      // If it's an array of {tag, content} objects
-      if (Array.isArray(parsed)) {
-        return parsed.map((item, index) => {
-          const Tag = item.tag || 'p';
-          const TitleTag = item.titleTag || 'h2';
-          const SubHeadingTag = item.subHeadingTag || 'h3';
-          const key = item.id !== undefined ? item.id : index;
-          console.log(item)
-          return (
-            <div key={key} className={index > 0 ? "mt-4" : ""}>
-              <Tag key={key} className={index > 0 ? "mt-4 text-3xl font-bold text-gray-900 border-l-4 border-amber-500 pl-4" : "text-3xl font-bold text-gray-900 border-l-4 border-amber-500 pl-4"}>
-                {item.titleTag}
-              </Tag>
-              <SubHeadingTag className="">{item.content}</SubHeadingTag>
-            </div>
-          );
-        });
-      }
-    } catch (e) {
-      console.log(e, "error")
-      // Not JSON or parsing failed, fall back to HTML rendering
-    }
-
-    // Default to HTML/Plain text rendering for backward compatibility
-    return (
-      <div
-        dangerouslySetInnerHTML={{
-          __html: content.replace(/\n/g, "<br />")
-        }}
-      />
-    );
-  };
   return (
     <LayoutShell>
       <SeoHead pageName={`service-${service.slug}`} initialSeoData={seoData} />
@@ -151,23 +114,10 @@ export default function ServiceDetail({ service, seoData }) {
                 transition={{ delay: 0.2 }}
                 className="space-y-8"
               >
-                {service?.heading && (
-                  <h2 className="text-3xl font-bold text-gray-900 border-l-4 border-amber-500 pl-4">
-                    {service?.heading}
-                  </h2>
-                )}
-
                 <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-8">
-                  {renderDynamicContent(service.longDescription)}
+                  <RenderDynamicContent content={service.longDescription} />
                 </div>
 
-                {(service?.subHeading || service?.subDescription) && (
-                  <div className="space-y-6 pt-8 border-t border-gray-100">
-                    <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-8">
-                      {renderDynamicContent(service.subDescription)}
-                    </div>
-                  </div>
-                )}
               </motion.div>
 
               {/* Feature List (Mockup/Optional) */}
