@@ -284,7 +284,7 @@ const AdminLeadsScreen = ({ route }) => {
               <View style={styles.detailRow}>
                 <Text style={styles.detailIcon}>⏲️</Text>
                 <Text style={styles.detailText}>
-                  Total Work: {item.actualHours} hrs
+                  Total Work: {item.actualHours}
                 </Text>
               </View>
             )}

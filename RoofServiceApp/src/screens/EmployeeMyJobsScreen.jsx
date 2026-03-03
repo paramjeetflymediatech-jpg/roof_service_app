@@ -234,7 +234,7 @@ const EmployeeMyJobsScreen = () => {
           <View style={styles.jobDetailItem}>
             <Text style={styles.detailIcon}>⏲️</Text>
             <Text style={styles.detailText}>
-              {item.actualHours} hrs worked
+              {item.actualHours} worked
             </Text>
           </View>
         )}

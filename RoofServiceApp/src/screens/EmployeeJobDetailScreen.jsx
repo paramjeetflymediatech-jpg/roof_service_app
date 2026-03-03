@@ -361,7 +361,7 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.infoIcon}>⏲️</Text>
               <View>
                 <Text style={styles.infoLabel}>Total Work Hours</Text>
-                <Text style={styles.infoValue}>{currentJob.actualHours} hrs</Text>
+                <Text style={styles.infoValue}>{currentJob.actualHours}</Text>
               </View>
             </View>
           ) : null}

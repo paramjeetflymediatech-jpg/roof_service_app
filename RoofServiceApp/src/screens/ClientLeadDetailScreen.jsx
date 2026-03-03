@@ -395,7 +395,7 @@ const ClientLeadDetailScreen = () => {
           <View style={[styles.detailRow, { marginTop: verticalScale(4) }]}>
             <Text style={styles.detailLabel}>Total Work:</Text>
             <Text style={styles.detailValue}>
-              {(actualHours || actual_hours)} hrs
+              {(actualHours || actual_hours)}
             </Text>
           </View>
         )}
