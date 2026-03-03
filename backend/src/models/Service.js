@@ -34,18 +34,6 @@ const Service = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    heading: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    subHeading: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    subDescription: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
     icon: {
       type: DataTypes.STRING,
       allowNull: true,

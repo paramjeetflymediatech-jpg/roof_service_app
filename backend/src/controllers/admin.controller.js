@@ -1445,9 +1445,6 @@ const postCreateService = async (req, res) => {
       icon,
       basePrice,
       status,
-      heading,
-      subHeading,
-      subDescription, 
       whyChooseUs,
     } = req.body;
 
@@ -1458,9 +1455,9 @@ const postCreateService = async (req, res) => {
 
     const whyChooseUsArray = whyChooseUs
       ? whyChooseUs
-          .split("\n")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
       : [];
 
     const existingService = await Service.findOne({ where: { slug } });
@@ -1480,10 +1477,7 @@ const postCreateService = async (req, res) => {
       categoryId: categoryId || null,
       shortDescription,
       longDescription,
-      icon,
-      heading,
-      subHeading,
-      subDescription,
+      icon, 
       basePrice: basePrice || null,
       status: status || "draft",
       featuredImageUrl,
@@ -1537,11 +1531,8 @@ const postUpdateService = async (req, res) => {
       icon,
       basePrice,
       status,
-      heading,
-      subHeading,
-      subDescription,
       whyChooseUs,
-    } = req.body; 
+    } = req.body;
     const serviceId = req.params.id;
 
     if (!name || !slug) {
@@ -1551,9 +1542,9 @@ const postUpdateService = async (req, res) => {
 
     const whyChooseUsArray = whyChooseUs
       ? whyChooseUs
-          .split("\n")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
       : [];
 
     const service = await Service.findByPk(serviceId);
@@ -1607,9 +1598,6 @@ const postUpdateService = async (req, res) => {
         status: status || "draft",
         featuredImageUrl,
         whyChooseUs: whyChooseUsArray,
-        heading,
-        subHeading,
-        subDescription,
       },
       { where: { id: serviceId } },
     );

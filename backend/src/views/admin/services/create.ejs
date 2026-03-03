@@ -93,34 +93,19 @@
                                                         </div>
 
                                                         <div class="form-group full-width">
-                                                            <label for="longDescription" class="form-label">Long
-                                                                Description</label>
+                                                            <label for="longDescription" class="form-label">Service
+                                                                Content (Supports JSON: [{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": ""}])</label>
+                                                            <div class="json-helper-btns mb-2">
+                                                                <button type="button" class="btn btn-xs btn-secondary"
+                                                                    onclick="insertJsonTemplate('longDescription')">Use
+                                                                    JSON Template</button>
+                                                            </div>
                                                             <textarea id="longDescription" name="longDescription"
-                                                                rows="5" class="form-input"></textarea>
-                                                        </div>
-
-                                                        <div class="form-group full-width">
-                                                            <label for="heading" class="form-label">Service
-                                                                Heading</label>
-                                                            <input type="text" id="heading" name="heading"
-                                                                class="form-input"
-                                                                placeholder="e.g. Expert Roofing Solutions">
-                                                        </div>
-
-                                                        <div class="form-group full-width">
-                                                            <label for="subHeading" class="form-label">Secondary
-                                                                Heading</label>
-                                                            <input type="text" id="subHeading" name="subHeading"
-                                                                class="form-input"
-                                                                placeholder="e.g. Why Choose Our Installation?">
-                                                        </div>
-
-                                                        <div class="form-group full-width">
-                                                            <label for="subDescription" class="form-label">Secondary
-                                                                Description</label>
-                                                            <textarea id="subDescription" name="subDescription" rows="4"
-                                                                class="form-input"
-                                                                placeholder="Detailed secondary information about this service..."></textarea>
+                                                                rows="10" class="form-input json-input"
+                                                                placeholder="Enter service description or use the JSON template..."></textarea>
+                                                            <p id="longDescription-error"
+                                                                class="text-xs text-red-500 mt-1 hidden">Invalid JSON
+                                                                format</p>
                                                         </div>
 
                                                         <div class="form-buttons">
@@ -143,6 +128,43 @@
                                         slugInput.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
                                     });
                                 }
+
+                                function insertJsonTemplate(id) {
+                                    const el = document.getElementById(id);
+                                    const template = '[{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": ""}]'
+                                    
+
+                                    if (el.value.trim() === '') {
+                                        el.value = template;
+                                    } else {
+                                        if (confirm('Replace current content with JSON template?')) {
+                                            el.value = template;
+                                        }
+                                    }
+                                    validateJson(el, document.getElementById(id + '-error'));
+                                }
+
+                                function validateJson(el, errorEl) {
+                                    const val = el.value.trim();
+                                    if (val.startsWith('[') || val.startsWith('{')) {
+                                        try {
+                                            JSON.parse(val);
+                                            errorEl.classList.add('hidden');
+                                            el.classList.remove('border-red-500');
+                                        } catch (e) {
+                                            errorEl.classList.remove('hidden');
+                                            el.classList.add('border-red-500');
+                                        }
+                                    } else {
+                                        errorEl.classList.add('hidden');
+                                        el.classList.remove('border-red-500');
+                                    }
+                                }
+
+                                document.querySelectorAll('.json-input').forEach(el => {
+                                    const errorEl = document.getElementById(el.id + '-error');
+                                    el.addEventListener('input', () => validateJson(el, errorEl));
+                                });
                             </script>
     </body>
 
