@@ -103,26 +103,26 @@ const renderHTML = (html) => {
         );
       }
       // ✅ Optional: Add styling to headings
-      if (domNode.name === "h1") {
+      if (node.name === "h1") {
         return (
           <h1 className="text-4xl font-bold my-4">
-            {domToReact(domNode.children, options)}
+            {domToReact(node.children, options)}
           </h1>
         );
       }
 
-      if (domNode.name === "h2") {
+      if (node.name === "h2") {
         return (
           <h2 className="text-3xl font-semibold my-3">
-            {domToReact(domNode.children, options)}
+            {domToReact(node.children, options)}
           </h2>
         );
       }
 
-      if (domNode.name === "h3") {
+      if (node.name === "h3") {
         return (
           <h3 className="text-2xl font-semibold my-3">
-            {domToReact(domNode.children, options)}
+            {domToReact(node.children, options)}
           </h3>
         );
       }
