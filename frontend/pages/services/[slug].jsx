@@ -69,7 +69,7 @@ export default function ServiceDetail({ service, seoData }) {
               src={
                 service.featuredImageUrl.startsWith("http")
                   ? service.featuredImageUrl
-                  : `${process.env.NEXT_PUBLIC_BASE_URL}${service.featuredImageUrl}`
+                  : `${process.env.NEXT_PUBLIC_BACKEND_URL}${service.featuredImageUrl}`
               }
               alt={service.name}
               fill
