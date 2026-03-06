@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
-import { COLORS, JOB_STATUS, FONTS, SHADOWS, hoursToHMS } from '../utils/constants';
+import { COLORS, JOB_STATUS, FONTS, SHADOWS, hoursToHMS ,LocalTime} from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const formatDateLocal = value => {
@@ -24,16 +24,7 @@ const formatDateLocal = value => {
   if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
   return d.toLocaleDateString();
 };
-const formatTime = time => {
-  if (!time) return '';
-
-  const date = new Date(time);
-
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  return `${hours}:${minutes}`;
-};
+ 
 
 const TABS = ['All', 'New', 'Active', 'Completed'];
 
@@ -101,8 +92,8 @@ const EmployeeMyJobsScreen = () => {
           status: job.status,
           date: createdDate ? formatDateLocal(createdDate) : '',
           preferredDate: scheduledDate ? formatDateLocal(scheduledDate) : '',
-          inTime: formatTime(job.startTime) || formatTime(lead.inTime) || null,
-          outTime: formatTime(job.endTime) || formatTime(lead.outTime) || null,
+          inTime: LocalTime(job.startTime) || LocalTime(lead.inTime) || null,
+          outTime: LocalTime(job.endTime) || LocalTime(lead.outTime) || null,
           notes: lead.message || job.notes || '',
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,

@@ -113,3 +113,10 @@ export function hoursToHMS(totalSeconds) {
 
   return `${String(h).padStart(2, "0")} h : ${String(m).padStart(2, "0")} m : ${String(s).padStart(2, "0")} s`;
 }
+
+export const LocalTime = value => {
+  if (!value) return 'N/A';
+  const d = new Date(value);
+  console.log(d.toLocaleTimeString(), 'd.toLocaleTimeString()')
+  return d.toLocaleTimeString();
+};

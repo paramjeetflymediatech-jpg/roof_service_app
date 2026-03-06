@@ -16,7 +16,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS, FONTS ,hoursToHMS } from '../utils/constants';
+import { COLORS, FONTS, hoursToHMS, LocalTime } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -77,9 +77,9 @@ const ClientLeadDetailScreen = () => {
           message:
             apiLead.message || apiLead.description || initialLead.message,
           employeeStartTime:
-            apiLead.employeeStartTime || initialLead.employeeStartTime,
+            LocalTime(apiLead.inTime) || initialLead.employeeStartTime,
           employeeEndTime:
-            apiLead.employeeEndTime || initialLead.employeeEndTime,
+            LocalTime(apiLead.outTime) || initialLead.employeeEndTime,
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
           clientImages: apiLead.clientImages || initialLead.clientImages,
@@ -391,7 +391,7 @@ const ClientLeadDetailScreen = () => {
           </View>
         )}
 
-        {!!(actualHours || actual_hours) && (
+        {(status === 'completed') && (
           <View style={[styles.detailRow, { marginTop: verticalScale(4) }]}>
             <Text style={styles.detailLabel}>Total Work:</Text>
             <Text style={styles.detailValue}>

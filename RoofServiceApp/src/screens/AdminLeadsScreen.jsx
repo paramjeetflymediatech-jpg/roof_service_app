@@ -14,8 +14,9 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
-import { COLORS, LEAD_STATUS, FONTS, SHADOWS, hoursToHMS } from '../utils/constants';
+import { COLORS, LEAD_STATUS, FONTS, SHADOWS, hoursToHMS, LocalTime } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
+
 
 const formatDateLocal = value => {
   if (!value) return '';
@@ -85,7 +86,7 @@ const AdminLeadsScreen = ({ route }) => {
       const rawItems =
         response.data?.items ||
         response.data?.data ||
-        (Array.isArray(response.data) ? response.data : []); 
+        (Array.isArray(response.data) ? response.data : []);
       const normalizedItems = rawItems.map(item => ({
         id: item.id || item._id || item.lead_id,
         clientName: item.clientName || item.client_name || item.name || 'N/A',
@@ -111,11 +112,11 @@ const AdminLeadsScreen = ({ route }) => {
         employeeEndTime: item.updatedAt || null,
         inTime:
           item.employeeStartTime != null
-            ? `${item.employeeStartTime} - ${formatDateLocal(item.inTime)}`
+            ? `${LocalTime(item.inTime)} - ${formatDateLocal(item.inTime)}`
             : null,
         outTime:
           item.employeeEndTime != null
-            ? `${item.employeeEndTime} - ${formatDateLocal(item.outTime)}`
+            ? `${LocalTime(item.outTime)} - ${formatDateLocal(item.outTime)}`
             : null,
         employeeNotes: item.employeeNotes || null,
         completionImages: item.completionImages || null,

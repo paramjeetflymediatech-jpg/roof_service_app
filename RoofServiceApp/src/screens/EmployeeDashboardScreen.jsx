@@ -15,7 +15,7 @@ import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
-import { COLORS, JOB_STATUS, SHADOWS } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS, LocalTime } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 // Reuse existing hero image or a new one if available
@@ -27,16 +27,7 @@ const formatDateLocal = value => {
   if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
   return d.toLocaleDateString();
 };
-const formatTime = time => {
-  if (!time) return '';
 
-  const date = new Date(time);
-
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  return `${hours}:${minutes}`;
-};
 const isToday = dateString => {
   if (!dateString) return false;
   const date = new Date(dateString);
@@ -84,15 +75,15 @@ const EmployeeDashboardScreen = () => {
           id: String(job.id ?? lead.id ?? Math.random()),
           leadId: lead.id,
           service: lead.serviceType || 'Roof Service',
-          address:  `${lead.address} ${lead?.city || ''}` || 'N/A',
+          address: `${lead.address} ${lead?.city || ''}` || 'N/A',
           clientName: lead.name || 'Client',
           phone: lead.phone || 'N/A',
           status: job.status,
           date: createdDate ? formatDateLocal(createdDate) : '',
           preferredDate: scheduledDate ? formatDateLocal(scheduledDate) : '',
           rawDate: scheduledDate, // Keep raw date for sorting/filtering
-          inTime: formatTime(job.startTime) || formatTime(lead.inTime) || null,
-          outTime: formatTime(job.endTime) || formatTime(lead.outTime) || null,
+          inTime: LocalTime(job.startTime) || LocalTime(lead.inTime) || null,
+          outTime: LocalTime(job.endTime) || LocalTime(lead.outTime) || null,
           notes: lead.message || job.notes || '',
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,
@@ -386,7 +377,7 @@ const EmployeeDashboardScreen = () => {
 
       {/* Bottom Nav */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+        <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>🏠</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>Home</Text>
         </TouchableOpacity>
