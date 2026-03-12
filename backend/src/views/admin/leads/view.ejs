@@ -960,14 +960,14 @@
                                                 }
 
                                                 card.innerHTML = `
-                                                <div class="flex items-center gap-3">
+                                                <div class="md:flex sm:display-grid  items-center gap-3">
                                                     <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${isAvailable ? 'bg-blue-600' : 'bg-gray-400'}">
                                                         ${initial}
                                                     </div>
                                                     <div class="flex-1 min-w-0">
                                                         <p class="text-sm font-medium text-gray-900 truncate">${emp.name}</p>
                                                         <p class="text-xs text-gray-500 truncate">
-                                                            
+                                                            ${emp.email}
                                                             </p>
                                                     </div>
                                                     <div class="shrink-0">
