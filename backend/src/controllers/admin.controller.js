@@ -397,44 +397,143 @@ const postUpdateLead = async (req, res) => {
 
 // POST /admin/leads/:id/delete - Delete lead
 const deleteLead = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const leadId = req.params.id;
-    const lead = await Lead.findByPk(leadId);
+    // Fetch lead with associated jobs to get their images
+    const lead = await Lead.findByPk(leadId, {
+      include: [{ model: Job, as: "jobs" }],
+    });
 
     if (!lead) {
+      await transaction.rollback();
       req.flash("error", "Lead not found");
       return res.redirect("/admin/leads");
     }
 
-    // Delete associated files
-    if (lead.clientImages && lead.clientImages.length > 0) {
+    // Collect all image URLs to delete from filesystem
+    let allImageUrls = [];
+
+    // 1. Lead Client Images
+    if (lead.clientImages) {
       try {
         const images = Array.isArray(lead.clientImages)
           ? lead.clientImages
           : JSON.parse(lead.clientImages);
-
-        for (const img of images) {
-          try {
-            const filePath = path.join(__dirname, "../../public", img.url);
-            if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath);
-            }
-          } catch (err) {
-            console.error("Error deleting image file:", err);
-          }
-        }
-      } catch (err) {
-        console.error("Error parsing clientImages:", err);
+        images.forEach((img) => {
+          if (img.url) allImageUrls.push(img.url);
+        });
+      } catch (e) {
+        console.error("Error parsing lead clientImages:", e);
       }
     }
 
-    await Lead.destroy({ where: { id: leadId } });
+    // 2. Lead Completion Images
+    if (lead.completionImages) {
+      try {
+        const images = Array.isArray(lead.completionImages)
+          ? lead.completionImages
+          : JSON.parse(lead.completionImages);
+        images.forEach((img) => {
+          if (img.url) allImageUrls.push(img.url);
+        });
+      } catch (e) {
+        console.error("Error parsing lead completionImages:", e);
+      }
+    }
 
-    req.flash("success", "Lead deleted successfully");
+    // 3. Associated Jobs Images
+    if (lead.jobs && lead.jobs.length > 0) {
+      lead.jobs.forEach((job) => {
+        // Before Images
+        if (job.beforeImages) {
+          try {
+            const images = Array.isArray(job.beforeImages)
+              ? job.beforeImages
+              : JSON.parse(job.beforeImages);
+            images.forEach((img) => {
+              if (img.url) allImageUrls.push(img.url);
+            });
+          } catch (e) {
+            console.error("Error parsing job beforeImages:", e);
+          }
+        }
+        // After Images
+        if (job.afterImages) {
+          try {
+            const images = Array.isArray(job.afterImages)
+              ? job.afterImages
+              : JSON.parse(job.afterImages);
+            images.forEach((img) => {
+              if (img.url) allImageUrls.push(img.url);
+            });
+          } catch (e) {
+            console.error("Error parsing job afterImages:", e);
+          }
+        }
+      });
+    }
+
+    // Delete associated records in order
+    // 1. JobWorkSessions
+    await JobWorkSession.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 2. JobLogs
+    await JobLog.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 3. Jobs
+    await Job.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 4. Invoices
+    await Invoice.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 5. Estimates
+    await Estimate.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 6. Finally, delete the Lead
+    await Lead.destroy({
+      where: { id: leadId },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    // After successful DB deletion, clean up files from filesystem
+    for (const url of allImageUrls) {
+      try {
+        const filePath = path.join(__dirname, "../../public", url);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (err) {
+        console.error(`Error deleting file ${url}:`, err);
+      }
+    }
+
+    req.flash(
+      "success",
+      "Lead, associated records, and all images deleted successfully",
+    );
     res.redirect("/admin/leads");
   } catch (error) {
+    if (transaction) await transaction.rollback();
     console.error("Delete lead error:", error);
-    req.flash("error", "Error deleting lead");
+    req.flash("error", "Error deleting lead: " + error.message);
     res.redirect("/admin/leads");
   }
 };

@@ -1,7 +1,16 @@
-const { Lead, Job, User, Estimate, Invoice } = require("../models");
+const {
+  Lead,
+  Job,
+  User,
+  Estimate,
+  Invoice,
+  JobLog,
+  JobWorkSession,
+} = require("../models");
 const { Op } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
+const sequelize = require("../config/mysql");
 const {
   sendLeadNotification,
   sendCustomerConfirmation,
@@ -1002,15 +1011,22 @@ exports.getAvailableEmployees = async (req, res, next) => {
 
 // NEW: Delete lead by client (only if pending)
 exports.deleteLead = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
-    const lead = await Lead.findByPk(req.params.id);
+    const leadId = req.params.id;
+    // Fetch lead with associated jobs to get their images
+    const lead = await Lead.findByPk(leadId, {
+      include: [{ model: Job, as: "jobs" }],
+    });
 
     if (!lead) {
+      await transaction.rollback();
       return res.status(404).json({ message: "Lead not found" });
     }
 
     // Check ownership
     if (lead.userId !== req.user.id) {
+      await transaction.rollback();
       return res
         .status(403)
         .json({ message: "Not authorized to delete this lead" });
@@ -1018,50 +1034,134 @@ exports.deleteLead = async (req, res, next) => {
 
     // Check status
     if (lead.status !== "pending") {
+      await transaction.rollback();
       return res
         .status(400)
         .json({ message: "Cannot delete a lead that is not pending" });
     }
 
-    if (lead.completion_images || lead.completionImages) {
-      const oldImages = lead.completion_images || lead.completionImages;
-      if (Array.isArray(oldImages)) {
-        oldImages.forEach((img) => {
-          const oldImagePath = path.join(
-            __dirname,
-            "..",
-            "..",
-            "public",
-            img.url,
-          );
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
-          }
+    // Collect all image URLs to delete from filesystem
+    let allImageUrls = [];
+
+    // 1. Lead Client Images
+    const clientImages = lead.clientImages || lead.client_images;
+    if (clientImages) {
+      try {
+        const images = Array.isArray(clientImages)
+          ? clientImages
+          : JSON.parse(clientImages);
+        images.forEach((img) => {
+          if (img.url) allImageUrls.push(img.url);
         });
+      } catch (e) {
+        console.error("Error parsing lead clientImages:", e);
       }
     }
 
-    if (lead.clientImages || lead.client_images) {
-      const oldImages = lead.clientImages || lead.client_images;
-      if (Array.isArray(oldImages)) {
-        oldImages.forEach((img) => {
-          const oldImagePath = path.join(
-            __dirname,
-            "..",
-            "..",
-            "public",
-            img.url,
-          );
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
-          }
+    // 2. Lead Completion Images
+    const completionImages = lead.completionImages || lead.completion_images;
+    if (completionImages) {
+      try {
+        const images = Array.isArray(completionImages)
+          ? completionImages
+          : JSON.parse(completionImages);
+        images.forEach((img) => {
+          if (img.url) allImageUrls.push(img.url);
         });
+      } catch (e) {
+        console.error("Error parsing lead completionImages:", e);
       }
     }
 
-    await lead.destroy();
-    res.json({ success: true, message: "Quote deleted successfully" });
+    // 3. Associated Jobs Images
+    if (lead.jobs && lead.jobs.length > 0) {
+      lead.jobs.forEach((job) => {
+        // Before Images
+        if (job.beforeImages) {
+          try {
+            const images = Array.isArray(job.beforeImages)
+              ? job.beforeImages
+              : JSON.parse(job.beforeImages);
+            images.forEach((img) => {
+              if (img.url) allImageUrls.push(img.url);
+            });
+          } catch (e) {
+            console.error("Error parsing job beforeImages:", e);
+          }
+        }
+        // After Images
+        if (job.afterImages) {
+          try {
+            const images = Array.isArray(job.afterImages)
+              ? job.afterImages
+              : JSON.parse(job.afterImages);
+            images.forEach((img) => {
+              if (img.url) allImageUrls.push(img.url);
+            });
+          } catch (e) {
+            console.error("Error parsing job afterImages:", e);
+          }
+        }
+      });
+    }
+
+    // Delete associated records in order
+    // 1. JobWorkSessions
+    await JobWorkSession.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 2. JobLogs
+    await JobLog.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 3. Jobs
+    await Job.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 4. Invoices
+    await Invoice.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 5. Estimates
+    await Estimate.destroy({
+      where: { leadId: leadId },
+      transaction,
+    });
+
+    // 6. Finally, delete the Lead
+    await Lead.destroy({
+      where: { id: leadId },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    // After successful DB deletion, clean up files from filesystem
+    for (const url of allImageUrls) {
+      try {
+        const filePath = path.join(__dirname, "../../public", url);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (err) {
+        console.error(`Error deleting file ${url}:`, err);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Lead, associated records, and images deleted successfully",
+    });
   } catch (err) {
+    if (transaction) await transaction.rollback();
     next(err);
   }
 };
