@@ -1,4 +1,5 @@
 const { DataDeletionRequest, User, Lead, Job, JobLog } = require("../models");
+const { Op} = require("sequelize");
 
 // GET /admin/deletion-requests - List all deletion requests
 exports.getDeletionRequestList = async (req, res) => {
@@ -8,20 +9,36 @@ exports.getDeletionRequestList = async (req, res) => {
     const offset = (page - 1) * limit;
     const { search } = req.query;
 
-    const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
     const where = {};
     if (search) {
-      where[Op.or] = [
-        { email: { [Op.like]: `%${search}%` } },
-        { name: { [Op.like]: `%${search}%` } },
-        { status: { [Op.like]: `%${search}%` } },
-        sequelizeWhere(fn("DATE_FORMAT", col("requested_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-        sequelizeWhere(fn("DATE_FORMAT", col("processed_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        })
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+      if (parsedDate.isValid()) {
+        where[Op.or] = [
+          {
+            requested_at: {
+              [Op.between]: [
+                parsedDate.startOf("day").toDate(),
+                parsedDate.endOf("day").toDate(),
+              ],
+            },
+          },
+          {
+            processed_at: {
+              [Op.between]: [
+                parsedDate.startOf("day").toDate(),
+                parsedDate.endOf("day").toDate(),
+              ],
+            },
+          },
+        ];
+      } else {
+        where[Op.or] = [
+          { email: { [Op.like]: `%${search}%` } },
+          { name: { [Op.like]: `%${search}%` } },
+          { status: { [Op.like]: `%${search}%` } }
+        ];
+      }
     }
     const { count, rows: requests } = await DataDeletionRequest.findAndCountAll({
       where,

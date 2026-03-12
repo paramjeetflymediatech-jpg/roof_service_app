@@ -285,7 +285,7 @@
                                                                         </h2>
                                                                         <p class="text-sm text-gray-500 mt-1">Submitted
                                                                             on <%= new
-                                                                                Date(lead.createdAt).toLocaleDateString()
+                                                                                Date(lead.createdAt).toLocaleDateString("en-GB")
                                                                                 %> at <%= new
                                                                                     Date(lead.createdAt).toLocaleTimeString()
                                                                                     %>
@@ -367,7 +367,7 @@
                                                                                     Preferred Date</p>
                                                                                 <p class="font-medium text-gray-900">
                                                                                     <%= lead.preferredDate ? new
-                                                                                        Date(lead.preferredDate).toLocaleDateString()
+                                                                                        Date(lead.preferredDate).toLocaleDateString("en-GB")
                                                                                         : 'Not specified' %>
                                                                                 </p>
                                                                             </div>

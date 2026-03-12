@@ -42,7 +42,7 @@
                                 <div class="px-8 py-6 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                     <div>
                                         <h2 class="text-xl font-bold text-gray-900 text-uppercase tracking-wide">Job #<%= job.id %></h2>
-                                        <p class="text-sm text-gray-500">Created on <%= new Date(job.createdAt).toLocaleDateString() %></p>
+                                        <p class="text-sm text-gray-500">Created on <%= new Date(job.createdAt).toLocaleDateString("en-GB") %></p>
                                     </div>
                                     <% 
                                         let statusClass = "bg-gray-100 text-gray-600";
@@ -60,7 +60,7 @@
                                         <div>
                                             <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Scheduled Date</label>
                                             <p class="text-gray-900 font-medium">
-                                                <%= job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString() : 'Not scheduled' %>
+                                                <%= job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString("en-GB") : 'Not scheduled' %>
                                             </p>
                                         </div>
                                         <div>

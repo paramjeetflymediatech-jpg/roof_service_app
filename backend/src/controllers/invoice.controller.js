@@ -1,6 +1,7 @@
 const { Invoice, User, Estimate, Lead } = require("../models");
-const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
+const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
+const moment = require("moment");
 /**
  * Helper to calculate work hours from a lead
  */
@@ -71,19 +72,24 @@ const InvoiceController = {
       if (status) {
         where.status = status;
       }
-      if (search) { 
-        where[Op.or] = [
-          { invoiceNumber: { [Op.like]: `%${search}%` } },
-          { clientName: { [Op.like]: `%${search}%` } },
-          { clientEmail: { [Op.like]: `%${search}%` } },
-          { total: { [Op.like]: `%${search}%` } },
-          sequelizeWhere(
-            fn("DATE_FORMAT", col("Invoice.created_at"), "%d/%m/%Y"),
-            {
-              [Op.like]: `%${search}%`
-            }
-          )
-        ];
+      if (search) {
+        const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+        if (parsedDate.isValid()) {
+          where.Invoice.created_at = {
+            [Op.between]: [
+              parsedDate.startOf("day").toDate(),
+              parsedDate.endOf("day").toDate(),
+            ],
+          };
+        } else {
+          where[Op.or] = [
+            { invoiceNumber: { [Op.like]: `%${search}%` } },
+            { clientName: { [Op.like]: `%${search}%` } },
+            { clientEmail: { [Op.like]: `%${search}%` } },
+            { total: { [Op.like]: `%${search}%` } }
+          ];
+        }
       }
 
       const { count, rows: invoices } = await Invoice.findAndCountAll({

@@ -9,7 +9,7 @@
                 <div class="text-xs text-gray-500"><%= estimate.clientEmail %></div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                <%= new Date(estimate.date).toLocaleDateString() %>
+                <%= new Date(estimate.date).toLocaleDateString("en-GB") %>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                 $<%= Number(estimate.total || 0).toFixed(2) %>

@@ -1,5 +1,6 @@
 const { Blog } = require("../models");
-
+const { Op } = require("sequelize");
+const moment = require("moment");
 // --- Admin Controller Methods ---
 
 /**
@@ -17,18 +18,21 @@ exports.getAdminList = async (req, res) => {
       where.status = status;
     }
     if (search) {
-      const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
-      where[Op.or] = [
-        { title: { [Op.like]: `%${search}%` } },
-        { author: { [Op.like]: `%${search}%` } },
-        { excerpt: { [Op.like]: `%${search}%` } },
-        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-        sequelizeWhere(fn("DATE_FORMAT", col("updated_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+      if (parsedDate.isValid()) {
+        where.created_at = {
+          [Op.between]: [
+            parsedDate.startOf("day").toDate(),
+            parsedDate.endOf("day").toDate(),
+          ],
+        };
+      } else {
+        where[Op.or] = [
+          { title: { [Op.like]: `%${search}%` } },
+          { author: { [Op.like]: `%${search}%` } },
+          { excerpt: { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
 
     const { count, rows: blogs } = await Blog.findAndCountAll({

@@ -1,6 +1,7 @@
 const { Estimate, User, Lead, Invoice } = require("../models");
-const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
+const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
+const moment = require("moment");
 
 /**
  * Controller for managing Estimates in the admin section
@@ -21,18 +22,23 @@ const EstimateController = {
         where.status = status;
       }
       if (search) {
-        where[Op.or] = [
-          { estimateNumber: { [Op.like]: `%${search}%` } },
-          { clientName: { [Op.like]: `%${search}%` } },
-          { clientEmail: { [Op.like]: `%${search}%` } },
-          { total: { [Op.like]: `%${search}%` } },
-          sequelizeWhere(
-            fn("DATE_FORMAT", col("Estimate.created_at"), "%d/%m/%Y"),
-            {
-              [Op.like]: `%${search}%`
-            }
-          )
-        ];
+        const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+        if (parsedDate.isValid()) {
+          where.Estimate.created_at = {
+            [Op.between]: [
+              parsedDate.startOf("day").toDate(),
+              parsedDate.endOf("day").toDate(),
+            ],
+          };
+        } else {
+          where[Op.or] = [
+            { estimateNumber: { [Op.like]: `%${search}%` } },
+            { clientName: { [Op.like]: `%${search}%` } },
+            { clientEmail: { [Op.like]: `%${search}%` } },
+            { total: { [Op.like]: `%${search}%` } }
+          ];
+        }
       }
 
       const { count, rows: estimates } = await Estimate.findAndCountAll({

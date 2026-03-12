@@ -123,7 +123,7 @@ const getUserList = async (req, res) => {
 
     const { search, role, isActive } = req.query;
     const where = {};
-    
+
     if (search) {
       const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
 
@@ -218,14 +218,22 @@ const getLeadList = async (req, res) => {
     const where = {};
 
     if (search) {
-      where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } },
-        { phone: { [Op.like]: `%${search}%` } },
-        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+      if (parsedDate.isValid()) {
+        where.created_at = {
+          [Op.between]: [
+            parsedDate.startOf("day").toDate(),
+            parsedDate.endOf("day").toDate(),
+          ],
+        };
+      } else {
+        where[Op.or] = [
+          { name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { phone: { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
 
     if (status) {
@@ -994,11 +1002,21 @@ const getSeoList = async (req, res) => {
     const { Op } = require("sequelize");
     const where = {};
     if (search) {
-      where[Op.or] = [
-        { pageName: { [Op.like]: `%${search}%` } },
-        { pageTitle: { [Op.like]: `%${search}%` } },
-        { metaDescription: { [Op.like]: `%${search}%` } },
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+      if (parsedDate.isValid()) {
+        where.updated_at = {
+          [Op.between]: [
+            parsedDate.startOf("day").toDate(),
+            parsedDate.endOf("day").toDate(),
+          ],
+        };
+      } else {
+        where[Op.or] = [
+          { pageName: { [Op.like]: `%${search}%` } },
+          { pageTitle: { [Op.like]: `%${search}%` } },
+          { metaDescription: { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
 
     const { count, rows: seoPages } = await SeoMeta.findAndCountAll({
@@ -2144,15 +2162,23 @@ const getJobList = async (req, res) => {
 
     const jobWhere = { ...where };
     if (search) {
-      jobWhere[Op.or] = [
-        { id: { [Op.like]: `%${search}%` } },
-        { '$lead.name$': { [Op.like]: `%${search}%` } },
-        { '$lead.email$': { [Op.like]: `%${search}%` } },
-        { '$employee.name$': { [Op.like]: `%${search}%` } },
-        sequelizeWhere(fn("DATE_FORMAT", col("scheduled_date"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+      if (parsedDate.isValid()) {
+        jobWhere.scheduled_date = {
+          [Op.between]: [
+            parsedDate.startOf("day").toDate(),
+            parsedDate.endOf("day").toDate(),
+          ],
+        };
+      } else {
+        jobWhere[Op.or] = [
+          { id: { [Op.like]: `%${search}%` } },
+          { '$lead.name$': { [Op.like]: `%${search}%` } },
+          { '$lead.email$': { [Op.like]: `%${search}%` } },
+          { '$employee.name$': { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
 
     const { count, rows } = await Job.findAndCountAll({

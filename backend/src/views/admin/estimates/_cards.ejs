@@ -16,7 +16,7 @@
             </div>
 
             <div class="space-y-1 text-sm text-gray-600 mb-4">
-                <p><span class="text-gray-400">Date:</span> <%= new Date(estimate.date).toLocaleDateString() %></p>
+                <p><span class="text-gray-400">Date:</span> <%= new Date(estimate.date).toLocaleDateString("en-GB") %></p>
                 <p><span class="text-gray-400">Total:</span> <span class="font-bold text-gray-900">$<%= estimate.total ? estimate.total.toFixed(2) : '0.00' %></span></p>
             </div>
 
