@@ -13,7 +13,7 @@ const {
 } = require("../models");
 const fs = require("fs");
 const path = require("path");
-const { Op } = require("sequelize");
+const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
 const sequelize = require("../config/mysql");
 // GET /admin/login - Render login page
 const getLogin = (req, res) => {
@@ -120,8 +120,31 @@ const getUserList = async (req, res) => {
     const limit = 12;
     const offset = (page - 1) * limit;
 
-    const totalUsers = await User.count();
+    const { search, role, isActive } = req.query;
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } },
+        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+      ];
+    }
+
+    if (role) {
+      where.role = role;
+    }
+
+    if (isActive !== undefined && isActive !== "") {
+      where.isActive = isActive === "true";
+    }
+
+    const totalUsers = await User.count({ where });
     const users = await User.findAll({
+      where,
       attributes: { exclude: ["password"] },
       order: [["createdAt", "DESC"]],
       limit: limit,
@@ -130,6 +153,22 @@ const getUserList = async (req, res) => {
     });
 
     const totalPages = Math.ceil(totalUsers / limit);
+
+    // If AJAX request, return rendered partials
+    if (req.xhr || req.query.ajax) {
+      return res.render('admin/users/_table_rows', { users }, (err, tableHtml) => {
+        res.render('admin/users/_cards', { users }, (err, cardHtml) => {
+          res.render('admin/users/_pagination', { totalPages, currentPage: page, limit, totalItems: totalUsers, query: req.query }, (err, paginationHtml) => {
+            return res.json({
+              tableHtml,
+              cardHtml,
+              paginationHtml,
+              query: req.query
+            });
+          });
+        });
+      });
+    }
 
     res.render("admin/users/list", {
       title: "User List",
@@ -140,6 +179,7 @@ const getUserList = async (req, res) => {
       totalUsers: totalUsers,
       totalItems: totalUsers,
       limit: limit,
+      query: req.query, // Pass query back to preserve form state
     });
   } catch (error) {
     console.error("User list error:", error);
@@ -155,8 +195,31 @@ const getLeadList = async (req, res) => {
     const limit = 12;
     const offset = (page - 1) * limit;
 
-    const totalLeads = await Lead.count();
+    const { search, status, leadType } = req.query;
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } },
+        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+      ];
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (leadType) {
+      where.leadType = leadType;
+    }
+
+    const totalLeads = await Lead.count({ where });
     const leads = await Lead.findAll({
+      where,
       include: [
         { model: Estimate, as: "estimates", attributes: ["id", "status"] },
         { model: Invoice, as: "invoices", attributes: ["id", "status"] },
@@ -168,14 +231,31 @@ const getLeadList = async (req, res) => {
 
     const totalPages = Math.ceil(totalLeads / limit);
 
+    // If AJAX request, return rendered partials
+    if (req.xhr || req.query.ajax) {
+      return res.render('admin/leads/_table_rows', { leads }, (err, tableHtml) => {
+        res.render('admin/leads/_cards', { leads }, (err, cardHtml) => {
+          res.render('admin/leads/_pagination', { totalPages, currentPage: page, limit, totalItems: totalLeads, query: req.query }, (err, paginationHtml) => {
+            return res.json({
+              tableHtml,
+              cardHtml,
+              paginationHtml,
+              query: req.query
+            });
+          });
+        });
+      });
+    }
+
     res.render("admin/leads/list", {
       title: "Lead List",
       userName: req.session.userName,
-      leads: leads.map((l) => l.get({ plain: false })), // Keep as model instances or use get({plain: true}) carefully with associations
+      leads: leads.map((l) => l.get({ plain: false })),
       currentPage: page,
       totalPages,
       totalLeads,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Lead list error:", error);
@@ -887,16 +967,50 @@ const deleteAllUsers = async (req, res) => {
 // GET /admin/seo - Render SEO list
 const getSeoList = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.query.page, 10) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search } = req.query;
+
+    const { Op } = require("sequelize");
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { pageName: { [Op.like]: `%${search}%` } },
+        { pageTitle: { [Op.like]: `%${search}%` } },
+        { metaDescription: { [Op.like]: `%${search}%` } },
+      ];
+    }
 
     const { count, rows: seoPages } = await SeoMeta.findAndCountAll({
+      where,
       order: [["updatedAt", "DESC"]],
       limit,
       offset,
       raw: true,
     });
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/seo/_table_rows", { seoPages }, (err, tableHtml) => {
+        res.render("admin/seo/_cards", { seoPages }, (err, cardHtml) => {
+          res.render("admin/seo/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            query: req.query,
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml,
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
 
     res.render("admin/seo/list", {
       title: "SEO Management",
@@ -906,9 +1020,13 @@ const getSeoList = async (req, res) => {
       totalPages: Math.ceil(count / limit),
       totalItems: count,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("SEO list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading SEO pages" });
+    }
     req.flash("error", "Error loading SEO pages");
     res.redirect("/admin/dashboard");
   }
@@ -1324,17 +1442,53 @@ const deleteSeo = async (req, res) => {
 // GET /admin/categories - Render category list
 const getCategoryList = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.query.page, 10) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search } = req.query;
+
+    const { Op } = require("sequelize");
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { slug: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+      ];
+    }
 
     const { count, rows: categories } = await ServiceCategory.findAndCountAll({
+      where,
       include: [{ model: Service, as: "services" }],
       order: [["name", "ASC"]],
       limit,
       offset,
       distinct: true,
     });
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/categories/_table_rows", { categories }, (err, tableHtml) => {
+        // Categories typically don't have separate mobile cards in the current design, 
+        // but we'll try to render if it exists or return empty
+        res.render("admin/categories/_cards", { categories }, (err, cardHtml) => {
+          res.render("admin/categories/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            query: req.query,
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml: cardHtml || "",
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
 
     res.render("admin/categories/list", {
       title: "Category Management",
@@ -1344,9 +1498,13 @@ const getCategoryList = async (req, res) => {
       totalPages: Math.ceil(count / limit),
       totalItems: count,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Category list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading categories" });
+    }
     req.flash("error", "Error loading categories");
     res.redirect("/admin/dashboard");
   }
@@ -1490,25 +1648,66 @@ const getServiceList = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search, categoryId } = req.query;
+
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { slug: { [Op.like]: `%${search}%` } },
+      ];
+    }
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
 
     const { count, rows: services } = await Service.findAndCountAll({
+      where,
       include: [{ model: ServiceCategory, as: "category" }],
       order: [["name", "ASC"]],
       limit,
       offset,
     });
 
+    const categories = await ServiceCategory.findAll({ order: [["name", "ASC"]] });
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/services/_table_rows", { services }, (err, tableHtml) => {
+        res.render("admin/services/_cards", { services }, (err, cardHtml) => {
+          res.render("admin/services/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml: cardHtml || "",
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
+
     res.render("admin/services/list", {
       title: "Service Management",
       userName: req.session.userName,
       services,
+      categories,
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       totalItems: count,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Service list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading services" });
+    }
     req.flash("error", "Error loading services");
     res.redirect("/admin/dashboard");
   }
@@ -1576,7 +1775,7 @@ const postCreateService = async (req, res) => {
       categoryId: categoryId || null,
       shortDescription,
       longDescription,
-      icon, 
+      icon,
       basePrice: basePrice || null,
       status: status || "draft",
       featuredImageUrl,
@@ -1733,10 +1932,16 @@ const deleteService = async (req, res) => {
 // Gallery management routes
 const getGalleryList = async (req, res) => {
   try {
-    const { location, category } = req.query;
-    const page = parseInt(req.query.page) || 1;
+    const { location, category, search } = req.query;
+    const page = parseInt(req.query.page, 10) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+
+    const { Op } = require("sequelize");
+    const where = {};
+    if (location) where.location = location;
+    if (category) where.category = category;
+    if (search) where.title = { [Op.like]: `%${search}%` };
 
     let viewMode = "folders";
     let items = [];
@@ -1800,6 +2005,21 @@ const getGalleryList = async (req, res) => {
       totalItems = items.length; // Count of locations
     }
 
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/gallery/_items", { items, viewMode, location: location || "", category: category || "" }, (err, itemsHtml) => {
+        res.render("admin/gallery/_pagination", {
+          currentPage: page, totalPages: Math.ceil(totalItems / limit), totalItems, limit, location: location || "", category: category || "", query: req.query
+        }, (err, paginationHtml) => {
+          return res.json({
+            success: true,
+            cardHtml: itemsHtml,
+            paginationHtml,
+            totalItems: totalItems
+          });
+        });
+      });
+    }
+
     res.render("admin/gallery/index", {
       title: "Gallery Management",
       userName: req.session.userName,
@@ -1812,6 +2032,7 @@ const getGalleryList = async (req, res) => {
       totalPages: Math.ceil(totalItems / limit),
       totalItems: totalItems,
       limit: limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Gallery list error:", error);
@@ -1895,8 +2116,28 @@ const getJobList = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search, status } = req.query;
+
+    const where = {};
+    if (status) {
+      where.status = status;
+    }
+
+    const jobWhere = { ...where };
+    if (search) {
+      jobWhere[Op.or] = [
+        { id: { [Op.like]: `%${search}%` } },
+        { '$lead.name$': { [Op.like]: `%${search}%` } },
+        { '$lead.email$': { [Op.like]: `%${search}%` } },
+        { '$employee.name$': { [Op.like]: `%${search}%` } },
+        sequelizeWhere(fn("DATE_FORMAT", col("scheduled_date"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+      ];
+    }
 
     const { count, rows } = await Job.findAndCountAll({
+      where: jobWhere,
       include: [
         {
           model: Lead,
@@ -1915,6 +2156,28 @@ const getJobList = async (req, res) => {
       distinct: true,
     });
 
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/jobs/_table_rows", { jobs: rows }, (err, tableHtml) => {
+        res.render("admin/jobs/_cards", { jobs: rows }, (err, cardHtml) => {
+          res.render("admin/jobs/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            query: req.query
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml: cardHtml || "",
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
+
     res.render("admin/jobs/index", {
       title: "Job Management",
       userName: req.session.userName,
@@ -1923,9 +2186,13 @@ const getJobList = async (req, res) => {
       totalPages: Math.ceil(count / limit),
       totalItems: count,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Get job list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading job list" });
+    }
     req.flash("error", "Error loading job list");
     res.redirect("/admin/dashboard");
   }

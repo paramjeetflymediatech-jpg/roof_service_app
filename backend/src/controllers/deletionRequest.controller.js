@@ -3,32 +3,72 @@ const { DataDeletionRequest, User, Lead, Job, JobLog } = require("../models");
 // GET /admin/deletion-requests - List all deletion requests
 exports.getDeletionRequestList = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.query.page, 10) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search } = req.query;
 
-    const totalRequests = await DataDeletionRequest.count();
-    const requests = await DataDeletionRequest.findAll({
+    const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { email: { [Op.like]: `%${search}%` } },
+        { name: { [Op.like]: `%${search}%` } },
+        { status: { [Op.like]: `%${search}%` } },
+        sequelizeWhere(fn("DATE_FORMAT", col("requested_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+        sequelizeWhere(fn("DATE_FORMAT", col("processed_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        })
+      ];
+    }
+    const { count, rows: requests } = await DataDeletionRequest.findAndCountAll({
+      where,
       order: [["requestedAt", "DESC"]],
       limit,
       offset,
       raw: true,
     });
 
-    const totalPages = Math.ceil(totalRequests / limit);
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/deletion_requests/_table_rows", { requests }, (err, tableHtml) => {
+        res.render("admin/deletion_requests/_cards", { requests }, (err, cardHtml) => {
+          res.render("admin/deletion_requests/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            query: req.query,
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml,
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
 
     res.render("admin/deletion_requests/list", {
       title: "Data Deletion Requests",
       userName: req.session.userName,
       requests,
       currentPage: page,
-      totalPages: totalPages,
-      totalRequests: totalRequests,
-      totalItems: totalRequests,
-      limit: limit,
+      totalPages: Math.ceil(count / limit),
+      totalRequests: count,
+      totalItems: count,
+      limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Deletion requests list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading deletion requests" });
+    }
     req.flash("error", "Error loading deletion requests");
     res.redirect("/admin/dashboard");
   }
@@ -127,10 +167,10 @@ exports.approveDeletionRequest = async (req, res) => {
       await userController.deleteMyAccount(
         { user: { id: user.id } },
         {
-          json: () => {},
-          status: () => ({ json: () => {} }),
+          json: () => { },
+          status: () => ({ json: () => { } }),
         },
-        () => {},
+        () => { },
       );
     } catch (err) {
       console.error("Error deleting user account:", err);

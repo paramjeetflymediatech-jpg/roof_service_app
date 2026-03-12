@@ -1,5 +1,5 @@
 const { Invoice, User, Estimate, Lead } = require("../models");
-
+const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 /**
  * Helper to calculate work hours from a lead
@@ -62,7 +62,32 @@ const InvoiceController = {
    */
   async getAllInvoices(req, res) {
     try {
-      const invoices = await Invoice.findAll({
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = 12;
+      const offset = (page - 1) * limit;
+      const { search, status } = req.query;
+
+      const where = {};
+      if (status) {
+        where.status = status;
+      }
+      if (search) { 
+        where[Op.or] = [
+          { invoiceNumber: { [Op.like]: `%${search}%` } },
+          { clientName: { [Op.like]: `%${search}%` } },
+          { clientEmail: { [Op.like]: `%${search}%` } },
+          { total: { [Op.like]: `%${search}%` } },
+          sequelizeWhere(
+            fn("DATE_FORMAT", col("Invoice.created_at"), "%d/%m/%Y"),
+            {
+              [Op.like]: `%${search}%`
+            }
+          )
+        ];
+      }
+
+      const { count, rows: invoices } = await Invoice.findAndCountAll({
+        where,
         include: [
           { model: User, as: "createdBy", attributes: ["name"] },
           { model: Lead, as: "lead", attributes: ["id", "name"] },
@@ -72,6 +97,8 @@ const InvoiceController = {
             attributes: ["id", "estimateNumber"],
           },
         ],
+        offset,
+        limit,
         order: [["createdAt", "DESC"]],
       });
 
@@ -90,13 +117,42 @@ const InvoiceController = {
         return data;
       });
 
+      if (req.xhr || req.query.ajax) {
+        return res.render("admin/invoices/_table_rows", { invoices: formattedInvoices }, (err, tableHtml) => {
+          res.render("admin/invoices/_cards", { invoices: formattedInvoices }, (err, cardHtml) => {
+            res.render("admin/invoices/_pagination", {
+              currentPage: page,
+              totalPages: Math.ceil(count / limit),
+              totalItems: count,
+              limit,
+            }, (err, paginationHtml) => {
+              return res.json({
+                success: true,
+                tableHtml,
+                cardHtml: cardHtml || "",
+                paginationHtml,
+                totalItems: count,
+              });
+            });
+          });
+        });
+      }
+
       res.render("admin/invoices/index", {
         invoices: formattedInvoices,
         title: "Invoices",
         user: req.user,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+        limit,
+        query: req.query,
       });
     } catch (error) {
       console.error("Error fetching invoices:", error);
+      if (req.xhr || req.query.ajax) {
+        return res.status(500).json({ success: false, message: "Error loading invoices" });
+      }
       res.status(500).send("Internal Server Error");
     }
   },

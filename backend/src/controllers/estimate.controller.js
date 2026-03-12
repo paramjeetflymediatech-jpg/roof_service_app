@@ -1,5 +1,5 @@
 const { Estimate, User, Lead, Invoice } = require("../models");
-
+const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 
 /**
@@ -11,11 +11,38 @@ const EstimateController = {
    */
   async getAllEstimates(req, res) {
     try {
-      const estimates = await Estimate.findAll({
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = 12;
+      const offset = (page - 1) * limit;
+      const { search, status } = req.query;
+
+      const where = {};
+      if (status) {
+        where.status = status;
+      }
+      if (search) {
+        where[Op.or] = [
+          { estimateNumber: { [Op.like]: `%${search}%` } },
+          { clientName: { [Op.like]: `%${search}%` } },
+          { clientEmail: { [Op.like]: `%${search}%` } },
+          { total: { [Op.like]: `%${search}%` } },
+          sequelizeWhere(
+            fn("DATE_FORMAT", col("Estimate.created_at"), "%d/%m/%Y"),
+            {
+              [Op.like]: `%${search}%`
+            }
+          )
+        ];
+      }
+
+      const { count, rows: estimates } = await Estimate.findAndCountAll({
+        where,
         include: [
           { model: User, as: "createdBy", attributes: ["name"] },
           { model: Invoice, as: "invoices", attributes: ["id", "status"] },
         ],
+        offset,
+        limit,
         order: [["createdAt", "DESC"]],
       });
 
@@ -34,13 +61,42 @@ const EstimateController = {
         return data;
       });
 
+      if (req.xhr || req.query.ajax) {
+        return res.render("admin/estimates/_table_rows", { estimates: formattedEstimates }, (err, tableHtml) => {
+          res.render("admin/estimates/_cards", { estimates: formattedEstimates }, (err, cardHtml) => {
+            res.render("admin/estimates/_pagination", {
+              currentPage: page,
+              totalPages: Math.ceil(count / limit),
+              totalItems: count,
+              limit,
+            }, (err, paginationHtml) => {
+              return res.json({
+                success: true,
+                tableHtml,
+                cardHtml: cardHtml || "",
+                paginationHtml,
+                totalItems: count,
+              });
+            });
+          });
+        });
+      }
+
       res.render("admin/estimates/index", {
         estimates: formattedEstimates,
         title: "Estimates",
         user: req.user,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+        limit,
+        query: req.query,
       });
     } catch (error) {
       console.error("Error fetching estimates:", error);
+      if (req.xhr || req.query.ajax) {
+        return res.status(500).json({ success: false, message: "Error loading estimates" });
+      }
       res.status(500).send("Internal Server Error");
     }
   },

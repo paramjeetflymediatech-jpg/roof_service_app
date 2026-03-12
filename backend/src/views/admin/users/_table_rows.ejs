@@ -1,0 +1,29 @@
+<% if (users && users.length > 0) { %>
+    <% users.forEach(user => { %>
+        <tr>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td>
+                <span class="badge <%= user.role === 'admin' ? 'badge-primary' : 'badge-secondary' %>">
+                    <%= user.role.toUpperCase() %>
+                </span>
+            </td>
+            <td>
+                <span class="badge <%= user.isActive ? 'badge-success' : 'badge-danger' %>">
+                    <%= user.isActive ? 'Active' : 'Inactive' %>
+                </span>
+            </td>
+            <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+            <td>
+                <div class="flex gap-2">
+                    <a href="/admin/users/<%= user.id %>/edit" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm">Edit</a>
+                    <button onclick="confirmDelete('<%= user.id %>', '<%= user.name %>')" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm">Delete</button>
+                </div>
+            </td>
+        </tr>
+    <% }) %>
+<% } else { %>
+    <tr>
+        <td colspan="6" class="text-center text-gray-500">No users found</td>
+    </tr>
+<% } %>

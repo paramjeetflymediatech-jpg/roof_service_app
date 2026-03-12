@@ -10,12 +10,55 @@ exports.getAdminList = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
+    const { search, status } = req.query;
+
+    const where = {};
+    if (status) {
+      where.status = status;
+    }
+    if (search) {
+      const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
+      where[Op.or] = [
+        { title: { [Op.like]: `%${search}%` } },
+        { author: { [Op.like]: `%${search}%` } },
+        { excerpt: { [Op.like]: `%${search}%` } },
+        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+        sequelizeWhere(fn("DATE_FORMAT", col("updated_at"), "%d/%m/%Y"), {
+          [Op.like]: `%${search}%`
+        }),
+      ];
+    }
 
     const { count, rows: blogs } = await Blog.findAndCountAll({
+      where,
       order: [["createdAt", "DESC"]],
       limit,
       offset,
     });
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/blogs/_table_rows", { blogs }, (err, tableHtml) => {
+        res.render("admin/blogs/_cards", { blogs }, (err, cardHtml) => {
+          res.render("admin/blogs/_pagination", {
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            query: req.query,
+          }, (err, paginationHtml) => {
+            return res.json({
+              success: true,
+              tableHtml,
+              cardHtml: cardHtml || "",
+              paginationHtml,
+              totalItems: count,
+            });
+          });
+        });
+      });
+    }
 
     res.render("admin/blogs/list", {
       title: "Blog Management",
@@ -25,9 +68,13 @@ exports.getAdminList = async (req, res) => {
       totalPages: Math.ceil(count / limit),
       totalItems: count,
       limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("Error fetching blogs:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading blogs" });
+    }
     res.status(500).render("error", { message: "Error fetching blogs" });
   }
 };
@@ -102,9 +149,9 @@ exports.postCreate = async (req, res) => {
       author,
       tags: tags
         ? tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter((tag) => tag.length > 0)
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0)
         : [],
       status,
       metaTitle,
@@ -211,9 +258,9 @@ exports.postUpdate = async (req, res) => {
         author,
         tags: tags
           ? tags
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter((tag) => tag.length > 0)
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
           : [],
         status,
         metaTitle,

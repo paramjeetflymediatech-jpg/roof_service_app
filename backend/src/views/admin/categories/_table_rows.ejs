@@ -1,0 +1,19 @@
+<% if (categories && categories.length > 0) { %>
+    <% categories.forEach(category => { %>
+        <tr>
+            <td><%= category.name %></td>
+            <td><code><%= category.slug %></code></td>
+            <td><%= category.description ? category.description.substring(0, 50) + (category.description.length > 50 ? '...' : '') : '-' %></td>
+            <td><%= category.icon || '-' %></td>
+            <td><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"><%= category.services ? category.services.length : 0 %></span></td>
+            <td>
+                <div class="flex gap-2">
+                    <a href="/admin/categories/<%= category.id %>/edit" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm">Edit</a>
+                    <button onclick="confirmDelete('<%= category.id %>')" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm">Delete</button>
+                </div>
+            </td>
+        </tr>
+    <% }) %>
+<% } else { %>
+    <tr><td colspan="6" class="text-center text-gray-500">No categories found</td></tr>
+<% } %>

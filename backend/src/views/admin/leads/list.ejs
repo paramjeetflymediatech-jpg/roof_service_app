@@ -78,103 +78,45 @@
                                             </div>
                                         </div>
 
-                                        <!-- Mobile View (Cards) -->
-                                        <div class="block md:hidden space-y-4">
-                                            <% if (leads.length===0) { %>
-                                                <div
-                                                    class="text-center py-8 bg-white rounded-lg border border-gray-200 text-gray-500">
-                                                    <div class="flex flex-col items-center">
-                                                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none"
-                                                            stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z">
-                                                            </path>
-                                                        </svg>
-                                                        <p class="text-lg font-medium">No leads found</p>
+                                        <!-- Search & Filter Form -->
+                                        <div class="bg-white p-6 rounded-xl shadow-sm mb-8 border border-gray-100">
+                                            <form id="searchForm" action="/admin/leads" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div class="md:col-span-2 relative">
+                                                    <input type="text" name="search" id="searchInput" 
+                                                        value="<%= typeof query !== 'undefined' ? query.search || '' : '' %>"
+                                                        placeholder="Search leads by name, email, phone..." 
+                                                        class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm">
+                                                    <div class="absolute left-3 top-2.5 text-gray-400">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                                     </div>
                                                 </div>
-                                                <% } else { %>
-                                                    <% leads.forEach(lead=> { %>
-                                                        <div
-                                                            class="bg-white rounded-lg shadow border border-gray-200 p-4">
-                                                            <div class="flex justify-between items-start mb-3">
-                                                                <div>
-                                                                    <h3 class="font-semibold text-gray-900 truncate"
-                                                                        title="<%= lead.name %>">
-                                                                        <%= lead.name %>
-                                                                    </h3>
-                                                                    <div class="text-sm text-gray-500 mt-0.5">
-                                                                        <%= lead.email %>
-                                                                    </div>
-                                                                    <div class="text-xs text-gray-400">
-                                                                        <%= lead.phone %>
-                                                                    </div>
-                                                                </div>
-                                                                <span
-                                                                    class="badge badge-<%= lead.status %> text-xs px-2 py-0.5 rounded-full">
-                                                                    <%= lead.status.replace('_', ' ' ).toUpperCase() %>
-                                                                </span>
-                                                            </div>
+                                                <div>
+                                                    <select name="status" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm bg-white">
+                                                        <option value="">All Statuses</option>
+                                                        <option value="new" <%= typeof query !== 'undefined' && query.status === 'new' ? 'selected' : '' %>>New</option>
+                                                        <option value="pending" <%= typeof query !== 'undefined' && query.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                                        <option value="in_progress" <%= typeof query !== 'undefined' && query.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+                                                        <option value="completed" <%= typeof query !== 'undefined' && query.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                                                        <option value="closed_won" <%= typeof query !== 'undefined' && query.status === 'closed_won' ? 'selected' : '' %>>Closed Won</option>
+                                                        <option value="closed_lost" <%= typeof query !== 'undefined' && query.status === 'closed_lost' ? 'selected' : '' %>>Closed Lost</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <select name="leadType" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm bg-white">
+                                                        <option value="">All Types</option>
+                                                        <option value="quote" <%= typeof query !== 'undefined' && query.leadType === 'quote' ? 'selected' : '' %>>Quote</option>
+                                                        <option value="commercial" <%= typeof query !== 'undefined' && query.leadType === 'commercial' ? 'selected' : '' %>>Commercial</option>
+                                                    </select>
+                                                </div>
+                                                <div class="md:col-span-4 flex justify-end gap-2">
+                                                    <a href="/admin/leads" class="clear-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">Clear Filters</a>
+                                                </div>
+                                            </form>
+                                        </div>
 
-                                                            <div
-                                                                class="flex items-center justify-between text-sm text-gray-500 mb-4 bg-gray-50 p-2 rounded">
-                                                                <span
-                                                                    class="badge badge-type text-xs px-2 py-1 rounded">
-                                                                    <%= lead.leadType %>
-                                                                </span>
-                                                                <span class="text-xs">
-                                                                    <%= new Date(lead.createdAt).toLocaleDateString() %>
-                                                                </span>
-                                                            </div>
-
-                                                            <div class="flex gap-2 pt-2 border-t border-gray-100">
-                                                                <a href="/admin/leads/<%= lead.id %>/edit"
-                                                                    class="flex-1 text-center py-2 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition text-sm font-medium flex items-center justify-center gap-1">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16"
-                                                                        height="16" viewBox="0 0 24 24" fill="none"
-                                                                        stroke="currentColor" stroke-width="2"
-                                                                        stroke-linecap="round" stroke-linejoin="round">
-                                                                        <path
-                                                                            d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                        </path>
-                                                                        <path
-                                                                            d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                        </path>
-                                                                    </svg>
-                                                                    Edit
-                                                                </a>
-                                                                <a href="/admin/leads/<%= lead.id %>"
-                                                                    class="flex-1 text-center py-2 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition text-sm font-medium flex items-center justify-center gap-1">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                                    </svg>
-                                                                    View
-                                                                </a>
-                                                                <form action="/admin/leads/<%= lead.id %>/delete"
-                                                                    method="POST"
-                                                                    onsubmit="return confirm('Are you sure you want to delete this lead?');"
-                                                                    class="flex-1">
-                                                                    <button type="submit"
-                                                                        class="w-full py-2 bg-red-50 text-red-700 rounded hover:bg-red-100 transition text-sm font-medium flex items-center justify-center gap-1">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            width="16" height="16" viewBox="0 0 24 24"
-                                                                            fill="none" stroke="currentColor"
-                                                                            stroke-width="2" stroke-linecap="round"
-                                                                            stroke-linejoin="round">
-                                                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                                                            <path
-                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                            </path>
-                                                                        </svg>
-                                                                        Delete
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                        <% }) %>
-                                                            <% } %>
+                                          <!-- Mobile View (Cards) -->
+                                        <div id="listCardContainer" class="block md:hidden space-y-4">
+                                            <%- include('./_cards') %>
                                         </div>
 
                                         <div
@@ -207,173 +149,21 @@
                                                     </tr>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    <% if (leads.length===0) { %>
-                                                        <tr>
-                                                            <td colspan="6"
-                                                                class="px-6 py-10 text-center text-gray-500">
-                                                                <div class="flex flex-col items-center">
-                                                                    <svg class="w-12 h-12 text-gray-300 mb-4"
-                                                                        fill="none" stroke="currentColor"
-                                                                        viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z">
-                                                                        </path>
-                                                                    </svg>
-                                                                    <p class="text-lg font-medium">No leads found</p>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <% } else { %>
-                                                            <% leads.forEach(lead=> { %>
-                                                                <tr class="hover:bg-gray-50 transition-colors">
-                                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <div class="font-semibold text-gray-900">
-                                                                            <%= lead.name %>
-                                                                        </div>
-                                                                        <!-- Mobile-only contact info -->
-                                                                        <div
-                                                                            class="md:hidden text-xs text-gray-500 mt-1">
-                                                                            <%= lead.email %><br>
-                                                                                <%= lead.leadType %>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td class="px-6 py-4 hidden md:table-cell">
-                                                                        <div class="text-sm text-gray-600">
-                                                                            <%= lead.email %>
-                                                                        </div>
-                                                                        <div class="text-sm text-gray-500">
-                                                                            <%= lead.phone %>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td class="px-6 py-4 hidden lg:table-cell">
-                                                                        <span class="badge badge-type">
-                                                                            <%= lead.leadType %>
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <span class="badge badge-<%= (lead.status || '').toLowerCase() %>">
-                                                                            <%= (lead.status || '').replace('_', ' ').toUpperCase() %>
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <div class="flex items-center gap-2">
-                                                                            <% if (lead.estimates && lead.estimates.length > 0) { %>
-                                                                                <a href="/admin/estimates/<%= lead.estimates[0].id %>/preview" target="_blank" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition" title="View Estimate">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                                                </a>
-                                                                            <% } %>
-                                                                            <% if (lead.invoices && lead.invoices.length > 0) { %>
-                                                                                <a href="/admin/invoices/<%= lead.invoices[0].id %>/preview" target="_blank" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition" title="View Invoice">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                                                </a>
-                                                                            <% } %>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td
-                                                                        class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">
-                                                                        <%= new
-                                                                            Date(lead.createdAt).toLocaleDateString() %>
-                                                                    </td>
-                                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <div class="flex gap-2">
-                                                                            <a href="/admin/leads/<%= lead.id %>/edit"
-                                                                                class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                                                                                title="Edit">
-                                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                    width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    stroke-width="2"
-                                                                                    stroke-linecap="round"
-                                                                                    stroke-linejoin="round">
-                                                                                    <path
-                                                                                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                                    </path>
-                                                                                    <path
-                                                                                        d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                                    </path>
-                                                                                </svg>
-                                                                            </a>
-                                                                            <a href="/admin/leads/<%= lead.id %>"
-                                                                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                                                                title="View Details">
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                                                </svg>
-                                                                            </a>
-                                                                            <% if (lead.status !== 'closed_won' && lead.status !== 'closed_lost') { %>
-                                                                                <button type="button" onclick="openAssignModal('<%= lead.id %>', '<%= lead.name %>')"
-                                                                                    class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
-                                                                                    title="Assign to Employee">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                                                                        <circle cx="8.5" cy="7" r="4"></circle>
-                                                                                        <line x1="20" y1="8" x2="20" y2="14"></line>
-                                                                                        <line x1="23" y1="11" x2="17" y2="11"></line>
-                                                                                    </svg>
-                                                                                </button>
-                                                                            <% } %>
-
-                                                                            <form
-                                                                                action="/admin/leads/<%= lead.id %>/delete"
-                                                                                method="POST"
-                                                                                onsubmit="return confirm('Are you sure you want to delete this lead?');"
-                                                                                class="inline">
-                                                                                <button type="submit"
-                                                                                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                                                    title="Delete">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="20" height="20"
-                                                                                        viewBox="0 0 24 24" fill="none"
-                                                                                        stroke="currentColor"
-                                                                                        stroke-width="2"
-                                                                                        stroke-linecap="round"
-                                                                                        stroke-linejoin="round">
-                                                                                        <polyline points="3 6 5 6 21 6">
-                                                                                        </polyline>
-                                                                                        <path
-                                                                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                                        </path>
-                                                                                    </svg>
-                                                                                </button>
-                                                                            </form>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                                <% }) %>
-                                                                    <% } %>
+                                                  <tbody id="listTableBody">
+                                                    <%- include('./_table_rows') %>
                                                 </tbody>
                                             </table>
                                         </div>
 
-                                        <% if (totalPages> 1) { %>
-                                            <div class="pagination mt-8 flex justify-center">
-                                                <% if (currentPage> 1) { %>
-                                                    <a href="/admin/leads?page=<%= currentPage - 1 %>"
-                                                        class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition">Previous</a>
-                                                    <% } %>
-
-                                                        <% for (let i=1; i <=totalPages; i++) { %>
-                                                            <a href="/admin/leads?page=<%= i %>"
-                                                                class="px-4 py-2 border rounded-lg mx-1 <%= currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100' %> transition">
-                                                                <%= i %>
-                                                            </a>
-                                                            <% } %>
-
-                                                                <% if (currentPage < totalPages) { %>
-                                                                    <a href="/admin/leads?page=<%= currentPage + 1 %>"
-                                                                        class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition">Next</a>
-                                                                    <% } %>
-                                            </div>
-                                            <% } %>
+                                        <div id="paginationContainer">
+                                            <%- include('./_pagination') %>
+                                        </div>
                                     </div>
                                 </main>
                         </div>
 
                         <script src="/js/toast.js"></script>
+                        <script src="/js/list-ajax.js"></script>
 
                         <!-- Assignment modal1 -->
                         <div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto h-full w-full flex items-center justify-center px-4">

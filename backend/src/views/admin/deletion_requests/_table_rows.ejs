@@ -1,0 +1,35 @@
+<% if (requests && requests.length > 0) { %>
+    <% requests.forEach(request => { %>
+        <tr>
+            <td><%= request.name %></td>
+            <td><%= request.email %></td>
+            <td>
+                <span class="badge 
+                    <%= request.status === 'pending' ? 'badge-warning' : 
+                        request.status === 'completed' ? 'badge-success' :
+                        request.status === 'processing' ? 'badge-primary' :
+                        'badge-danger' %>">
+                    <%= request.status.toUpperCase() %>
+                </span>
+            </td>
+            <td><%= new Date(request.requestedAt).toLocaleString() %></td>
+            <td>
+                <% if (request.processedAt) { %>
+                    <%= new Date(request.processedAt).toLocaleString() %>
+                <% } else { %>
+                    -
+                <% } %>
+            </td>
+            <td>
+                <a href="/admin/deletion-requests/<%= request.id %>" 
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm">
+                    View Details
+                </a>
+            </td>
+        </tr>
+    <% }) %>
+<% } else { %>
+    <tr>
+        <td colspan="6" class="text-center text-gray-500">No requests found</td>
+    </tr>
+<% } %>

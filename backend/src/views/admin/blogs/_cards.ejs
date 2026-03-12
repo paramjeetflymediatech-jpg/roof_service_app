@@ -1,0 +1,47 @@
+<% if (blogs && blogs.length > 0) { %>
+    <% blogs.forEach(blog => { %>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+            <div class="flex gap-4 mb-3">
+                <div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                    <% if (blog.image) { %>
+                        <img src="<%= blog.image %>" alt="<%= blog.title %>" class="w-full h-full object-cover">
+                    <% } else { %>
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <i class="far fa-image fa-lg"></i>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-gray-900 truncate"><%= blog.title %></h3>
+                    <p class="text-xs text-gray-500 mb-1">By <%= blog.author %></p>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium 
+                            <%= blog.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' %>">
+                            <%= blog.status.charAt(0).toUpperCase() + blog.status.slice(1) %>
+                        </span>
+                        <span class="text-xs text-gray-400"><%= new Date(blog.createdAt).toLocaleDateString() %></span>
+                    </div>
+                </div>
+            </div>
+            
+            <% if (blog.excerpt) { %>
+                <p class="text-sm text-gray-600 mb-4 line-clamp-2"><%= blog.excerpt %></p>
+            <% } %>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+                <a href="/admin/blogs/<%= blog.id %>/edit" class="flex-1 text-center py-2 px-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm font-medium">
+                    Edit
+                </a>
+                <form action="/admin/blogs/<%= blog.id %>/delete" method="POST" class="inline flex-none" onsubmit="return confirm('Delete this blog?')">
+                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    <% }) %>
+<% } else { %>
+    <div class="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
+        <p class="text-gray-500">No blogs found.</p>
+    </div>
+<% } %>

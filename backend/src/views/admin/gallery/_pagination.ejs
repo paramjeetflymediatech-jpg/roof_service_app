@@ -1,0 +1,16 @@
+<% if (currentPage > 1) { %>
+    <a href="/admin/gallery?page=<%= currentPage - 1 %>&location=<%= encodeURIComponent(location) %>&category=<%= encodeURIComponent(category) %>"
+        class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition text-gray-700">Previous</a>
+<% } %>
+
+<% for (let i = 1; i <= totalPages; i++) { %>
+    <a href="/admin/gallery?page=<%= i %>&location=<%= encodeURIComponent(location) %>&category=<%= encodeURIComponent(category) %>"
+        class="px-4 py-2 border rounded-lg mx-1 <%= currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-700 hover:bg-gray-100' %> transition">
+        <%= i %>
+    </a>
+<% } %>
+
+<% if (currentPage < totalPages) { %>
+    <a href="/admin/gallery?page=<%= currentPage + 1 %>&location=<%= encodeURIComponent(location) %>&category=<%= encodeURIComponent(category) %>"
+        class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition text-gray-700">Next</a>
+<% } %>

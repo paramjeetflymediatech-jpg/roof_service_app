@@ -1,0 +1,45 @@
+<% if (invoices && invoices.length > 0) { %>
+    <% invoices.forEach(invoice => { %>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider"><%= invoice.invoiceNumber %></span>
+                    <h3 class="font-bold text-gray-900 mt-1"><%= invoice.clientName %></h3>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+                    <%= invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : 
+                       invoice.status === 'Unpaid' ? 'bg-red-100 text-red-700' : 
+                       invoice.status === 'Overdue' ? 'bg-orange-100 text-orange-700' : 
+                       invoice.status === 'Cancelled' ? 'bg-gray-100 text-gray-700' : 'bg-blue-100 text-blue-700' %>">
+                    <%= invoice.status %>
+                </span>
+            </div>
+
+            <div class="space-y-1 text-sm text-gray-600 mb-4">
+                <p><span class="text-gray-400">Date:</span> <%= new Date(invoice.date).toLocaleDateString() %></p>
+                <p><span class="text-gray-400">Total:</span> <span class="font-bold text-gray-900">$<%= invoice.total ? invoice.total.toFixed(2) : '0.00' %></span></p>
+                <% if (invoice.lead) { %>
+                    <p><span class="text-gray-400">Lead:</span> <%= invoice.lead.name %></p>
+                <% } %>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+                <a href="/admin/invoices/<%= invoice.id %>/edit" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M18.364 5.636l-3.536 3.536m0 0l-1.06-1.06m1.06 1.06l3.536-3.536a2.121 2.121 0 013 3l-3.536 3.536m-5.656-5.656l1.06 1.06m0 0L15.536 12"></path></svg>
+                </a>
+                <a href="/admin/invoices/<%= invoice.id %>/preview" target="_blank" class="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" title="Preview">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                </a>
+                <form action="/admin/invoices/<%= invoice.id %>/delete" method="POST" class="inline" onsubmit="return confirm('Delete this invoice?')">
+                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    <% }) %>
+<% } else { %>
+    <div class="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
+        <p class="text-gray-500">No invoices found.</p>
+    </div>
+<% } %>
