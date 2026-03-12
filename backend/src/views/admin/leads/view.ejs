@@ -1003,8 +1003,9 @@
                                     if (timeSlot === 'evening') hour = 18;
 
                                     const scheduledDate = new Date(date);
+                                    console.log(scheduledDate, 'before');
                                     scheduledDate.setHours(hour, 0, 0, 0);
-
+                                    console.log(scheduledDate, 'after');
                                     if (!employeeId) {
                                         showToast('Please select an employee', 'error');
                                         return;
