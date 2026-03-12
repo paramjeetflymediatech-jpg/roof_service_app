@@ -123,9 +123,9 @@ const getUserList = async (req, res) => {
 
     const { search, role, isActive } = req.query;
     const where = {};
-
+    
     if (search) {
-      const parsedDate = moment(search, [" MM/DD/YYYY", "D/M/YYYY"], true);
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
 
       if (parsedDate.isValid()) {
         where.createdAt = {
