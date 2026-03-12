@@ -25,7 +25,7 @@ const EstimateController = {
         const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
 
         if (parsedDate.isValid()) {
-          where.Estimate.created_at = {
+          where.created_at = {
             [Op.between]: [
               parsedDate.startOf("day").toDate(),
               parsedDate.endOf("day").toDate(),
