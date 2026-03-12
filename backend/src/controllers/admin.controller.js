@@ -11,6 +11,7 @@ const {
   Estimate,
   JobWorkSession,
 } = require("../models");
+const moment = require("moment");
 const fs = require("fs");
 const path = require("path");
 const { Op, fn, col, where: sequelizeWhere } = require("sequelize");
@@ -122,17 +123,35 @@ const getUserList = async (req, res) => {
 
     const { search, role, isActive } = req.query;
     const where = {};
-
+    
     if (search) {
-      where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } },
-        { phone: { [Op.like]: `%${search}%` } },
-        sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
-          [Op.like]: `%${search}%`
-        }),
-      ];
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+
+      if (parsedDate.isValid()) {
+        where.createdAt = {
+          [Op.between]: [
+            parsedDate.startOf("day").toDate(),
+            parsedDate.endOf("day").toDate(),
+          ],
+        };
+      } else {
+        where[Op.or] = [
+          { name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { phone: { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
+    // if (search) {
+    //   where[Op.or] = [
+    //     { name: { [Op.like]: `%${search}%` } },
+    //     { email: { [Op.like]: `%${search}%` } },
+    //     { phone: { [Op.like]: `%${search}%` } },
+    //     sequelizeWhere(fn("DATE_FORMAT", col("created_at"), "%d/%m/%Y"), {
+    //       [Op.like]: `%${search}%`
+    //     }),
+    //   ];
+    // }
 
     if (role) {
       where.role = role;
