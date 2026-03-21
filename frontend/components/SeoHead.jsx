@@ -8,8 +8,7 @@ const SeoHead = ({ pageName, initialSeoData }) => {
     error,
   } = useSeo(pageName, { skip: !!initialSeoData });
   const seoData = initialSeoData || fetchedData;
-  console.log(seoData, "------------------------------------");
-
+ 
   if (typeof window !== "undefined") {
     console.log(`[SeoHead] Rendering for ${pageName}`, seoData);
   }

@@ -737,9 +737,26 @@ export const NEW_CONSTRUCTION_FAQS = [
         answer: 'Yes, top-rated Surrey roofing contractors are both licensed and insured. Considering this, Mainstreet Roofing in Surrey provides you with full coverage and high liability insurance.',
     },
 ];
+// Utility function for FAQ Schema
+export const getFAQSchema = (faqs) => {
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+            }
+        }))
+    };
+};
 
-
-
-
-
+// Pre-generated schemas for main FAQ sets
+export const MAIN_FAQ_SCHEMA = getFAQSchema(FAQS);
+export const ABOUT_FAQ_SCHEMA = getFAQSchema(ABOUT_FAQS);
+export const REROOFING_FAQ_SCHEMA = getFAQSchema(REROOFING_FAQS);
+export const METAL_ROOFING_FAQ_SCHEMA = getFAQSchema(METAL_ROOFING_FAQS);
+export const NEW_CONSTRUCTION_FAQ_SCHEMA = getFAQSchema(NEW_CONSTRUCTION_FAQS);
 
