@@ -7,9 +7,9 @@ import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker, HiChevronDown } from "r
 import {
   FaFacebook,
   FaTwitter,
-  FaInstagram, 
+  FaInstagram,
   FaPinterest,
-  FaWhatsapp, 
+  FaWhatsapp,
   FaGooglePlay,
 } from "react-icons/fa";
 import { usePathname } from "next/navigation";
@@ -106,11 +106,10 @@ export default function LayoutShell({ children }) {
 
         {/* Header */}
         <header
-          className={`transition-all duration-300 ${
-            scrolled
+          className={`transition-all duration-300 ${scrolled
               ? "bg-white/95 backdrop-blur-md shadow-md py-2"
               : "bg-white py-4"
-          }`}
+            }`}
         >
           <div className="container-custom flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3 group">
@@ -509,7 +508,9 @@ export default function LayoutShell({ children }) {
                   <div>
                     <p className="text-white font-medium">Location</p>
                     <p className="hover:text-primary-400 transition-colors">
-                      {COMPANY_INFO.address}
+                      <a href="https://maps.app.goo.gl/rNsU8DNTrkMwWDDG6" target="_blank">
+                        {COMPANY_INFO.address}
+                      </a>
                     </p>
                   </div>
                 </li>
