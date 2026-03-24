@@ -11,9 +11,11 @@ import {
   ImageBackground,
   Image,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { COLORS, SHADOWS } from '../utils/constants';
@@ -26,6 +28,7 @@ const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 const EmployeeProfileScreen = () => {
   const navigation = useNavigation();
   const { user, logout, login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState({ total: 0, inProgress: 0, completed: 0 });
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,6 +152,11 @@ const EmployeeProfileScreen = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -160,7 +168,7 @@ const EmployeeProfileScreen = () => {
           style={styles.headerBackground}
           imageStyle={styles.headerImageStyle}
         >
-          <View style={styles.headerOverlay}>
+          <View style={[styles.headerOverlay, { paddingTop: insets.top > 0 ? insets.top + verticalScale(10) : verticalScale(20) }]}>
             <View style={styles.navBar}>
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -208,9 +216,7 @@ const EmployeeProfileScreen = () => {
                 </TouchableOpacity>
               </View>
               <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
-              <Text style={styles.userEmail}>
-                {user?.email || 'email@example.com'}
-              </Text>
+              <Text style={styles.userEmail}>{user?.email || 'email@example.com'}</Text>
             </View>
           </View>
         </ImageBackground>
@@ -382,7 +388,7 @@ const EmployeeProfileScreen = () => {
       </ScrollView>
 
       {/* Footer Nav */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('EmployeeDashboard')}
@@ -397,7 +403,7 @@ const EmployeeProfileScreen = () => {
           <Text style={styles.navIcon}>💼</Text>
           <Text style={styles.navLabel}>Jobs</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+        <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>👤</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>
             Profile
@@ -430,7 +436,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
     paddingHorizontal: moderateScale(20),
   },
   navBar: {
@@ -467,6 +472,7 @@ const styles = StyleSheet.create({
   },
   profileHeaderContent: {
     alignItems: 'center',
+    width: "100%",
   },
   avatarContainer: {
     width: 90,
@@ -495,6 +501,13 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     marginBottom: 4,
   },
+  userEmail: {
+    fontSize: 16, 
+    color: COLORS.white,
+    textAlign:"center", 
+    marginBottom: 4,
+  },
+ 
   userRole: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
@@ -597,8 +610,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: COLORS.white,
     paddingVertical: 12,
-    paddingBottom:
-      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     ...SHADOWS.large,

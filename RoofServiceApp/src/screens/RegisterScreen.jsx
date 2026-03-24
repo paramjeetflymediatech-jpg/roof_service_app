@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import { api } from '../config/api';
 import Input from '../components/Input';
@@ -20,6 +21,7 @@ import { moderateScale, verticalScale, scale } from '../utils/responsive';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { login } = useAuth();
   const [step, setStep] = useState(1); // 1: Personal Info, 2: Security & Address
   const [formData, setFormData] = useState({
@@ -214,7 +216,13 @@ const RegisterScreen = () => {
     >
       <View style={styles.circle1} />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top > 0 ? insets.top : verticalScale(40),
+            paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(40),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
@@ -260,7 +268,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: verticalScale(40),
   },
   content: {
     paddingHorizontal: moderateScale(24),

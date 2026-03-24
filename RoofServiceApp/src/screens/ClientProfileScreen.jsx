@@ -11,9 +11,11 @@ import {
   ImageBackground,
   Image,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { COLORS, SHADOWS } from '../utils/constants';
@@ -26,6 +28,7 @@ const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 const ClientProfileScreen = () => {
   const navigation = useNavigation();
   const { user, logout, login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState({ total: 0, inProgress: 0, completed: 0 });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -191,8 +194,16 @@ const ClientProfileScreen = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom > 0 ? insets.bottom + verticalScale(20) : verticalScale(40) }
+        ]}
         showsVerticalScrollIndicator={false}
         style={{ zIndex: 10 }}
       >
@@ -202,7 +213,7 @@ const ClientProfileScreen = () => {
           style={styles.headerBackground}
           imageStyle={styles.headerImageStyle}
         >
-          <View style={styles.headerOverlay}>
+          <View style={[styles.headerOverlay, { paddingTop: insets.top > 0 ? insets.top + verticalScale(10) : verticalScale(20) }]}>
             <View style={styles.navBar}>
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -414,7 +425,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
     paddingHorizontal: moderateScale(20),
   },
   navBar: {

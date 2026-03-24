@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, SHADOWS, LEAD_STATUS } from '../utils/constants';
@@ -28,6 +29,7 @@ const HERO_IMAGE = require('../../assets/roofing-background.jpg'); // Ensure thi
 const ClientHomeScreen = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState({
     activeQuotes: 0,
     pending: 0,
@@ -129,7 +131,7 @@ const ClientHomeScreen = () => {
           style={styles.heroSection}
           imageStyle={styles.heroImage}
         >
-          <View style={styles.heroOverlay}>
+          <View style={[styles.heroOverlay, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
@@ -261,7 +263,7 @@ const ClientHomeScreen = () => {
             style={styles.menuOverlayBackdrop}
             onPress={() => setIsMenuOpen(false)}
           />
-          <View style={styles.menuContainer}>
+          <View style={[styles.menuContainer, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20), paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(20) }]}>
             <View style={styles.menuHeader}>
               <Text style={styles.menuTitle}>Menu</Text>
               <TouchableOpacity onPress={() => setIsMenuOpen(false)}>
@@ -339,7 +341,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)', // Dark overlay for text readability
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
   },
   header: {
     flexDirection: 'row',
@@ -537,9 +538,7 @@ const styles = StyleSheet.create({
   menuContainer: {
     width: getMenuWidth(),
     backgroundColor: COLORS.white,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
     paddingHorizontal: moderateScale(20),
-    paddingBottom: verticalScale(24),
     ...SHADOWS.large,
   },
   menuHeader: {

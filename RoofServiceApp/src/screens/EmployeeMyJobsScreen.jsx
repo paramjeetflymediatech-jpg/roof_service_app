@@ -11,7 +11,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../config/api';
@@ -31,6 +31,7 @@ const TABS = ['All', 'New', 'Active', 'Completed'];
 const EmployeeMyJobsScreen = () => {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -238,7 +239,7 @@ const EmployeeMyJobsScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -320,7 +321,7 @@ const EmployeeMyJobsScreen = () => {
       />
 
       {/* Footer Nav - Replicated to maintain context */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('EmployeeDashboard')}
@@ -356,7 +357,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(20),
     paddingVertical: verticalScale(16),
     backgroundColor: COLORS.white,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(34),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
@@ -509,8 +509,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.white,
     paddingVertical: verticalScale(12),
-    paddingBottom:
-      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     justifyContent: 'space-around',

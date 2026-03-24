@@ -10,11 +10,13 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SHADOWS, FONTS } from '../utils/constants'; // Assuming these exist
 import { moderateScale, verticalScale } from '../utils/responsive'; // Assuming these exist
 
 const HelpSupportScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const handleEmailSupport = () => {
     Linking.openURL('mailto:mainstreetroofing604@gmail.com');
@@ -52,7 +54,7 @@ const HelpSupportScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -119,7 +121,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(35),
     paddingBottom: verticalScale(16),
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,

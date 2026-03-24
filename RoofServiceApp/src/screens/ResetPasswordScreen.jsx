@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../config/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -19,6 +20,7 @@ import { moderateScale, verticalScale, scale } from '../utils/responsive';
 const ResetPasswordScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const insets = useSafeAreaInsets();
   const { email } = route.params || {};
 
   const [otp, setOtp] = useState('');
@@ -88,7 +90,13 @@ const ResetPasswordScreen = () => {
     >
       <View style={styles.circle1} />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top > 0 ? insets.top : verticalScale(40),
+            paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(40),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
@@ -177,7 +185,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: verticalScale(40),
   },
   content: {
     paddingHorizontal: moderateScale(24),

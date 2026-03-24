@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
@@ -28,6 +29,7 @@ const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 const AdminProfileScreen = () => {
   const navigation = useNavigation();
   const { user, logout, login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
@@ -158,7 +160,7 @@ const AdminProfileScreen = () => {
         style={styles.headerBackground}
         imageStyle={styles.headerImage}
       >
-        <View style={styles.headerOverlay}>
+        <View style={[styles.headerOverlay, { paddingTop: insets.top > 0 ? insets.top + verticalScale(20) : verticalScale(30) }]}>
           <View style={styles.profileHeaderContent}>
             <View style={styles.avatarContainer}>
               {profilePicture ? (
@@ -335,7 +337,7 @@ const AdminProfileScreen = () => {
       </ScrollView>
 
       {/* Top Bar (Overlay) */}
-      <View style={[styles.topBar, styles.topBarOverlay]}>
+      <View style={[styles.topBar, styles.topBarOverlay, { paddingTop: insets.top > 0 ? insets.top + verticalScale(10) : verticalScale(20) }]}>
         <BrandLogo
           imageStyle={{ width: 30, height: 30 }}
           tintColor={COLORS.white}
@@ -347,7 +349,7 @@ const AdminProfileScreen = () => {
       </View>
 
       {/* Footer Nav */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('AdminDashboard')}
@@ -402,7 +404,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: moderateScale(40),
     borderBottomRightRadius: moderateScale(40),
     padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
   },
   topBar: {
     flexDirection: 'row',
@@ -415,7 +416,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
     zIndex: 10,
   },
   logoutButton: {
@@ -638,8 +638,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.white,
     paddingVertical: verticalScale(12),
-    paddingBottom:
-      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     justifyContent: 'space-around',

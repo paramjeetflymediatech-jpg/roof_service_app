@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
@@ -29,6 +30,7 @@ const formatDateLocal = value => {
 
 const ClientLeadDetailScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { lead: initialLead } = useRoute().params || {};
 
   const [lead, setLead] = useState(initialLead || null);
@@ -141,7 +143,7 @@ const ClientLeadDetailScreen = () => {
 
   if (!lead) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
         {loading ? (
           <ActivityIndicator
             size="large"
@@ -183,7 +185,7 @@ const ClientLeadDetailScreen = () => {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}
       contentContainerStyle={styles.scrollContent}
     >
       <View style={styles.header}>
@@ -521,7 +523,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingTop: verticalScale(20),
   },
   scrollContent: {
     padding: moderateScale(20),

@@ -1,28 +1,30 @@
 import React from 'react';
+import * as ReactNative from 'react-native';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
   Image,
   Platform,
 } from 'react-native';
 import { version } from '../../package.json';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AboutAppScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const appVersion = version;
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <ReactNative.StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -97,7 +99,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(35),
     paddingBottom: verticalScale(16),
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,

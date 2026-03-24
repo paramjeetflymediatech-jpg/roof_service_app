@@ -25,7 +25,6 @@ const isValidHHMM = value => TIME_REGEX.test(value.trim());
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
   const { job } = useRoute().params || {};
-  console.log(job, 'ss')
   const [currentJob, setCurrentJob] = useState(job);
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
@@ -361,7 +360,7 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.infoIcon}>⏲️</Text>
               <View>
                 <Text style={styles.infoLabel}>Total Work Hours</Text>
-                <Text style={styles.infoValue}>{currentJob.actualHours}</Text>
+                <Text style={styles.infoValue}>{currentJob.actualHours} </Text>
               </View>
             </View>
           ) : null}

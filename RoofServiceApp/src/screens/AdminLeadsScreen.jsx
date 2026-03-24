@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS, FONTS, SHADOWS, hoursToHMS, LocalTime } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
@@ -27,6 +28,7 @@ const formatDateLocal = value => {
 
 const AdminLeadsScreen = ({ route }) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { userId, userName } = route.params || {};
 
   const [quotes, setQuotes] = useState([]);
@@ -300,7 +302,7 @@ const AdminLeadsScreen = ({ route }) => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
         <Text style={styles.headerTitle}>
           {userName ? `Leads: ${userName}` : 'All Leads'}
         </Text>
@@ -444,7 +446,7 @@ const AdminLeadsScreen = ({ route }) => {
       </Modal>
 
       {/* Footer navigation */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('AdminDashboard')}
@@ -484,7 +486,6 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: COLORS.white,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(35),
     paddingBottom: verticalScale(16),
     paddingHorizontal: moderateScale(20),
     borderBottomWidth: 1,
@@ -733,8 +734,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.white,
     paddingVertical: verticalScale(12),
-    paddingBottom:
-      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     justifyContent: 'space-around',

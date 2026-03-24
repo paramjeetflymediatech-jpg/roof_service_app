@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../App';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, JOB_STATUS, SHADOWS, LocalTime } from '../utils/constants';
@@ -42,6 +43,7 @@ const isToday = dateString => {
 const EmployeeDashboardScreen = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -266,7 +268,7 @@ const EmployeeDashboardScreen = () => {
         style={styles.headerBackground}
         imageStyle={styles.headerImage}
       >
-        <View style={styles.headerOverlay}>
+        <View style={[styles.headerOverlay, { paddingTop: insets.top > 0 ? insets.top + verticalScale(10) : verticalScale(20) }]}>
           <View style={styles.topBar}>
             <BrandLogo
               imageStyle={{
@@ -376,7 +378,7 @@ const EmployeeDashboardScreen = () => {
       </View>
 
       {/* Bottom Nav */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>🏠</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>Home</Text>
@@ -419,7 +421,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: moderateScale(30),
     borderBottomRightRadius: moderateScale(30),
     padding: moderateScale(20),
-    paddingTop: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
   },
   topBar: {
     flexDirection: 'row',
@@ -641,8 +642,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.white,
     paddingVertical: verticalScale(12),
-    paddingBottom:
-      Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     justifyContent: 'space-around',

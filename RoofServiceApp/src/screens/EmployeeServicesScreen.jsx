@@ -14,12 +14,14 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 import { api, SERVER_URL } from '../config/api';
 
 const EmployeeServicesScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -110,7 +112,7 @@ const EmployeeServicesScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
         <TouchableOpacity
@@ -225,7 +227,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingTop: Platform.OS === 'ios' ? verticalScale(40) : verticalScale(10),
   },
   header: {
     flexDirection: 'row',
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(40),
   },
   cardContainer: {
-    height: verticalScale(220),
+    height: "auto",
     marginBottom: verticalScale(24),
     borderRadius: moderateScale(20),
     ...SHADOWS.medium,
@@ -274,6 +275,9 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     marginBottom: verticalScale(12),
+    backgroundColor: "rgb(0,0,0,0.5)",
+    padding: moderateScale(5),
+    borderRadius: moderateScale(10),
   },
   cardTitle: {
     fontSize: moderateScale(24),
@@ -292,7 +296,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   priceTag: {
-    color: COLORS.primary,
+    color: COLORS.white,
     fontWeight: 'bold',
     marginTop: 4,
   },
