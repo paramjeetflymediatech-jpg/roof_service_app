@@ -9,7 +9,8 @@ import {
   FaTwitter,
   FaInstagram, 
   FaPinterest,
-  FaWhatsapp,
+  FaWhatsapp, 
+  FaGooglePlay,
 } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 
@@ -81,7 +82,7 @@ export default function LayoutShell({ children }) {
                 <HiPhone className="text-accent-500" />
                 {COMPANY_INFO.phone}
               </a>
-              <a href={`mailto:${COMPANY_INFO.email}`} className="flex gap-2">
+              <a href={`mailto:${COMPANY_INFO.email}`} className="flex gap-2 break-all">
                 <HiMail className="text-accent-500" />
                 {COMPANY_INFO.email}
               </a>
@@ -275,7 +276,7 @@ export default function LayoutShell({ children }) {
       {/* Footer */}
       <footer className="bg-dark-900 text-gray-300 pt-16 pb-40 lg:pb-8">
         <div className="container-custom">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-5 gap-12 mb-12">
             {/* Company Info */}
             <div className="space-y-6">
               <Link
@@ -486,7 +487,7 @@ export default function LayoutShell({ children }) {
                   </div>
                 </li>
 
-                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400 break-all">
                   <div className="text-primary-500">
                     <HiMail size={20} />
                   </div>
@@ -494,7 +495,7 @@ export default function LayoutShell({ children }) {
                     <p className="text-white font-medium">Email</p>
                     <a
                       href={`mailto:${COMPANY_INFO.email}`}
-                      className="hover:text-primary-400 transition-colors"
+                      className="hover:text-primary-400 break-all transition-colors"
                     >
                       {COMPANY_INFO.email}
                     </a>
@@ -549,6 +550,30 @@ export default function LayoutShell({ children }) {
                   <FaPinterest />
                 </a>
               </div>
+            </div>
+            <div className="text-center md:text-left">
+              <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wider">
+                Download Our App
+              </h3>
+
+              <ul className="space-y-4">
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                  <div className="text-primary-500">
+                    <FaGooglePlay size={40} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Google Play Store</p>
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.roofserviceapp"
+                      className="hover:text-primary-400 transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Get it on Google Play
+                    </a>
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
 
