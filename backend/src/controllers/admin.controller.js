@@ -243,9 +243,10 @@ const getLeadList = async (req, res) => {
     if (leadType) {
       where.leadType = leadType;
     }
-
-    const totalLeads = await Lead.count({ where });
-    const leads = await Lead.findAll({
+    let pendingLeadsCount = 0;
+    let completedLeadsCount = 0;
+    
+    const { count: totalLeads, rows: leads } = await Lead.findAndCountAll({
       where,
       include: [
         { model: Estimate, as: "estimates", attributes: ["id", "status"] },
@@ -254,26 +255,54 @@ const getLeadList = async (req, res) => {
       order: [["createdAt", "DESC"]],
       limit: limit,
       offset: offset,
+      distinct: true,
     });
+
+    pendingLeadsCount = await Lead.count({
+      where: {
+        status: { [Op.in]: ["new", "pending"] },
+      },
+    });
+
+    completedLeadsCount = await Lead.count({
+      where: { status: "completed" },
+    });
+
+    console.log(`[getLeadList] Total: ${totalLeads}, Pending: ${pendingLeadsCount}, Completed: ${completedLeadsCount}`);
 
     const totalPages = Math.ceil(totalLeads / limit);
 
     // If AJAX request, return rendered partials
     if (req.xhr || req.query.ajax) {
-      return res.render('admin/leads/_table_rows', { leads }, (err, tableHtml) => {
-        res.render('admin/leads/_cards', { leads }, (err, cardHtml) => {
-          res.render('admin/leads/_pagination', { totalPages, currentPage: page, limit, totalItems: totalLeads, query: req.query }, (err, paginationHtml) => {
-            return res.json({
-              tableHtml,
-              cardHtml,
-              paginationHtml,
-              query: req.query
-            });
-          });
+      console.log(`[getLeadList] Rendering AJAX partials`);
+      return res.render("admin/leads/_table_rows", { leads }, (err, tableHtml) => {
+        if (err) console.error("AJAX _table_rows error:", err);
+        res.render("admin/leads/_cards", { leads }, (err, cardHtml) => {
+          if (err) console.error("AJAX _cards error:", err);
+          res.render(
+            "admin/leads/_pagination",
+            {
+              totalPages,
+              currentPage: page,
+              limit,
+              totalItems: totalLeads,
+              query: req.query,
+            },
+            (err, paginationHtml) => {
+              if (err) console.error("AJAX _pagination error:", err);
+              return res.json({
+                tableHtml,
+                cardHtml,
+                paginationHtml,
+                query: req.query,
+              });
+            },
+          );
         });
       });
     }
 
+    console.log(`[getLeadList] Rendering main list view`);
     res.render("admin/leads/list", {
       title: "Lead List",
       userName: req.session.userName,
@@ -281,6 +310,8 @@ const getLeadList = async (req, res) => {
       currentPage: page,
       totalPages,
       totalLeads,
+      pendingLeadsCount,
+      completedLeadsCount,
       limit,
       query: req.query,
     });
