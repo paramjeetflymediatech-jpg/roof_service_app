@@ -161,30 +161,39 @@ const getUserList = async (req, res) => {
       where.isActive = isActive === "true";
     }
 
-    const totalUsers = await User.count({ where });
-    const users = await User.findAll({
+    const { count: totalUsers, rows: users } = await User.findAndCountAll({
       where,
       attributes: { exclude: ["password"] },
       order: [["createdAt", "DESC"]],
       limit: limit,
       offset: offset,
-      raw: true,
+      distinct: true,
     });
 
     const totalPages = Math.ceil(totalUsers / limit);
 
     // If AJAX request, return rendered partials
     if (req.xhr || req.query.ajax) {
-      return res.render('admin/users/_table_rows', { users }, (err, tableHtml) => {
-        res.render('admin/users/_cards', { users }, (err, cardHtml) => {
-          res.render('admin/users/_pagination', { totalPages, currentPage: page, limit, totalItems: totalUsers, query: req.query }, (err, paginationHtml) => {
-            return res.json({
-              tableHtml,
-              cardHtml,
-              paginationHtml,
-              query: req.query
-            });
-          });
+      return res.render("admin/users/_table_rows", { users }, (err, tableHtml) => {
+        res.render("admin/users/_cards", { users }, (err, cardHtml) => {
+          res.render(
+            "admin/users/_pagination",
+            {
+              totalPages,
+              currentPage: page,
+              limit,
+              totalItems: totalUsers,
+              query: req.query,
+            },
+            (err, paginationHtml) => {
+              return res.json({
+                tableHtml,
+                cardHtml,
+                paginationHtml,
+                query: req.query,
+              });
+            },
+          );
         });
       });
     }
@@ -194,11 +203,11 @@ const getUserList = async (req, res) => {
       userName: req.session.userName,
       users,
       currentPage: page,
-      totalPages: totalPages,
-      totalUsers: totalUsers,
+      totalPages,
+      totalUsers,
       totalItems: totalUsers,
-      limit: limit,
-      query: req.query, // Pass query back to preserve form state
+      limit,
+      query: req.query,
     });
   } catch (error) {
     console.error("User list error:", error);
@@ -1525,7 +1534,7 @@ const getCategoryList = async (req, res) => {
       ];
     }
 
-    const { count, rows: categories } = await ServiceCategory.findAndCountAll({
+    const { count: totalCategories, rows: categories } = await ServiceCategory.findAndCountAll({
       where,
       include: [{ model: Service, as: "services" }],
       order: [["name", "ASC"]],
@@ -1534,26 +1543,30 @@ const getCategoryList = async (req, res) => {
       distinct: true,
     });
 
+    const totalPages = Math.ceil(totalCategories / limit);
+
     if (req.xhr || req.query.ajax) {
       return res.render("admin/categories/_table_rows", { categories }, (err, tableHtml) => {
-        // Categories typically don't have separate mobile cards in the current design, 
-        // but we'll try to render if it exists or return empty
         res.render("admin/categories/_cards", { categories }, (err, cardHtml) => {
-          res.render("admin/categories/_pagination", {
-            currentPage: page,
-            totalPages: Math.ceil(count / limit),
-            totalItems: count,
-            limit,
-            query: req.query,
-          }, (err, paginationHtml) => {
-            return res.json({
-              success: true,
-              tableHtml,
-              cardHtml: cardHtml || "",
-              paginationHtml,
-              totalItems: count,
-            });
-          });
+          res.render(
+            "admin/categories/_pagination",
+            {
+              totalPages,
+              currentPage: page,
+              limit,
+              totalItems: totalCategories,
+              query: req.query,
+            },
+            (err, paginationHtml) => {
+              return res.json({
+                success: true,
+                tableHtml,
+                cardHtml: cardHtml || "",
+                paginationHtml,
+                totalItems: totalCategories,
+              });
+            },
+          );
         });
       });
     }
@@ -1563,8 +1576,9 @@ const getCategoryList = async (req, res) => {
       userName: req.session.userName,
       categories,
       currentPage: page,
-      totalPages: Math.ceil(count / limit),
-      totalItems: count,
+      totalPages,
+      totalItems: totalCategories,
+      totalCategories,
       limit,
       query: req.query,
     });

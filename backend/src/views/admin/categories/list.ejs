@@ -69,6 +69,11 @@
                     <%- include('./_pagination') %>
                 </div>
 
+                <!-- Total Count -->
+                <div class="mt-4 text-sm text-gray-600">
+                    Showing <%= categories.length %> of <%= totalCategories %> categories
+                </div>
+
                 <!-- Hidden Card Container for AJAX script compatibility -->
                 <div id="listCardContainer" class="hidden"></div>
             </div>
