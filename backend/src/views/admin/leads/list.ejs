@@ -66,14 +66,13 @@
                                                 <p class="text-sm font-medium text-gray-500 uppercase">Pending Review
                                                 </p>
                                                 <p class="text-2xl font-bold text-gray-900">
-                                                    <%= leads.filter(l=> l.status === 'new' || l.status ===
-                                                        'pending').length %>
+                                                    <%= pendingLeadsCount %>
                                                 </p>
                                             </div>
                                             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
                                                 <p class="text-sm font-medium text-gray-500 uppercase">completed</p>
                                                 <p class="text-2xl font-bold text-gray-900">
-                                                    <%= leads.filter(l=> l.status === 'completed').length %>
+                                                    <%= completedLeadsCount %>
                                                 </p>
                                             </div>
                                         </div>

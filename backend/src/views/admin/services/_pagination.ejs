@@ -1,19 +1,30 @@
 <% if (totalPages > 1) { %>
+    <% 
+        // Create a copy of the query safely
+        let cleanedQuery = {};
+        if (typeof query !== 'undefined' && query) {
+            cleanedQuery = JSON.parse(JSON.stringify(query));
+            delete cleanedQuery.page;
+            delete cleanedQuery.ajax;
+        }
+        const queryString = new URLSearchParams(cleanedQuery).toString();
+        const separator = queryString ? '&' : '';
+    %>
     <div class="pagination mt-8 flex justify-center">
         <% if (currentPage > 1) { %>
-            <a href="/admin/services?page=<%= currentPage - 1 %><%= typeof query !== 'undefined' ? '&' + new URLSearchParams(query).toString() : '' %>"
+            <a href="/admin/services?page=<%= currentPage - 1 %><%= separator %><%= queryString %>"
                 class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition">Previous</a>
         <% } %>
 
         <% for (let i = 1; i <= totalPages; i++) { %>
-            <a href="/admin/services?page=<%= i %><%= typeof query !== 'undefined' ? '&' + new URLSearchParams(query).toString() : '' %>"
+            <a href="/admin/services?page=<%= i %><%= separator %><%= queryString %>"
                 class="px-4 py-2 border rounded-lg mx-1 <%= currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100' %> transition">
                 <%= i %>
             </a>
         <% } %>
 
         <% if (currentPage < totalPages) { %>
-            <a href="/admin/services?page=<%= currentPage + 1 %><%= typeof query !== 'undefined' ? '&' + new URLSearchParams(query).toString() : '' %>"
+            <a href="/admin/services?page=<%= currentPage + 1 %><%= separator %><%= queryString %>"
                 class="px-4 py-2 border rounded-lg mx-1 hover:bg-gray-100 transition">Next</a>
         <% } %>
     </div>

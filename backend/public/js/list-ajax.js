@@ -47,14 +47,24 @@ $(document).ready(function () {
         searchInput.on('input', function () {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-                const url = searchForm.attr('action') + '?' + searchForm.serialize();
+                // When searching, reset to page 1
+                let formData = searchForm.serializeArray();
+                formData = formData.filter(item => item.name !== 'page');
+                formData.push({ name: 'page', value: '1' });
+                
+                const url = searchForm.attr('action') + '?' + $.param(formData);
                 updateList(url);
             }, 500);
         });
     }
 
     searchForm.find('select').on('change', function () {
-        const url = searchForm.attr('action') + '?' + searchForm.serialize();
+        // When filtering, reset to page 1
+        let formData = searchForm.serializeArray();
+        formData = formData.filter(item => item.name !== 'page');
+        formData.push({ name: 'page', value: '1' });
+
+        const url = searchForm.attr('action') + '?' + $.param(formData);
         updateList(url);
     });
 
