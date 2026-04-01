@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
@@ -98,32 +98,25 @@ const EmployeeProfileScreen = () => {
   };
 
   const handleUploadProfilePicture = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      quality: 0.8,
-      maxWidth: 800,
-      maxHeight: 800,
-    });
-
-    if (result.didCancel) return;
-    if (result.errorCode) {
-      Alert.alert('Error', result.errorMessage || 'Failed to pick image');
-      return;
-    }
-
-    const asset = result.assets?.[0];
-    if (!asset) return;
-
     try {
+      const result = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        width: 800,
+        height: 800,
+        cropping: true,
+      });
+
+      if (!result) return;
       setUploading(true);
+      
       const formData = new FormData();
       formData.append('profilePicture', {
         uri:
           Platform.OS === 'android'
-            ? asset.uri
-            : asset.uri.replace('file://', ''),
-        type: asset.type || 'image/jpeg',
-        name: asset.fileName || `profile-${Date.now()}.jpg`,
+            ? result.path
+            : result.path.replace('file://', ''),
+        type: result.mime || 'image/jpeg',
+        name: result.filename || `profile-${Date.now()}.jpg`,
       });
 
       const res = await api.uploadProfilePicture(formData);
@@ -134,8 +127,10 @@ const EmployeeProfileScreen = () => {
 
       Alert.alert('Success', 'Profile picture updated successfully');
     } catch (error) {
-      console.log('Upload profile picture error:', error.response || error);
-      Alert.alert('Error', 'Failed to upload profile picture');
+      if (error.message !== 'User cancelled image selection') {
+        console.log('Upload profile picture error:', error.response || error);
+        Alert.alert('Error', 'Failed to upload profile picture');
+      }
     } finally {
       setUploading(false);
     }
@@ -494,6 +489,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: moderateScale(45),
+  },
+    cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.secondary, // or a bright color
+    width: moderateScale(28),
+    height: moderateScale(28),
+    borderRadius: moderateScale(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+  },
+  cameraIcon: {
+    fontSize: moderateScale(14),
   },
   userName: {
     fontSize: 22,

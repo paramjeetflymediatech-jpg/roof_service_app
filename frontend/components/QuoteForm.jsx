@@ -155,8 +155,6 @@ export default function QuoteForm() {
     }
   };
 
-  console.log(services,'serivce')
-
   if (isSubmitted) {
     return (
       <motion.div

@@ -43,17 +43,106 @@ const AdminLeadsScreen = ({ route }) => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  useEffect(() => {
-    loadQuotes('', null, 1, false, userId);
-  }, [userId]);
+  const loadQuotes = useCallback(
+    async (
+      search = '',
+      date = null,
+      pageNum = 1,
+      shouldAppend = false,
+      filterUserId = null,
+    ) => {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
 
+      try {
+        const params = { page: pageNum, limit: 10 };
+        if (search) params.search = search;
+        if (date) params.date = date;
+        if (statusFilter !== 'all') params.status = statusFilter;
+        // Use passed userId or fallback to component state userId (if available in closure, but safer to pass)
+        if (filterUserId) params.userId = filterUserId;
+
+        const response = await api.getLeads(params);
+        const rawItems =
+          response.data?.items ||
+          response.data?.data ||
+          (Array.isArray(response.data) ? response.data : []);
+        const normalizedItems = rawItems.map(item => ({
+          id: item.id || item._id || item.lead_id,
+          clientName: item.clientName || item.client_name || item.name || 'N/A',
+          service: item.serviceType || item.service_name || 'N/A',
+          address: `${item.address} ${item?.city}` || 'N/A',
+          phone: item.phone || item.phone_number || 'N/A',
+          status: item.status || LEAD_STATUS.PENDING,
+          date: formatDateLocal(item.date || item.created_at || item.createdAt),
+          email: item.email || 'N/A',
+          client_images: item.clientImages || 'N/A',
+          preferedDate: formatDateLocal(
+            item.preferredDate || item.prefered_date || item.preferedDate,
+          ),
+          scheduledAt:
+            item.preferredDate || item.prefered_date || item.preferedDate,
+          assignedTo:
+            item.assignedEmployee?.name ||
+            item.assignedTo?.name ||
+            item.assigned_to ||
+            null,
+          assignedEmployee: item.assignedEmployee || item.assignedTo || null,
+          employeeStartTime: item.employeeStartTime || null,
+          employeeEndTime: item.updatedAt || null,
+          inTime:
+            item.employeeStartTime != null
+              ? `${LocalTime(item.inTime)} - ${formatDateLocal(item.inTime)}`
+              : null,
+          outTime:
+            item.employeeEndTime != null
+              ? `${LocalTime(item.outTime)} - ${formatDateLocal(item.outTime)}`
+              : null,
+          employeeNotes: item.employeeNotes || null,
+          completionImages: item.completionImages || null,
+          actualHours: item.actualHours ? hoursToHMS(item.actualHours) : '',
+          actual_hours: item.actual_hours ? hoursToHMS(item.actual_hours) : '',
+          createdAt: formatDateLocal(item.createdAt || item.created_at || item.created_at),
+          updatedAt: formatDateLocal(item.updatedAt || item.updated_at || item.updated_at),
+        }));
+      
+        if (shouldAppend) {
+          setQuotes(prev => [...prev, ...normalizedItems]);
+        } else {
+          setQuotes(normalizedItems);
+        }
+
+        if (normalizedItems.length < 10) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+        }
+      } catch (error) {
+        console.log('Admin load quotes error:', error);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [statusFilter],
+  );
+
+  // Immediate refresh on focus (e.g. returning from a lead)
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       loadQuotes(searchQuery, dateFilter, 1, false, userId);
-    }, [userId]),
+    }, [loadQuotes, searchQuery, dateFilter, userId]),
   );
 
   const isFirstRender = React.useRef(true);
+
+  // Immediate fetch when status or userId changes, but NOT on first render (useFocusEffect handles that)
+  useEffect(() => {
+    if (isFirstRender.current) return;
+    loadQuotes(searchQuery, dateFilter, 1, false, userId);
+  }, [statusFilter, userId, loadQuotes]);
+
+  // Debounced fetch for search and date filters
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -64,88 +153,8 @@ const AdminLeadsScreen = ({ route }) => {
       loadQuotes(searchQuery, dateFilter, 1, false, userId);
     }, 500);
     return () => clearTimeout(timeout);
-  }, [searchQuery, dateFilter, statusFilter, userId]);
+  }, [searchQuery, dateFilter, loadQuotes]); // Only watch search and date (and loadQuotes which includes status) here
 
-  const loadQuotes = async (
-    search = '',
-    date = null,
-    pageNum = 1,
-    shouldAppend = false,
-    filterUserId = null,
-  ) => {
-    if (pageNum === 1) setLoading(true);
-    else setLoadingMore(true);
-
-    try {
-      const params = { page: pageNum, limit: 10 };
-      if (search) params.search = search;
-      if (date) params.date = date;
-      if (statusFilter !== 'all') params.status = statusFilter;
-      // Use passed userId or fallback to component state userId (if available in closure, but safer to pass)
-      if (filterUserId) params.userId = filterUserId;
-
-      const response = await api.getLeads(params);
-      const rawItems =
-        response.data?.items ||
-        response.data?.data ||
-        (Array.isArray(response.data) ? response.data : []);
-      const normalizedItems = rawItems.map(item => ({
-        id: item.id || item._id || item.lead_id,
-        clientName: item.clientName || item.client_name || item.name || 'N/A',
-        service: item.serviceType || item.service_name || 'N/A',
-        address: `${item.address} ${item?.city}` || 'N/A',
-        phone: item.phone || item.phone_number || 'N/A',
-        status: item.status || LEAD_STATUS.PENDING,
-        date: formatDateLocal(item.date || item.created_at || item.createdAt),
-        email: item.email || 'N/A',
-        client_images: item.clientImages || 'N/A',
-        preferedDate: formatDateLocal(
-          item.preferredDate || item.prefered_date || item.preferedDate,
-        ),
-        scheduledAt:
-          item.preferredDate || item.prefered_date || item.preferedDate,
-        assignedTo:
-          item.assignedEmployee?.name ||
-          item.assignedTo?.name ||
-          item.assigned_to ||
-          null,
-        assignedEmployee: item.assignedEmployee || item.assignedTo || null,
-        employeeStartTime: item.employeeStartTime || null,
-        employeeEndTime: item.updatedAt || null,
-        inTime:
-          item.employeeStartTime != null
-            ? `${LocalTime(item.inTime)} - ${formatDateLocal(item.inTime)}`
-            : null,
-        outTime:
-          item.employeeEndTime != null
-            ? `${LocalTime(item.outTime)} - ${formatDateLocal(item.outTime)}`
-            : null,
-        employeeNotes: item.employeeNotes || null,
-        completionImages: item.completionImages || null,
-        actualHours: item.actualHours ? hoursToHMS(item.actualHours) : '',
-        actual_hours: item.actual_hours ? hoursToHMS(item.actual_hours) : '',
-        createdAt: formatDateLocal(item.createdAt || item.created_at || item.created_at),
-        updatedAt: formatDateLocal(item.updatedAt || item.updated_at || item.updated_at),
-      }));
-      console.log(normalizedItems, 'normalizedItems');
-      if (shouldAppend) {
-        setQuotes(prev => [...prev, ...normalizedItems]);
-      } else {
-        setQuotes(normalizedItems);
-      }
-
-      if (normalizedItems.length < 10) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-      }
-    } catch (error) {
-      console.log('Admin load quotes error:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

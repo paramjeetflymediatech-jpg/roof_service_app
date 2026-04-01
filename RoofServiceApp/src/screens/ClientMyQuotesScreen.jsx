@@ -77,7 +77,6 @@ const ClientMyQuotesScreen = () => {
 
       const { items, pages } = response.data;
       const clientLeads = Array.isArray(items) ? items : [];
-      console.log(clientLeads, 'leeads')
       const mapped = clientLeads.map(lead => ({
         id: String(lead.id),
         service: lead.serviceType || 'Roof Service',
@@ -312,7 +311,7 @@ const ClientMyQuotesScreen = () => {
       </View>
 
       <FlatList
-        data={quotes}
+        data={filteredQuotes}
         keyExtractor={item => item.id}
         renderItem={renderQuoteItem}
         contentContainerStyle={styles.listContent}

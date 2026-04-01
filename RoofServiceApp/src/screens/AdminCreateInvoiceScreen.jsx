@@ -29,7 +29,8 @@ const AdminCreateInvoiceScreen = () => {
         date: existing?.date?.slice(0, 10) || today(),
         dueDate: existing?.dueDate?.slice(0, 10) || in14Days(),
         notes: src.notes || '',
-        status: existing?.status || 'Pending',
+        status: existing?.status || 'draft',
+        leadId: route.params.leadId || '',
     });
 
     const [items, setItems] = useState(

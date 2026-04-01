@@ -626,9 +626,9 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10),
   },
   estimateHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: moderateScale(10),
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // gap: moderateScale(10),
   },
   estimateIconBadge: {
     width: moderateScale(38),
@@ -725,9 +725,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.success + '30',
   },
   invoiceCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: moderateScale(8),
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // gap: moderateScale(8),
   },
   invoiceIconText: {
     fontSize: moderateScale(18),

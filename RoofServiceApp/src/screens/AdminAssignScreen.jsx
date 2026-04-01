@@ -23,8 +23,8 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 const AdminAssignScreen = ({ route }) => {
   const navigation = useNavigation();
   const { quote } = route?.params || {};
-  const { user } = useAuth(); 
-  const [selectedQuote, setSelectedQuote] = useState(quote); 
+  const { user } = useAuth();
+  const [selectedQuote, setSelectedQuote] = useState(quote);
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -136,7 +136,7 @@ const AdminAssignScreen = ({ route }) => {
         [];
       setEmployees(list);
     } catch (error) {
-      //   console.log('Load employees error:', error);
+      console.log('Load employees error:', error);
       Alert.alert('Error', 'Failed to load employees');
     }
   };
@@ -614,6 +614,7 @@ const AdminAssignScreen = ({ route }) => {
                 onPress={() =>
                   navigation.navigate('AdminCreateEstimate', {
                     leadId: selectedQuote.id,
+                    estimate: null,
                     prefill: {
                       clientName: selectedQuote.clientName,
                       clientEmail: selectedQuote.email,
@@ -656,6 +657,7 @@ const AdminAssignScreen = ({ route }) => {
                 onPress={() =>
                   navigation.navigate('AdminCreateInvoice', {
                     leadId: selectedQuote.id,
+                    estimate: leadEstimate?.id || null,
                     prefill: {
                       clientName: selectedQuote.clientName,
                       clientEmail: selectedQuote.email,

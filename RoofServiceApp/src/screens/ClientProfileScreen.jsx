@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
@@ -108,32 +108,24 @@ const ClientProfileScreen = () => {
   };
 
   const handleUploadProfilePicture = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      quality: 0.8,
-      maxWidth: 800,
-      maxHeight: 800,
-    });
-
-    if (result.didCancel) return;
-    if (result.errorCode) {
-      Alert.alert('Error', result.errorMessage || 'Failed to pick image');
-      return;
-    }
-
-    const asset = result.assets?.[0];
-    if (!asset) return;
-
     try {
+      const result = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        width: 800,
+        height: 800,
+        cropping: true,
+      });
+
+      if (!result) return;
       setUploading(true);
       const formData = new FormData();
       formData.append('profilePicture', {
         uri:
           Platform.OS === 'android'
-            ? asset.uri
-            : asset.uri.replace('file://', ''),
-        type: asset.type || 'image/jpeg',
-        name: asset.fileName || `profile-${Date.now()}.jpg`,
+            ? result.path
+            : result.path.replace('file://', ''),
+        type: result.mime || 'image/jpeg',
+        name: result.filename || `profile-${Date.now()}.jpg`,
       });
 
       const res = await api.uploadProfilePicture(formData);
@@ -146,11 +138,13 @@ const ClientProfileScreen = () => {
 
       Alert.alert('Success', 'Profile picture updated successfully');
     } catch (error) {
-      console.log('Upload profile picture error:', error.response || error);
-      Alert.alert(
-        'Error',
-        'Failed to upload profile picture. Please try again.',
-      );
+      if (error.message !== 'User cancelled image selection') {
+        console.log('Upload profile picture error:', error.response || error);
+        Alert.alert(
+          'Error',
+          'Failed to upload profile picture. Please try again.',
+        );
+      }
     } finally {
       setUploading(false);
     }
