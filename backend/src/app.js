@@ -22,20 +22,47 @@ app.use(express.static(path.join(__dirname, "../public")));
 const allowedOrigins = [
   process.env.HOST_URL || "http://localhost:3000",
   process.env.FRONTEND_URL || "http://localhost:3001",
-  "http://localhost:3000", // Add frontend local port
-  "exp://localhost:8081", // React Native Expo
-  "exp://127.0.0.1:8081", // React Native localhost
-  process.env.BACKEND_URL || "http://localhost:5000",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:8081",
+  "exp://localhost:8081",
+  "exp://127.0.0.1:8081",
+  "http://10.0.2.2:8081",
+  "http://10.0.2.2:5001",
+  process.env.BACKEND_URL || "http://localhost:5001",
 ].filter(Boolean);
+
 app.set('trust proxy', 1);
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
+        callback(null, true);
+      } else {
+        console.log(`[CORS] Blocked origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// Global debug logger to identify where 403 is coming from
+app.use((req, res, next) => {
+  const oldJson = res.json;
+  res.json = function(data) {
+    if (res.statusCode === 403) {
+      console.log(`[403 FORBIDDEN] Path: ${req.originalUrl} | Method: ${req.method} | IP: ${req.ip}`);
+      console.log(`[403 FORBIDDEN] Response Data: ${JSON.stringify(data)}`);
+    }
+    return oldJson.apply(res, arguments);
+  };
+  next();
+});
 
 
 // Body parser middleware

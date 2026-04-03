@@ -90,6 +90,8 @@ async function runMigration() {
         profile_picture VARCHAR(255) NULL,
         reset_password_token VARCHAR(255),
         reset_password_expire DATETIME,
+        status ENUM('active', 'inactive', 'pending_deletion', 'deleted') DEFAULT 'active',
+        deletion_requested_at DATETIME NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

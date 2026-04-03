@@ -153,6 +153,24 @@ async function runMigration() {
           await queryInterface.renameColumn("users", col.old, col.new);
         }
       }
+
+      // Add 'status' column if it doesn't exist
+      if (!(await checkColumnExists("users", "status"))) {
+        console.log("Adding column users.status...");
+        await queryInterface.addColumn("users", "status", {
+          type: DataTypes.ENUM("active", "inactive", "pending_deletion", "deleted"),
+          defaultValue: "active",
+        });
+      }
+
+      // Add 'deletion_requested_at' column if it doesn't exist
+      if (!(await checkColumnExists("users", "deletion_requested_at"))) {
+        console.log("Adding column users.deletion_requested_at...");
+        await queryInterface.addColumn("users", "deletion_requested_at", {
+          type: DataTypes.DATE,
+          allowNull: true,
+        });
+      }
     }
 
     console.log("✅ Sync Migration completed successfully!");

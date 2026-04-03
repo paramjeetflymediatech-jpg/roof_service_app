@@ -14,20 +14,24 @@ const pdfRoutes = require("./pdf.routes");
 const estimateApiRoutes = require("./estimate.api.routes");
 const invoiceApiRoutes = require("./invoice.api.routes");
 
+const { jwtAuth, checkAccountStatus } = require("../middlewares/auth.middleware");
+
 const router = express.Router();
 
 router.use("/", apiRoutes);
 router.use("/auth", authRoutes);
-router.use("/leads", leadRoutes);
+
+// Apply checkAccountStatus after authentication to restrict pending_deletion accounts
+router.use("/leads", jwtAuth, checkAccountStatus, leadRoutes);
 router.use("/services", serviceRoutes);
-router.use("/users", userRoutes);
-router.use("/jobs", jobRoutes);
+router.use("/users", jwtAuth, checkAccountStatus, userRoutes);
+router.use("/jobs", jwtAuth, checkAccountStatus, jobRoutes);
 router.use("/gallery", galleryRoutes);
 router.use("/categories", categoryRoutes);
-router.use("/upload", uploadRoutes);
+router.use("/upload", jwtAuth, checkAccountStatus, uploadRoutes);
 router.use("/data-deletion", dataDeletionRoutes);
 router.use("/", pdfRoutes);
-router.use("/estimates", estimateApiRoutes);
-router.use("/invoices", invoiceApiRoutes);
+router.use("/estimates", jwtAuth, checkAccountStatus, estimateApiRoutes);
+router.use("/invoices", jwtAuth, checkAccountStatus, invoiceApiRoutes);
 
 module.exports = router;

@@ -4,11 +4,13 @@ import {
   API_BASE_URL as ENV_API_BASE_URL,
   SERVER_URL as ENV_SERVER_URL,
 } from '@env';
+import { Platform } from 'react-native';
 
-// Use environment variables from .env file
+// Use environment variables from .env file 
 // Falls back to localhost for development if .env is not configured
-export const API_BASE_URL = ENV_API_BASE_URL || 'http://10.0.2.2:5000/api';
-export const SERVER_URL = ENV_SERVER_URL || 'http://10.0.2.2:5000';
+export const API_BASE_URL = ENV_API_BASE_URL || Platform.OS == "android" ? "http://10.0.2.2:5001/api" : "http://localhost:5001/api";
+export const SERVER_URL = ENV_SERVER_URL || Platform.OS === "android" ? 'http://10.0.2.2:5001' : 'http://localhost:5001';
+console.log(API_BASE_URL, '------------a')
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -95,6 +97,8 @@ export const api = {
       },
     }),
   deleteMyAccount: () => apiClient.delete('/users/me'),
+  requestAccountDeletion: () => apiClient.post('/users/me/request-deletion'),
+  cancelAccountDeletion: () => apiClient.post('/users/me/cancel-deletion'),
 
   // Jobs (for employees)
   getAllJobs: (filters = {}) => {

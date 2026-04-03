@@ -6,12 +6,14 @@ import React, {
   useCallback,
 } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, setOnUnauthorized } from './src/config/api';
-import { COLORS } from './src/utils/constants';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { COLORS, SHADOWS } from './src/utils/constants';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { moderateScale, verticalScale } from './src/utils/responsive';
+import { TouchableOpacity, Text } from 'react-native';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -77,8 +79,21 @@ const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const isPendingDeletion = user?.status === 'pending_deletion';
+  const deletionDate = user?.deletionRequestedAt;
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        loading,
+        isPendingDeletion,
+        deletionDate,
+        checkAuthState,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -269,12 +284,70 @@ const RootNavigator = () => {
   );
 };
 
+const DeletionBanner = () => {
+  const { isPendingDeletion, deletionDate, user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+
+  if (!isPendingDeletion) return null;
+
+  const date = deletionDate ? new Date(deletionDate) : new Date();
+  date.setHours(date.getHours() + 24); // Assuming 24h cooldown
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => {
+        const profileScreen =
+          user?.role === 'admin'
+            ? 'AdminProfile'
+            : user?.role === 'employee'
+            ? 'EmployeeProfile'
+            : 'ClientProfile';
+        navigation.navigate(profileScreen);
+      }}
+      style={{
+        backgroundColor: '#FEE2E2',
+        paddingTop: insets.top,
+        paddingBottom: verticalScale(10),
+        paddingHorizontal: moderateScale(20),
+        borderBottomWidth: 1,
+        borderBottomColor: '#FECACA',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <Text
+        style={{
+          color: '#B91C1C',
+          fontWeight: '700',
+          fontSize: moderateScale(14),
+          textAlign: 'center',
+        }}
+      >
+        ⚠️ Account Scheduled for Deletion
+      </Text>
+      <Text
+        style={{
+          color: '#B91C1C',
+          fontSize: moderateScale(12),
+          textAlign: 'center',
+          marginTop: verticalScale(2),
+        }}
+      >
+        Functionality is restricted. Tap here to manage or cancel.
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
 // Main App Component
 const App = () => {
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <NavigationContainer>
+          <DeletionBanner />
           <RootNavigator />
         </NavigationContainer>
       </AuthProvider>

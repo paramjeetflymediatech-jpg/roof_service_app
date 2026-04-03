@@ -380,12 +380,65 @@ exports.deleteMyAccount = async (req, res, next) => {
     // 8. Finally, delete the user account
     await user.destroy();
 
-    res.json({
-      success: true,
-      message: "Account and all associated data deleted successfully",
-    });
+    if (res) {
+      res.json({
+        success: true,
+        message: "Account and all associated data deleted successfully",
+      });
+    }
   } catch (err) {
     console.error("Error deleting account:", err);
+    if (next) next(err);
+  }
+};
+
+// Request account deletion (sets status to pending_deletion and logs timestamp)
+exports.requestAccountDeletion = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Password verification is done on the frontend by re-authenticating with the login endpoint,
+    // so we can proceed with marking the account for deletion.
+    user.status = "pending_deletion";
+    user.deletionRequestedAt = new Date();
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Account deletion request submitted. Your account will be deleted in 24-48 hours.",
+      status: user.status,
+      deletionRequestedAt: user.deletionRequestedAt,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Cancel account deletion (sets status back to active and clears timestamp)
+exports.cancelAccountDeletion = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.status = "active";
+    user.deletionRequestedAt = null;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Account deletion request cancelled successfully.",
+      status: user.status,
+    });
+  } catch (err) {
     next(err);
   }
 };

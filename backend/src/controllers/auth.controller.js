@@ -52,6 +52,8 @@ exports.login = async (req, res) => {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          status: user.status,
+          deletionRequestedAt: user.deletionRequestedAt,
         },
         token,
       },
@@ -106,6 +108,8 @@ exports.register = async (req, res) => {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          status: user.status,
+          deletionRequestedAt: user.deletionRequestedAt,
         },
         token,
       },
@@ -135,10 +139,20 @@ exports.getMe = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    delete user.password;
     res.json({
       success: true,
-      data: user,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        status: user.status,
+        deletionRequestedAt: user.deletionRequestedAt,
+        profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Get me error:", error);

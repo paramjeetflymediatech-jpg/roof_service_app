@@ -267,11 +267,19 @@ const ClientQuoteScreen = () => {
         );
       }
     } catch (error) {
-      console.log('Submit error:', error?.response || error);
-      Alert.alert(
-        'Error',
-        `Failed to ${isEditing ? 'update' : 'submit'} quote. Please try again.`,
-      );
+      console.log(error.response, '---err')
+      console.log('Submit error:', error?.response?.data || error);
+      if (error?.response?.status === 403) {
+        Alert.alert(
+          'Error',
+          error?.response?.data.message
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          `Failed to ${isEditing ? 'update' : 'submit'} quote. Please try again.`,
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -540,7 +548,7 @@ const ClientQuoteScreen = () => {
         <View style={styles.existingImagesContainer}>
           <Text style={styles.inputLabel}>Current Photos:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {existingImages.map((img, index) => { 
+            {existingImages.map((img, index) => {
               const imageUrl = img.url.startsWith('http')
                 ? img.url
                 : `${SERVER_URL}/${img.url}`;

@@ -12,6 +12,7 @@ import {
   Image,
   ActivityIndicator,
   StatusBar,
+  Modal,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -33,6 +34,11 @@ const ClientProfileScreen = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [verifying, setVerifying] = useState(false);
+
+  const isPendingDeletion = user?.status === 'pending_deletion';
 
   // Form State
   const [name, setName] = useState(user?.name || '');
@@ -147,6 +153,81 @@ const ClientProfileScreen = () => {
       }
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeletePress = () => {
+    if (isPendingDeletion) {
+      Alert.alert(
+        'Cancel Deletion',
+        'Are you sure you want to cancel your account deletion request?',
+        [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Yes, Cancel',
+            onPress: handleCancelDeletion,
+          },
+        ],
+      );
+    } else {
+      setShowDeleteModal(true);
+    }
+  };
+
+  const handleVerifyAndDelete = async () => {
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter your password to confirm.');
+      return;
+    }
+
+    try {
+      setVerifying(true);
+      // Verify password by attempting to login
+      await api.login({
+        email: user.email,
+        password: password,
+      });
+
+      // If login succeeds, request deletion
+      await api.requestAccountDeletion();
+      
+      // Update local user state
+      const updatedUser = { ...user, status: 'pending_deletion', deletionRequestedAt: new Date().toISOString() };
+      await login(updatedUser);
+
+      setShowDeleteModal(false);
+      setPassword('');
+      Alert.alert(
+        'Request Submitted',
+        'Your account is now scheduled for deletion in 24-48 hours. Most app features are now restricted.',
+      );
+    } catch (error) {
+      console.log('Verification/Deletion error:', error.response?.data || error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Invalid password or failed to request deletion. Please try again.',
+      );
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleCancelDeletion = async () => {
+    try {
+      setLoading(true);
+      await api.cancelAccountDeletion();
+      
+      // Update local user state
+      const updatedUser = { ...user, status: 'active' };
+      delete updatedUser.deletionRequestedAt;
+      await login(updatedUser);
+
+      Alert.alert('Success', 'Your account deletion request has been cancelled.');
+    } catch (error) {
+      console.log('Cancel deletion error:', error.response?.data || error);
+      Alert.alert('Error', 'Failed to cancel deletion request. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -378,6 +459,13 @@ const ClientProfileScreen = () => {
               title="About App"
               onPress={() => navigation.navigate('AboutApp')}
             />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon={isPendingDeletion ? '🔄' : '🗑️'}
+              title={isPendingDeletion ? 'Cancel Account Deletion' : 'Delete Account'}
+              isDestructive={!isPendingDeletion}
+              onPress={handleDeletePress}
+            />
           </View>
         </View>
 
@@ -394,6 +482,60 @@ const ClientProfileScreen = () => {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Delete Account Verification Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Account Deletion</Text>
+            <Text style={styles.modalDescription}>
+              For your security, please enter your password to confirm that you
+              want to delete your account.
+            </Text>
+            <Text style={styles.modalWarning}>
+              Your account will be deleted in 24-48 hours. You can cancel this
+              request anytime during the cooldown period.
+            </Text>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter your password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  setPassword('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handleVerifyAndDelete}
+                disabled={verifying}
+              >
+                {verifying ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.confirmButtonText}>Confirm Deletion</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -628,6 +770,77 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(16),
     color: COLORS.textLight,
     fontSize: moderateScale(12),
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: moderateScale(20),
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(20),
+    padding: moderateScale(24),
+    width: '100%',
+    ...SHADOWS.large,
+  },
+  modalTitle: {
+    fontSize: moderateScale(20),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: verticalScale(12),
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: moderateScale(14),
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: verticalScale(16),
+  },
+  modalWarning: {
+    fontSize: moderateScale(12),
+    color: COLORS.error,
+    backgroundColor: '#FEF2F2',
+    padding: moderateScale(12),
+    borderRadius: moderateScale(8),
+    textAlign: 'center',
+    marginBottom: verticalScale(20),
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: moderateScale(10),
+    padding: moderateScale(12),
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(20),
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: verticalScale(12),
+    borderRadius: moderateScale(10),
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+    marginRight: moderateScale(12),
+  },
+  confirmButton: {
+    backgroundColor: COLORS.error,
+  },
+  cancelButtonText: {
+    color: COLORS.text,
+    fontWeight: '600',
+  },
+  confirmButtonText: {
+    color: COLORS.white,
+    fontWeight: '600',
   },
 });
 

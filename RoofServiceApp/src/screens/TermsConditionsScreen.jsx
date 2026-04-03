@@ -103,6 +103,32 @@ const TermsConditionsScreen = () => {
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            6. Account Deletion & Data Retention
+          </Text>
+          <Text style={styles.text}>
+            Account deletion requests are subject to a 24-48 hour cooldown
+            period. During this window, your account will be marked as "pending
+            deletion" and most application functionalities will be restricted.
+            You may cancel your deletion request at any time before the cooldown
+            period expires.
+          </Text>
+          <Text style={styles.text}>
+            Upon final deletion, we will permanently remove your personal
+            identifiable information, including your full name, raw email
+            address, raw phone number, and physical address.
+          </Text>
+          <Text style={styles.text}>
+            To comply with legal obligations, financial auditing, and security
+            requirements, we may retain certain non-personal records, such as
+            hashed email/phone identifiers, anonymized transaction history, and
+            fraud flags. We reserve the right to investigate fraudulent activity
+            associated with an account even after a deletion request has been
+            initiated.
+          </Text>
+        </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>

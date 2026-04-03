@@ -8,22 +8,20 @@ const { jwtAuth, isAdmin } = require("../middlewares/auth.middleware");
 router.post("/", upload.array("images", 5), leadController.createLead);
 router.post(
   "/create",
-  jwtAuth,
   upload.array("images", 5),
   leadController.createLeadByApp,
 );
-router.get("/", jwtAuth, leadController.getLeads);
-router.get("/:id", jwtAuth, leadController.getLeadById);
+router.get("/", leadController.getLeads);
+router.get("/:id", leadController.getLeadById);
 
 // Admin Routes
-router.put("/:id", jwtAuth, isAdmin, leadController.updateLead);
-router.put("/:id/assign", jwtAuth, isAdmin, leadController.assignLead);
+router.put("/:id", isAdmin, leadController.updateLead);
+router.put("/:id/assign", isAdmin, leadController.assignLead);
 
 // Client Routes (pending leads only)
-router.delete("/:id", jwtAuth, leadController.deleteLead);
+router.delete("/:id", leadController.deleteLead);
 router.put(
   "/my/:id",
-  jwtAuth,
   upload.array("images", 5),
   leadController.updateMyLead,
 );

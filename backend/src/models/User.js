@@ -58,6 +58,14 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    status: {
+      type: DataTypes.ENUM("active", "inactive", "pending_deletion", "deleted"),
+      defaultValue: "active",
+    },
+    deletionRequestedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     tableName: "users",
