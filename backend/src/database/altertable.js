@@ -21,7 +21,11 @@ async function runAlterMigration() {
 
   try {
     // Add columns only if they do not exist
-    const alterQueries = [];
+    const alterQueries = [
+      `ALTER TABLE users 
+       ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active', 
+       ADD COLUMN IF NOT EXISTS deletion_requested_at TIMESTAMP NULL`,
+    ];
     for (const query of alterQueries) {
       await connection.query(query);
     }
