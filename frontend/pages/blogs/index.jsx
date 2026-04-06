@@ -13,7 +13,7 @@ export async function getServerSideProps() {
     try {
         const [blogsResponse, seoResponse] = await Promise.allSettled([
             getBlogs({ limit: 100 }), // Fetch more items for client-side pagination
-            getSeoData('blog')
+            getSeoData('blogs')
         ]);
 
         const blogs = blogsResponse.status === 'fulfilled' && blogsResponse.value.success
