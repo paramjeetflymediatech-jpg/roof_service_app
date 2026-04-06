@@ -11,6 +11,7 @@ import {
   FaPinterest,
   FaWhatsapp,
   FaGooglePlay,
+  FaAppStoreIos,
 } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 
@@ -571,6 +572,22 @@ export default function LayoutShell({ children }) {
                       rel="noopener noreferrer"
                     >
                       Get it on Google Play
+                    </a>
+                  </div>
+                </li>
+                <li className="flex flex-col md:flex-row gap-3 md:gap-4 items-center md:items-start text-gray-400">
+                  <div className="text-primary-500">
+                    <FaAppStoreIos size={40} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">App Store</p>
+                    <a
+                      href="https://apps.apple.com/us/app/roofserviceapp/id6761363620"
+                      className="hover:text-primary-400 transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Get it on App Store
                     </a>
                   </div>
                 </li>
