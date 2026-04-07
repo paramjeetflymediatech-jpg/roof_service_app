@@ -1,3 +1,5 @@
+import { Youtube } from "lucide-react";
+
 // Company Information
 export const COMPANY_INFO = {
     name: 'Mainstreet Roofing Ltd Services',
@@ -11,11 +13,18 @@ export const COMPANY_INFO = {
 
 // Social Media Links
 export const SOCIAL_LINKS = {
+    youtube: 'https://www.youtube.com/@mainstreetroofingltd',
     facebook: 'https://www.facebook.com/profile.php?id=61550475260377',
     twitter: 'https://x.com/mainstreet54102',
-    instagram: 'https://www.instagram.com/mainstreetroofting/',
-    pinterest: 'https://in.pinterest.com/mainstreetroofting/',
+    instagram: 'https://www.instagram.com/mainstreetroofingltd/',
+    pinterest: 'https://www.pinterest.com/mainstreetroofingltd/',
 };
+// export const SOCIAL_LINKS = {
+//     facebook: 'https://www.facebook.com/profile.php?id=61550475260377',
+//     twitter: 'https://x.com/mainstreet54102',
+//     instagram: 'https://www.instagram.com/mainstreetroofting/',
+//     pinterest: 'https://in.pinterest.com/mainstreetroofting/',
+// };
 
 // Service Categories
 // export const SERVICES = [

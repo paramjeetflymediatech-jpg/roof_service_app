@@ -11,6 +11,7 @@ import {
   FaPinterest,
   FaWhatsapp,
   FaGooglePlay,
+  FaYoutube,
   FaAppStoreIos,
 } from "react-icons/fa";
 import { usePathname } from "next/navigation";
@@ -100,6 +101,9 @@ export default function LayoutShell({ children }) {
               </a>
               <a href={`${SOCIAL_LINKS.pinterest}`} className="flex gap-2">
                 <FaPinterest />
+              </a>
+              <a href={`${SOCIAL_LINKS.youtube}`} className="flex gap-2">
+                <FaYoutube />
               </a>
             </div>
           </div>
@@ -550,6 +554,14 @@ export default function LayoutShell({ children }) {
                   className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
                 >
                   <FaPinterest />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
+                >
+                  <FaYoutube />
                 </a>
               </div>
             </div>
