@@ -122,9 +122,30 @@
                                         <span>Subtotal</span>
                                         <span id="subtotalDisplay">$<%= Number(estimate.subtotal || 0).toFixed(2) %></span>
                                     </div>
-                                    <div class="flex justify-between text-sm text-gray-600">
-                                        <span>GST (5%)</span>
-                                        <span id="taxDisplay">$<%= Number(estimate.tax || 0).toFixed(2) %></span>
+                                    <div class="flex items-center justify-between text-sm text-gray-600">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="applyGst" id="applyGst" class="rounded text-indigo-600 focus:ring-indigo-500" <%= estimate.applyGst !== false ? 'checked' : '' %>>
+                                            <span>GST (5%)</span>
+                                        </label>
+                                        <span id="gstDisplay">$0.00</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm text-gray-600">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="applyPst" id="applyPst" class="rounded text-indigo-600 focus:ring-indigo-500" <%= estimate.applyPst ? 'checked' : '' %>>
+                                            <span id="pstLabel">PST (<%= estimate.provincialTaxRate || 7 %>%)</span>
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <% const currentTaxKey = `${estimate.provincialTaxRate || 7.0},${estimate.provincialTaxType || 'PST'}`; %>
+                                            <select id="provinceTaxSelect" class="text-[10px] border-gray-200 rounded py-0 px-1 focus:ring-indigo-500">
+                                                <option value="7.0,PST" <%= currentTaxKey === '7,PST' || currentTaxKey === '7.0,PST' || currentTaxKey === '7.000,PST' ? 'selected' : '' %>>BC (PST 7%)</option>
+                                                <option value="6.0,PST" <%= currentTaxKey === '6,PST' || currentTaxKey === '6.0,PST' || currentTaxKey === '6.000,PST' ? 'selected' : '' %>>SK (PST 6%)</option>
+                                                <option value="7.0,PST" <%= currentTaxKey === '7,PST' || currentTaxKey === '7.0,PST' || currentTaxKey === '7.000,PST' ? 'selected' : '' %>>MB (PST 7%)</option>
+                                                <option value="9.975,QST" <%= currentTaxKey === '9.975,QST' ? 'selected' : '' %>>QC (QST 9.975%)</option>
+                                            </select>
+                                            <input type="hidden" name="provincialTaxRate" id="provincialTaxRateInput" value="<%= estimate.provincialTaxRate || 7.0 %>">
+                                            <input type="hidden" name="provincialTaxType" id="provincialTaxTypeInput" value="<%= estimate.provincialTaxType || 'PST' %>">
+                                            <span id="pstDisplay">$0.00</span>
+                                        </div>
                                     </div>
                                     <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
                                         <span class="text-base font-bold text-gray-900">Total</span>
@@ -224,12 +245,31 @@
                     row.querySelector('.item-amount').textContent = `$${amount.toFixed(2)}`;
                     subtotal += amount;
                 });
-                const tax = subtotal * 0.05;
-                const total = subtotal + tax;
+                
+                const applyGst = document.getElementById('applyGst').checked;
+                const applyPst = document.getElementById('applyPst').checked;
+                const gst = applyGst ? subtotal * 0.05 : 0;
+                
+                const provinceSelect = document.getElementById('provinceTaxSelect');
+                const [pRate, pType] = provinceSelect.value.split(',');
+                const pstRate = parseFloat(pRate) || 0;
+                const pst = applyPst ? subtotal * (pstRate / 100) : 0;
+                const total = subtotal + gst + pst;
+
+                // Update hidden inputs and labels
+                document.getElementById('provincialTaxRateInput').value = pstRate;
+                document.getElementById('provincialTaxTypeInput').value = pType;
+                document.getElementById('pstLabel').textContent = `${pType} (${pstRate}%)`;
+
                 document.getElementById('subtotalDisplay').textContent = `$${subtotal.toFixed(2)}`;
-                document.getElementById('taxDisplay').textContent = `$${tax.toFixed(2)}`;
+                document.getElementById('gstDisplay').textContent = `$${gst.toFixed(2)}`;
+                document.getElementById('pstDisplay').textContent = `$${pst.toFixed(2)}`;
                 document.getElementById('totalDisplay').textContent = `$${total.toFixed(2)}`;
             }
+
+            document.getElementById('applyGst').addEventListener('change', calculateTotals);
+            document.getElementById('applyPst').addEventListener('change', calculateTotals);
+            document.getElementById('provinceTaxSelect').addEventListener('change', calculateTotals);
 
             addItemBtn.addEventListener('click', () => {
                 const clone = itemRowTemplate.content.cloneNode(true);

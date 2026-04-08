@@ -13,6 +13,7 @@ const dataDeletionRoutes = require("./dataDeletion.routes");
 const pdfRoutes = require("./pdf.routes");
 const estimateApiRoutes = require("./estimate.api.routes");
 const invoiceApiRoutes = require("./invoice.api.routes");
+const reviewRoutes = require("./review.routes");
 
 const { jwtAuth, checkAccountStatus } = require("../middlewares/auth.middleware");
 
@@ -33,5 +34,6 @@ router.use("/data-deletion", dataDeletionRoutes);
 router.use("/", pdfRoutes);
 router.use("/estimates", jwtAuth, checkAccountStatus, estimateApiRoutes);
 router.use("/invoices", jwtAuth, checkAccountStatus, invoiceApiRoutes);
+router.use("/reviews", reviewRoutes);
 
 module.exports = router;

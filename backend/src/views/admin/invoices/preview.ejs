@@ -1,34 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .heading-font { font-family: 'Outfit', sans-serif; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
         @media print {
-            @page { margin: 1cm; }
-            body { 
-                background: white !important; 
+            @page {
+                margin: 2mm;
+                size: A4;
+            }
+
+            .print-no-break {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .print-flex-row {
+                flex-direction: row !important;
+                display: flex !important;
+            }
+
+            body {
+                background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            .no-print { display: none !important; }
-            .content-wrapper { 
-                box-shadow: none !important; 
+
+            .no-print {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
                 max-width: 100% !important;
                 width: 100% !important;
                 border-radius: 0 !important;
             }
-            .print-bg-none { background: transparent !important; }
-            .print-border-none { border: none !important; }
-            
+
+            .print-bg-none {
+                background: transparent !important;
+            }
+
+            .print-border-none {
+                border: none !important;
+            }
+
             /* Ensure logo stays at top right */
             .header-container {
                 display: flex !important;
@@ -37,21 +74,23 @@
                 align-items: flex-start !important;
                 width: 100% !important;
             }
+
             .logo-box {
                 background: transparent !important;
                 border: none !important;
                 flex-shrink: 0 !important;
-                width: 140px !important;
+                width: 100px !important;
                 height: auto !important;
                 display: block !important;
                 margin-left: auto !important;
             }
+
             .print-logo {
-                width: 140px !important;
+                width: 100px !important;
                 height: auto !important;
                 object-fit: contain !important;
             }
-            
+
         }
 
         .invoice-card {
@@ -69,39 +108,48 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 py-10 lg:py-20">
+
+<body class="bg-gray-100 py-2 lg:py-6">
     <!-- Navbar / Actions -->
     <div class="max-w-4xl mx-auto mb-8 px-4 no-print flex flex-wrap justify-between items-center gap-4">
         <div class="flex items-center gap-4">
-            <a href="/admin/invoices" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <a href="/admin/invoices"
+                class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
                 Invoices
             </a>
             <% if (invoice.lead) { %>
-            <a href="/admin/leads/<%= invoice.lead.id %>" class="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1">
-                View Lead: <%= invoice.lead.name %>
-            </a>
-            <% } %>
-            <% if (invoice.estimate) { %>
-            <a href="/admin/estimates/<%= invoice.estimate.id %>" class="text-xs font-bold text-gray-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
-                View Estimate: <%= invoice.estimate.estimateNumber %>
-            </a>
-            <% } %>
+                <a href="/admin/leads/<%= invoice.lead.id %>"
+                    class="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1">
+                    View Lead: <%= invoice.lead.name %>
+                </a>
+                <% } %>
+                    <% if (invoice.estimate) { %>
+                        <a href="/admin/estimates/<%= invoice.estimate.id %>"
+                            class="text-xs font-bold text-gray-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                            View Estimate: <%= invoice.estimate.estimateNumber %>
+                        </a>
+                        <% } %>
         </div>
         <div class="flex gap-3">
-            <button onclick="window.print()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button onclick="window.print()"
+                class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 6 2 18 2 18 9"></polyline>
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                     <rect x="6" y="14" width="12" height="8"></rect>
                 </svg>
                 Print / Download
             </button>
-            <a href="/admin/invoices/<%= invoice.id %>/edit" class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <a href="/admin/invoices/<%= invoice.id %>/edit"
+                class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
@@ -111,186 +159,329 @@
     </div>
 
     <!-- Invoice Content -->
-    <div class="max-w-4xl mx-auto invoice-card shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden content-wrapper">
+    <div
+        class="max-w-4xl mx-auto invoice-card shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden content-wrapper">
         <div class="header-accent no-print"></div>
 
         <!-- Corporate Header -->
-        <div class="px-8 pt-12 pb-8 md:px-16 flex flex-col md:flex-row justify-between items-start gap-10 header-container">
-            <div class="space-y-6">
-                <div class="space-y-1">
-                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">Mainstreet Roofing LTD</h1>
-                    <p class="text-indigo-600 font-bold uppercase tracking-widest text-[11px]">Professional Roofing Solutions</p>
+        <div
+            class="px-8 pt-4 pb-2 md:px-12 flex flex-col md:flex-row justify-between items-start gap-4 header-container">
+            <div class="space-y-2">
+                <div class="space-y-0.5">
+                    <h1 class="text-xl font-extrabold text-gray-900 tracking-tight leading-tight">Mainstreet Roofing LTD
+                    </h1>
+                    <p class="text-indigo-600 font-bold uppercase tracking-widest text-[8px]">Professional Roofing
+                        Solutions</p>
                 </div>
-                
-                <div class="grid grid-cols-1 gap-1 text-[13px] text-gray-500 leading-relaxed font-medium">
+
+                <div class="grid grid-cols-1 gap-0.5 text-[11px] text-gray-500 leading-normal font-medium">
                     <p class="flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
                         Gurmukh Singh
                     </p>
                     <p class="flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z"/><path d="M7 3v3h10V3M9 18v2M15 18v2M8 10h8M8 14h8"/></svg>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M22 19V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z" />
+                            <path d="M7 3v3h10V3M9 18v2M15 18v2M8 10h8M8 14h8" />
+                        </svg>
                         GST # 706833506RT0001
                     </p>
                     <p class="flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                         9380 124st, Surrey, V3V4S3, BC, Canada
                     </p>
                     <p class="flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
                         604-720-4313
                     </p>
                     <p class="flex items-center gap-2 text-indigo-600">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
                         mainstreetroofing604@gmail.com
                     </p>
                 </div>
             </div>
-            
-            <div class="flex flex-col items-end gap-6 text-right w-full md:w-auto relative">
+
+            <div class="flex flex-col items-end gap-1 text-right w-full md:w-auto relative">
                 <div class="logo-box">
-                    <img src="/assets/roofing-logo.png" alt="Company Logo" class="max-w-[140px] max-h-[140px] w-auto h-auto object-contain print-logo" onerror="this.src='/images/logo.png'; this.onerror=null;">
+                    <img src="/assets/roofing-logo.png" alt="Company Logo"
+                        class="max-w-[90px] max-h-[90px] w-auto h-auto object-contain print-logo"
+                        onerror="this.src='/images/logo.png'; this.onerror=null;">
                 </div>
-                <div class="space-y-1">
-                    <h2 class="text-xl font-extrabold text-gray-200 uppercase tracking-tighter">Invoice</h2>
-                    <p class="text-lg font-bold text-gray-900 tracking-tight"><%= invoice.invoiceNumber %></p>
+                <div class="space-y-0.5">
+                    <h2 class="text-xs font-extrabold text-gray-400 uppercase tracking-tighter">Invoice</h2>
+                    <p class="text-xs font-bold text-gray-900 tracking-tight">
+                        <%= invoice.invoiceNumber %>
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Info Grid -->
-        <div class="px-8 py-10 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-12 border-y border-gray-100 bg-gray-50/20">
-            <div class="space-y-6">
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Invoice To</span>
-                    <h3 class="text-xl font-bold text-gray-900 leading-tight"><%= invoice.clientName %></h3>
+        <div class="px-8 py-2 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-2 border-y border-gray-100 bg-gray-50/20">
+            <div class="space-y-1">
+                <div class="space-y-0.5">
+                    <span class="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em]">Invoice To</span>
+                    <h3 class="text-sm font-bold text-gray-900 leading-tight">
+                        <%= invoice.clientName %>
+                    </h3>
                 </div>
-                <div class="space-y-1.5 text-sm text-gray-600">
+                <div class="space-y-0.5 text-[11px] text-gray-600">
                     <p class="flex items-start gap-2">
-                        <svg class="w-4 h-4 mt-0.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <svg class="w-4 h-4 mt-0.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                         <%= invoice.clientAddress %>
                     </p>
                     <p class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
                         <%= invoice.clientPhone %>
                     </p>
                     <p class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
                         <%= invoice.clientEmail %>
                     </p>
                 </div>
             </div>
-            
-            <div class="md:text-right space-y-6">
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Dates & Totals</span>
-                    <p class="text-sm font-semibold text-gray-700">Date Issued: <span class="text-gray-900 ml-1"><%= new Date(invoice.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
+
+            <div class="md:text-right space-y-2">
+                <div class="space-y-0.5">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em]">Dates & Totals</span>
+                    <p class="text-[11px] font-semibold text-gray-700">Date Issued: <span class="text-gray-900 ml-1">
+                            <%= new Date(invoice.date).toLocaleDateString('en-US', { month: 'long' , day: 'numeric' ,
+                                year: 'numeric' }) %>
+                        </span></p>
                     <% if(invoice.dueDate) { %>
-                        <p class="text-sm font-semibold text-gray-700">Due Date: <span class="text-gray-900 ml-1"><%= new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></p>
-                    <% } %>
-                    <p class="text-sm font-semibold text-gray-700">Status: 
-                        <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider 
+                        <p class="text-[11px] font-semibold text-gray-700">Due Date: <span class="text-gray-900 ml-1">
+                                <%= new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'long' ,
+                                    day: 'numeric' , year: 'numeric' }) %>
+                            </span></p>
+                        <% } %>
+                            <p class="text-[11px] font-semibold text-gray-700">Status:
+                                <span
+                                    class="ml-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider 
                             <%= invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : 
                                invoice.status === 'Overdue' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
-                            <%= invoice.status %>
-                        </span>
-                    </p>
+                                    <%= invoice.status %>
+                                </span>
+                            </p>
                 </div>
-                <div class="pt-4 border-t border-gray-100 md:border-none">
-                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Amount Due</span>
-                    <p class="text-3xl font-black text-indigo-600 mt-1">CAD $<%= Number(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></p>
+                <div class="pt-1 border-t border-gray-100 md:border-none">
+                    <span class="text-[8px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Amount Due</span>
+                    <p class="text-lg font-black text-indigo-600">CAD $<%= Number(invoice.total ||
+                            0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %>
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Line Items -->
-        <div class="px-8 pb-12 md:px-16">
-            <div class="mt-10 overflow-hidden">
+        <div class="px-8 pb-4 md:px-12">
+            <div class="mt-4 overflow-hidden">
                 <table class="w-full text-left table-fixed">
                     <thead>
-                        <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                            <th class="pb-5 w-[60%]">Description of Services</th>
-                            <th class="pb-5 text-right px-4 whitespace-nowrap w-[15%]">Rate</th>
-                            <th class="pb-5 text-right px-4 whitespace-nowrap w-[10%]">Qty</th>
-                            <th class="pb-5 text-right pl-4 whitespace-nowrap w-[15%]">Net Amount</th>
+                        <tr
+                            class="text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                            <th class="pb-2 w-[60%]">Description of Services</th>
+                            <th class="pb-2 text-right px-4 whitespace-nowrap w-[15%]">Rate</th>
+                            <th class="pb-2 text-right px-4 whitespace-nowrap w-[10%]">Qty</th>
+                            <th class="pb-2 text-right pl-4 whitespace-nowrap w-[15%]">Net Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
-                        <% invoice.items.forEach(item => { %>
+                        <% invoice.items.forEach(item=> { %>
                             <tr class="group">
-                                <td class="py-7 pr-8 align-top">
-                                    <div class="text-[14px] text-gray-900 font-semibold leading-relaxed whitespace-pre-line tracking-tight break-words">
+                                <td class="py-0.5 pr-8 align-top">
+                                    <div
+                                        class="text-[10px] text-gray-900 font-semibold leading-tight whitespace-pre-line tracking-tight break-words">
                                         <%= item.description %>
                                     </div>
                                 </td>
-                                <td class="py-7 text-right px-4 align-top text-gray-600 tabular-nums text-sm font-medium whitespace-nowrap">$<%= Number(item.rate || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></td>
-                                <td class="py-7 text-right px-4 align-top text-gray-600 tabular-nums text-sm font-medium whitespace-nowrap"><%= item.qty %></td>
-                                <td class="py-7 text-right pl-4 align-top text-gray-900 tabular-nums font-bold text-sm whitespace-nowrap">$<%= (Number(item.rate || 0) * Number(item.qty || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></td>
+                                <td
+                                    class="py-0.5 text-right px-4 align-top text-gray-600 tabular-nums text-[10px] font-medium whitespace-nowrap">
+                                    $<%= Number(item.rate || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %>
+                                </td>
+                                <td
+                                    class="py-0.5 text-right px-4 align-top text-gray-600 tabular-nums text-[10px] font-medium whitespace-nowrap">
+                                    <%= item.qty %>
+                                </td>
+                                <td
+                                    class="py-0.5 text-right pl-4 align-top text-gray-900 tabular-nums font-bold text-[10px] whitespace-nowrap">
+                                    $<%= (Number(item.rate || 0) * Number(item.qty || 0)).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2 }) %>
+                                </td>
                             </tr>
-                        <% }) %>
+                            <% }) %>
                     </tbody>
                 </table>
             </div>
 
             <!-- Financial Summary -->
-            <div class="mt-12 flex justify-end">
-                <div class="w-full md:w-80 space-y-4">
-                    <div class="flex justify-between items-center text-[13px] font-medium px-4">
-                        <span class="text-gray-400 uppercase tracking-widest text-[10px]">Subtotal</span>
-                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(invoice.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+            <div class="mt-2 flex justify-end">
+                <div class="w-full md:w-64 space-y-1">
+                    <div class="flex justify-between items-center text-[11px] font-medium px-4">
+                        <span class="text-gray-400 uppercase tracking-widest text-[9px]">Subtotal</span>
+                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(invoice.subtotal ||
+                                0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
                     </div>
-                    <div class="flex justify-between items-center text-[13px] font-medium px-4">
-                        <span class="text-gray-400 uppercase tracking-widest text-[10px]">Taxes (GST 5%)</span>
-                        <span class="text-gray-900 tabular-nums font-bold">$<%= Number(invoice.tax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
-                    </div>
-                    
-                    <div class="relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-indigo-600 rounded-2xl group-hover:scale-105 transition-transform duration-500"></div>
-                        <div class="relative p-6 flex justify-between items-center text-white">
-                            <span class="font-bold uppercase tracking-widest text-[10px]">Total CAD</span>
-                            <span class="text-3xl font-black tabular-nums tracking-tighter">$<%= Number(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                    <% if (invoice.applyGst !==false) { %>
+                        <div class="flex justify-between items-center text-[11px] font-medium px-4">
+                            <span class="text-gray-400 uppercase tracking-widest text-[9px]">Taxes (GST 5%)</span>
+                            <span class="text-gray-900 tabular-nums font-bold">$<%= (Number(invoice.subtotal || 0) *
+                                    0.05).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
                         </div>
-                    </div>
+                        <% } %>
+                            <% if (invoice.applyPst) { %>
+                                <div class="flex justify-between items-center text-[11px] font-medium px-4">
+                                    <span class="text-gray-400 uppercase tracking-widest text-[9px]">Taxes (<%=
+                                            invoice.provincialTaxType || 'PST' %>
+                                            <%= invoice.provincialTaxRate || 7 %>%)</span>
+                                    <span class="text-gray-900 tabular-nums font-bold">$<%= (Number(invoice.subtotal ||
+                                            0) * ((Number(invoice.provincialTaxRate) || 7) /
+                                            100)).toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                                </div>
+                                <% } %>
+
+                                    <div class="relative overflow-hidden group">
+                                        <div
+                                            class="absolute inset-0 bg-indigo-600 rounded-xl group-hover:scale-105 transition-transform duration-500">
+                                        </div>
+                                        <div class="relative p-3 flex justify-between items-center text-white">
+                                            <span class="font-bold uppercase tracking-widest text-[9px]">Total
+                                                CAD</span>
+                                            <span class="text-xl font-black tabular-nums tracking-tighter">$<%=
+                                                    Number(invoice.total || 0).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2 }) %></span>
+                                        </div>
+                                    </div>
                 </div>
             </div>
-            
-            <!-- Terms & Signoff -->
-            <div class="mt-24 pt-12 border-t border-gray-100 flex flex-col md:flex-row gap-12 justify-between items-start">
-                <div class="md:w-3/5 space-y-8">
-                    <% if (invoice.notes) { %>
-                        <div class="space-y-3">
-                            <span class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] block">Notes & Payment Instructions</span>
-                            <p class="text-[13px] text-gray-500 font-medium leading-relaxed italic"><%= invoice.notes %></p>
-                        </div>
-                    <% } %>
 
-                    <div class="p-6 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
-                        <p class="text-[12px] text-indigo-700/80 font-medium leading-relaxed italic">
-                            Please make checks payable to Mainstreet Roofing LTD. Electronic transfers can be sent to mainstreetroofing604@gmail.com. Thank you for your business!
-                        </p>
-                    </div>
+            <!-- Terms & Signoff -->
+            <div
+                class="mt-2 pt-2 border-t border-gray-100 flex flex-col md:flex-row print-flex-row gap-2 justify-between items-start print-no-break">
+                <div class="md:w-3/5 space-y-1">
+                    <% if (invoice.notes) { %>
+                        <div class="space-y-0.5">
+                            <span class="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] block">Terms &
+                                Conditions</span>
+                            <p class="text-[9px] text-gray-500 font-medium leading-tight italic line-clamp-3">
+                                <%= invoice.notes %>
+                            </p>
+                        </div>
+                        <% } %>
+
+                            <div class="p-1.5 bg-indigo-50/30 rounded-lg border border-indigo-100/50">
+                                <p class="text-[8px] text-indigo-700/80 font-medium leading-tight italic">
+                                    Checks to Mainstreet Roofing LTD. E-transfers to mainstreetroofing604@gmail.com.
+                                </p>
+                            </div>
+
+                            <!-- Bottom Branding Strip -->
+                            <div class="flex items-center gap-3 mt-1.5">
+                                <div class="flex flex-col items-center gap-1">
+                                    <img src="/qr_reviews.png" alt="Google Reviews QR"
+                                        class="w-16 h-16 border p-0.5 rounded-lg bg-white shadow-sm"
+                                        onerror="this.style.display='none'">
+                                    <span
+                                        class="text-[7px] font-bold text-gray-500 uppercase tracking-widest text-center">Scan
+                                        to visit<br>our business</span>
+                                </div>
+                                <div
+                                    class="flex flex-col gap-1 justify-center text-[11px] font-bold text-gray-700 border-l-2 border-indigo-100 pl-4 py-1">
+                                    <p class="flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Fully Insured Working
+                                    </p>
+                                    <p class="flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        WCB Covered
+                                    </p>
+                                </div>
+                            </div>
                 </div>
 
-                <div class="md:w-1/3 flex flex-col items-center md:items-end gap-10 opacity-80">
-                    <div class="w-full text-center md:text-right space-y-2">
-                        <div class="relative h-20 flex items-end justify-center md:justify-end">
-                            <img src="/assets/signature.png" alt="Signature" class="h-20 object-contain" onerror="this.style.display='none'">
+                <div class="md:w-1/3 flex flex-col items-center md:items-end gap-2 opacity-80">
+                    <div class="w-full text-center md:text-right space-y-0.5">
+                        <div class="relative h-10 flex items-end justify-center md:justify-end">
+                            <img src="/assets/signature.png" alt="Signature" class="h-8 object-contain"
+                                onerror="this.style.display='none'">
                         </div>
-                        <div class="border-b-2 border-dashed border-gray-200 w-full mb-2"></div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Authorized Signature</p>
+                        <div class="border-b border-dashed border-gray-200 w-full mb-0.5"></div>
+                        <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Authorized Signature
+                        </p>
+                    </div>
+
+                    <div class="w-full flex flex-row items-end justify-end gap-6">
+                        <!-- 1. Canadian Flag Stack (Now Left) -->
+                        <div class="flex flex-col items-start gap-0.5 border-r border-gray-100 pr-4">
+                            <img src="/flag.png" alt="Canada Flag" class="h-8 w-auto shadow-sm rounded-sm"
+                                onerror="this.style.display='none'">
+                            <span class="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Proudly
+                                Canadian</span>
+                        </div>
+
+                        <!-- 2. Website QR Stack (Middle) -->
+                        <div class="flex flex-col items-center gap-0.5">
+                            <img src="/qr_website.png" alt="Website QR"
+                                class="w-20 h-14 border p-0.5 rounded-lg bg-white shadow-sm"
+                                onerror="this.style.display='none'">
+                            <span
+                                class="text-[5px] font-bold text-gray-500 uppercase tracking-tight text-center leading-none">Scan
+                                to visit<br>our website</span>
+                        </div>
+
+                        <!-- 3. BBB Logo (Now Right) -->
+                        <img src="/BBB.png" alt="BBB Logo" class="h-14 w-auto object-contain mb-1.5"
+                            onerror="this.style.display='none'">
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-gray-900 py-6 px-16 text-center print-bg-none print-border-none no-print lg:rounded-b-3xl">
-            <p class="text-[11px] text-gray-400 font-bold uppercase tracking-[0.3em] opacity-50">
+
+        <div class="bg-gray-900 py-3 px-16 text-center print-bg-none print-border-none no-print lg:rounded-b-3xl">
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em] opacity-50">
                 Created & Secured by Mainstreet Roofing Solutions Admin Layer
             </p>
         </div>
     </div>
-    
-    <div class="mt-16 mb-24 text-center no-print">
-        <p class="text-sm font-semibold text-gray-400 tracking-tight">© <%= new Date().getFullYear() %> Mainstreet Roofing LTD. • Professional Invoicing Engine</p>
+
+    <div class="mt-8 mb-12 text-center no-print">
+        <p class="text-sm font-semibold text-gray-400 tracking-tight">© <%= new Date().getFullYear() %> Mainstreet
+                Roofing LTD. • Professional Invoicing Engine</p>
     </div>
 </body>
+
 </html>

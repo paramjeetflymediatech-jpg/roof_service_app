@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require("../controllers/admin.controller");
 const blogController = require("../controllers/blog.controller");
 const leadController = require("../controllers/lead.controller");
+const reviewRoutes = require("./review.routes");
 const { isAuthenticated, isAdmin } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
 const estimateController = require("../controllers/estimate.controller");
@@ -416,5 +417,11 @@ router.post(
   isAdmin,
   invoiceController.deleteInvoice,
 );
+
+// Review management routes
+const reviewController = require("../controllers/review.controller");
+router.get("/reviews", isAuthenticated, isAdmin, reviewController.getAdminReviews);
+router.post("/reviews/sync", isAuthenticated, isAdmin, reviewController.syncReviews);
+router.post("/reviews/:id/toggle-visibility", isAuthenticated, isAdmin, reviewController.toggleVisibility);
 
 module.exports = router;

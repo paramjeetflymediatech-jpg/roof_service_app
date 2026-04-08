@@ -50,16 +50,16 @@ const dot = (doc, x, y, color = BLUE) => {
 // ─── 1. Company Header ────────────────────────────────────────────────────────
 // Returns the Y position after the header block
 const drawHeader = (doc, docType, docNumber) => {
-    const L = 50, R = 545, logoW = 100;
-    let y = 45;
+    const L = 50, R = 545, logoW = 65;
+    let y = 30;
 
     // Company name
-    doc.font("Helvetica-Bold").fontSize(18).fillColor(TEXT).text(CO_NAME, L, y);
-    y += 22;
+    doc.font("Helvetica-Bold").fontSize(15).fillColor(TEXT).text(CO_NAME, L, y);
+    y += 16;
 
     // Tagline
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(BLUE).text(CO_TAGLINE, L, y);
-    y += 16;
+    doc.font("Helvetica-Bold").fontSize(7).fillColor(BLUE).text(CO_TAGLINE, L, y);
+    y += 12;
 
     // Contact lines with small bullet dots
     const contacts = [
@@ -71,28 +71,28 @@ const drawHeader = (doc, docType, docNumber) => {
     ];
     contacts.forEach(({ val, color }) => {
         const tx = dot(doc, L, y, BLUE);
-        doc.font("Helvetica").fontSize(9).fillColor(color).text(val, tx, y);
-        y += 13;
+        doc.font("Helvetica").fontSize(7.5).fillColor(color).text(val, tx, y);
+        y += 9.5;
     });
 
     // Logo – top right
-    const logoTop = 45;
+    const logoTop = 30;
     try {
         doc.image(LOGO_PATH, R - logoW, logoTop, { width: logoW });
     } catch (_) {
-        doc.font("Helvetica-Bold").fontSize(9).fillColor(TEXT).text(CO_NAME, R - logoW, logoTop + 30, { width: logoW, align: "center" });
+        doc.font("Helvetica-Bold").fontSize(8).fillColor(TEXT).text(CO_NAME, R - logoW, logoTop + 20, { width: logoW, align: "center" });
     }
 
     // "INVOICE / ESTIMATE" label + number – right-aligned below logo
-    const labelY = logoTop + 100;
+    const labelY = logoTop + 75;
     doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY)
         .text(docType.toUpperCase(), L, labelY, { align: "right", width: R - L });
-    doc.font("Helvetica-Bold").fontSize(9).fillColor(BLUE)
-        .text(docNumber, L, labelY + 12, { align: "right", width: R - L });
+    doc.font("Helvetica-Bold").fontSize(8.5).fillColor(BLUE)
+        .text(docNumber, L, labelY + 10, { align: "right", width: R - L });
 
-    const bottomY = Math.max(y, labelY + 28);
-    hr(doc, bottomY + 8);
-    return bottomY + 18;
+    const bottomY = Math.max(y, labelY + 20);
+    hr(doc, bottomY + 2);
+    return bottomY + 8;
 };
 
 // ─── 2. Invoice-To + Dates & Totals ──────────────────────────────────────────
@@ -102,11 +102,11 @@ const drawBillTo = (doc, client, meta, amountDue, startY) => {
     let rightY = startY;
     let type = meta.find((m) => m.label === "Status");
     // Left: INVOICE TO
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY).text(type ? "INVOICE TO" : "ESTIMATE TO", L, leftY);
-    leftY += 14;
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(GREY).text(type ? "INVOICE TO" : "ESTIMATE TO", L, leftY);
+    leftY += 12;
     if (client.name) {
-        doc.font("Helvetica-Bold").fontSize(13).fillColor(TEXT).text(client.name, L, leftY);
-        leftY += 18;
+        doc.font("Helvetica-Bold").fontSize(11).fillColor(TEXT).text(client.name, L, leftY);
+        leftY += 15;
     }
     const clientLines = [
         client.address && { val: client.address, color: BLUE },
@@ -115,42 +115,42 @@ const drawBillTo = (doc, client, meta, amountDue, startY) => {
     ].filter(Boolean);
     clientLines.forEach(({ val, color }) => {
         const tx = dot(doc, L, leftY, BLUE);
-        doc.font("Helvetica").fontSize(9).fillColor(color).text(val, tx, leftY);
-        leftY += 13;
+        doc.font("Helvetica").fontSize(7.5).fillColor(color).text(val, tx, leftY);
+        leftY += 9;
     });
 
     // Right: DATES & TOTALS
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY).text("DATES & TOTALS", L, rightY, { align: "right", width: 495 });
-    rightY += 14;
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(GREY).text("DATES & TOTALS", L, rightY, { align: "right", width: 495 });
+    rightY += 12;
 
     meta.forEach(({ label, value, valueColor, badge }) => {
         const rowY = rightY;
-        doc.font("Helvetica").fontSize(9).fillColor(GREY).text(`${label}:`, MID, rowY, { width: 100 });
+        doc.font("Helvetica").fontSize(7.5).fillColor(GREY).text(`${label}:`, MID, rowY, { width: 100 });
         if (badge) {
             // Status badge
             const badgeColor = (value || "").toLowerCase() === "paid" ? GREEN : "#e65100";
-            doc.rect(MID + 105, rowY - 1, 36, 13).fill(badgeColor);
-            doc.font("Helvetica-Bold").fontSize(8).fillColor("#fff")
-                .text(value.toUpperCase(), MID + 106, rowY + 1, { width: 34, align: "center" });
+            doc.rect(MID + 105, rowY - 1, 28, 9).fill(badgeColor);
+            doc.font("Helvetica-Bold").fontSize(6.5).fillColor("#fff")
+                .text(value.toUpperCase(), MID + 106, rowY + 1, { width: 26, align: "center" });
         } else {
-            doc.font("Helvetica-Bold").fontSize(9).fillColor(valueColor || TEXT)
+            doc.font("Helvetica-Bold").fontSize(7.5).fillColor(valueColor || TEXT)
                 .text(value, MID + 105, rowY, { width: 130, align: "right" });
         }
-        rightY += 15;
+        rightY += 11;
     });
 
-    // AMOUNT DUE big block
-    rightY += 4;
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY)
+    // AMOUNT DUE block
+    rightY += 2;
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(GREY)
         .text("AMOUNT DUE", MID, rightY, { width: 235, align: "right" });
-    rightY += 14;
-    doc.font("Helvetica-Bold").fontSize(22).fillColor(BLUE)
+    rightY += 12;
+    doc.font("Helvetica-Bold").fontSize(16).fillColor(BLUE)
         .text(`CAD ${fmtBig(amountDue)}`, MID, rightY, { width: 235, align: "right" });
-    rightY += 28;
+    rightY += 24;
 
-    const sectionBottom = Math.max(leftY, rightY) + 10;
+    const sectionBottom = Math.max(leftY, rightY) + 4;
     hr(doc, sectionBottom);
-    return sectionBottom + 14;
+    return sectionBottom + 8;
 };
 
 // ─── 3. Items Table ───────────────────────────────────────────────────────────
@@ -159,90 +159,149 @@ const drawItems = (doc, items, startY) => {
     let y = startY;
 
     // Column headers (small grey)
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY)
+    doc.font("Helvetica-Bold").fontSize(7).fillColor(GREY)
         .text("DESCRIPTION OF SERVICES", L, y)
         .text("RATE", 330, y, { width: 60, align: "right" })
         .text("QTY", 395, y, { width: 40, align: "center" })
         .text("NET AMOUNT", 440, y, { width: 105, align: "right" });
-    y += 12;
-    hr(doc, y);
     y += 10;
+    hr(doc, y);
+    y += 8;
 
     (items || []).forEach((item) => {
-        const descH = doc.heightOfString(item.description || "", { width: 275, font: "Helvetica", size: 10 });
-        const rowH = Math.max(descH + 14, 24);
-        doc.font("Helvetica").fontSize(10).fillColor(TEXT)
+        const descH = doc.heightOfString(item.description || "", { width: 275, font: "Helvetica", size: 7.5 });
+        const rowH = Math.max(descH + 4, 11);
+        doc.font("Helvetica").fontSize(7.5).fillColor(TEXT)
             .text(item.description || "", L, y, { width: 275 });
-        doc.font("Helvetica").fontSize(10).fillColor(TEXT)
+        doc.font("Helvetica").fontSize(7.5).fillColor(TEXT)
             .text(item.rate != null ? fmt(item.rate) : "", 330, y, { width: 60, align: "right" })
             .text(String(item.qty ?? 1), 395, y, { width: 40, align: "center" });
-        doc.font("Helvetica-Bold").fontSize(10).fillColor(TEXT)
+        doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEXT)
             .text(fmt(item.amount), 440, y, { width: 105, align: "right" });
         y += rowH;
     });
 
-    return y + 10;
+    return y + 8;
 };
 
 // ─── 4. Totals ─────────────────────────────────────────────────────────────────
-const drawTotals = (doc, subtotal, tax, total, startY) => {
+const drawTotals = (doc, subtotal, tax, total, applyGst, applyPst, provincialTaxType, provincialTaxRate, startY) => {
     const MID = 310;
-    let y = startY + 8;
+    let y = startY + 2;
 
     hr(doc, y, DIVIDER, MID, 545);
-    y += 10;
+    y += 6;
 
     // Subtotal
-    doc.font("Helvetica").fontSize(9).fillColor(GREY)
+    doc.font("Helvetica").fontSize(7.5).fillColor(GREY)
         .text("SUBTOTAL", MID, y, { width: 100 })
         .text(fmt(subtotal), MID + 105, y, { width: 130, align: "right" });
-    y += 16;
+    y += 10;
 
-    // Tax
-    doc.font("Helvetica").fontSize(9).fillColor(GREY)
-        .text("TAXES (GST 5%)", MID, y, { width: 100 })
-        .text(fmt(tax), MID + 105, y, { width: 130, align: "right" });
-    y += 18;
+    // Optional Taxes
+    if (applyGst) {
+        const partialGst = subtotal * 0.05;
+        doc.font("Helvetica").fontSize(7.5).fillColor(GREY)
+            .text("TAXES (GST 5%)", MID, y, { width: 100 })
+            .text(fmt(partialGst), MID + 105, y, { width: 130, align: "right" });
+        y += 10;
+    }
+
+    if (applyPst) {
+        const pRate = parseFloat(provincialTaxRate) || 7.0;
+        const pType = provincialTaxType || 'PST';
+        const partialPst = subtotal * (pRate / 100);
+        doc.font("Helvetica").fontSize(7.5).fillColor(GREY)
+            .text(`TAXES (${pType} ${pRate}%)`, MID, y, { width: 100 })
+            .text(fmt(partialPst), MID + 105, y, { width: 130, align: "right" });
+        y += 10;
+    }
+
+    y += 1;
 
     // Total CAD – big navy bar
-    const barH = 36;
+    const barH = 30;
     doc.rect(MID, y, 235, barH).fill(DARK_NAVY);
-    doc.font("Helvetica-Bold").fontSize(11).fillColor("#fff")
-        .text("TOTAL CAD", MID + 10, y + 10, { width: 60 });
-    doc.font("Helvetica-Bold").fontSize(18).fillColor("#fff")
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#fff")
+        .text("TOTAL CAD", MID + 10, y + 9, { width: 60 });
+    doc.font("Helvetica-Bold").fontSize(14).fillColor("#fff")
         .text(fmtBig(total), MID + 10, y + 6, { width: 215, align: "right" });
 
-    return y + barH + 20;
+    return y + barH + 8;
 };
 
 // ─── 5. Notes & Footer ────────────────────────────────────────────────────────
 const drawNotesFooter = (doc, notes, startY) => {
-    let y = startY + 10;
+    let y = startY + 4;
     hr(doc, y);
-    y += 12;
+    y += 8;
 
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY).text("NOTES & PAYMENT INSTRUCTIONS", 50, y);
-    y += 14;
+    doc.font("Helvetica-Bold").fontSize(7).fillColor(GREY).text("Terms & Conditions", 50, y);
+    y += 10;
 
     if (notes) {
-        doc.font("Helvetica").fontSize(9).fillColor(TEXT).text(notes, 50, y, { width: 495 });
-        y += doc.heightOfString(notes, { width: 495 }) + 10;
+        doc.font("Helvetica").fontSize(7.5).fillColor(TEXT).text(notes, 50, y, { width: 495 });
+        y += doc.heightOfString(notes, { width: 495 }) + 6;
     }
 
-    // Payment box (left) + Signature (right)
-    const boxH = 54;
-    doc.rect(50, y, 280, boxH).fillAndStroke("#fff8f0", "#e0c4a0");
-    doc.font("Helvetica-Oblique").fontSize(8.5).fillColor(BLUE)
-        .text(CO_PAY, 58, y + 8, { width: 264 });
+    // Payment box (left)
+    const boxH = 36;
+    const boxY = y;
+    doc.rect(50, boxY, 260, boxH).fillAndStroke("#fff8f0", "#e0c4a0");
+    doc.font("Helvetica-Oblique").fontSize(7).fillColor(BLUE)
+        .text(CO_PAY, 58, boxY + 5, { width: 244 });
 
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(GREY)
-        .text("AUTHORIZED SIGNATURE", 340, y + boxH - 16, { width: 205, align: "right" });
-    doc.moveTo(340, y + boxH - 4).lineTo(545, y + boxH - 4).strokeColor(GREY).lineWidth(0.5).stroke();
+    // Signature box (right)
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(GREY)
+        .text("AUTHORIZED SIGNATURE", 340, boxY + boxH - 10, { width: 205, align: "right" });
+    doc.moveTo(340, boxY + boxH - 2).lineTo(545, boxY + boxH - 2).strokeColor(GREY).lineWidth(0.5).stroke();
+
+    // ======= Bottom Additions (Condensed) =======
+    let bottomY = boxY + boxH + 6;
+
+    // --- Bottom Left (QR 1 + Credentials) ---
+    try {
+        // Reviews QR (Business) - ENLARGED
+        doc.image(path.join(__dirname, "../../public/qr_reviews.png"), 50, bottomY, { width: 48 });
+        doc.font("Helvetica-Bold").fontSize(5.5).fillColor(GREY)
+            .text("SCAN TO VISIT", 50, bottomY + 50, { width: 48, align: "center" });
+        doc.text("OUR BUSINESS", 50, bottomY + 57, { width: 48, align: "center" });
+
+        // Insurance Credentials
+        doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEXT).text("Fully Insured Working", 100, bottomY + 10);
+        doc.text("WCB Covered", 100, bottomY + 20);
+    } catch (e) {
+        console.error("Missing bottom left assets", e);
+    }
+
+    // --- Bottom Right (Horizontal row: Flag Stack -> QR Stack -> BBB Logo) ---
+    try {
+        const rowY = bottomY + 5;
+
+        // 1. Canadian Flag Stack - SIZED TO MATCH BBB
+        const flagX = 300;
+        doc.image(path.join(__dirname, "../../public/flag.png"), flagX + 5, rowY - 5, { width: 55 });
+        doc.font("Helvetica-Bold").fontSize(7).fillColor(TEXT)
+            .text("PROUDLY CANADIAN", flagX, rowY + 30, { width: 70, align: "center" });
+
+        // 2. Website QR Stack (Middle)
+        const qrX = 385;
+        doc.image(path.join(__dirname, "../../public/qr_website.png"), qrX + 10, rowY - 5, { width: 38 });
+        doc.font("Helvetica-Bold").fontSize(5.5).fillColor(GREY)
+            .text("SCAN TO VISIT", qrX, rowY + 35, { width: 55, align: "center" });
+        doc.text("OUR WEBSITE", qrX, rowY + 42, { width: 55, align: "center" });
+
+        // 3. BBB Logo
+        doc.image(path.join(__dirname, "../../public/BBB.png"), 485, rowY, { width: 55 });
+
+    } catch(e) {
+        console.error("Missing bottom right assets", e);
+    }
 };
 
 // ─── Route Handlers ───────────────────────────────────────────────────────────
 const buildDoc = (res, filename) => {
-    const doc = new PDFDocument({ size: "A4", margin: 40, bufferPages: true });
+    const doc = new PDFDocument({ size: "A4", margin: 25, bufferPages: true });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     doc.pipe(res);
@@ -275,7 +334,7 @@ exports.getInvoicePDF = async (req, res) => {
 
         y = drawBillTo(doc, client, meta, d.total, y);
         y = drawItems(doc, d.items || [], y);
-        y = drawTotals(doc, d.subtotal, d.tax, d.total, y);
+        y = drawTotals(doc, d.subtotal, d.tax, d.total, d.applyGst, d.applyPst, d.provincialTaxType, d.provincialTaxRate, y);
         drawNotesFooter(doc, d.notes, y);
 
         doc.end();
@@ -311,7 +370,7 @@ exports.getEstimatePDF = async (req, res) => {
 
         y = drawBillTo(doc, client, meta, d.total, y);
         y = drawItems(doc, d.items || [], y);
-        y = drawTotals(doc, d.subtotal, d.tax, d.total, y);
+        y = drawTotals(doc, d.subtotal, d.tax, d.total, d.applyGst, d.applyPst, d.provincialTaxType, d.provincialTaxRate, y);
         drawNotesFooter(doc, d.notes, y);
 
         doc.end();

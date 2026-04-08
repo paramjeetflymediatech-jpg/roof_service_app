@@ -50,6 +50,14 @@ const Estimate = sequelize.define(
       allowNull: false,
       defaultValue: 0.0,
     },
+    applyGst: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    applyPst: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     tax: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

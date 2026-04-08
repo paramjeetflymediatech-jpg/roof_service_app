@@ -216,7 +216,16 @@ const InvoiceController = {
         notes,
         items, // Expecting an array of objects
         estimateId,
+        applyGst,
+        applyPst,
+        provincialTaxType,
+        provincialTaxRate,
       } = req.body;
+      
+      const isGst = applyGst === 'on' || applyGst === true || applyGst === 'true';
+      const isPst = applyPst === 'on' || applyPst === true || applyPst === 'true';
+      const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+      const pTaxType = provincialTaxType || 'PST';
 
       // Calculate totals
       let subtotal = 0;
@@ -229,7 +238,9 @@ const InvoiceController = {
         subtotal += item.amount;
       });
 
-      const tax = subtotal * 0.05; // 5% GST
+      const gstAmount = isGst ? subtotal * 0.05 : 0;
+      const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+      const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
       // Generate invoice number
@@ -245,6 +256,10 @@ const InvoiceController = {
         dueDate: dueDate || null,
         items: parsedItems,
         subtotal,
+        applyGst: isGst,
+        applyPst: isPst,
+        provincialTaxType: pTaxType,
+        provincialTaxRate: pTaxRate,
         tax,
         total,
         notes,
@@ -320,7 +335,16 @@ const InvoiceController = {
         items,
         status,
         leadId,
+        applyGst,
+        applyPst,
+        provincialTaxType,
+        provincialTaxRate,
       } = req.body;
+      
+      const isGst = applyGst === 'on' || applyGst === true || applyGst === 'true';
+      const isPst = applyPst === 'on' || applyPst === true || applyPst === 'true';
+      const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+      const pTaxType = provincialTaxType || 'PST';
 
       const invoice = await Invoice.findByPk(req.params.id);
       if (!invoice) {
@@ -338,7 +362,9 @@ const InvoiceController = {
         subtotal += item.amount;
       });
 
-      const tax = subtotal * 0.05;
+      const gstAmount = isGst ? subtotal * 0.05 : 0;
+      const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+      const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
       await invoice.update({
@@ -350,6 +376,10 @@ const InvoiceController = {
         dueDate,
         items: parsedItems,
         subtotal,
+        applyGst: isGst,
+        applyPst: isPst,
+        provincialTaxType: pTaxType,
+        provincialTaxRate: pTaxRate,
         tax,
         total,
         notes,

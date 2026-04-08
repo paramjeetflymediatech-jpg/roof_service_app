@@ -1,0 +1,163 @@
+<%- include('../../partials/header') %>
+
+<body <% if (error && error.length > 0) { %>data-flash-error="<%= error %>"<% } %>
+      <% if (success && success.length > 0) { %>data-flash-success="<%= success %>"<% } %>>
+    
+    <div id="toast-container"></div>
+    
+    <div class="admin-wrapper">
+        <%- include('../../partials/sidebar') %>
+
+        <main class="main-content">
+            <%- include('../../partials/top-header') %>
+
+            <div class="content">
+                <div class="content-header">
+                    <div>
+                        <h1>Google Reviews</h1>
+                        <p>Manage reviews displayed on your website</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="syncReviewsBtn" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sync">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path>
+                            </svg>
+                            Sync From Google
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Rating</th>
+                                    <th>Review</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (reviews && reviews.length > 0) { %>
+                                    <% reviews.forEach(review => { %>
+                                        <tr>
+                                            <td>
+                                                <div class="user-info">
+                                                    <img src="<%= review.authorPhoto %>" alt="<%= review.authorName %>" class="avatar-sm">
+                                                    <span><%= review.authorName %></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="rating">
+                                                    <% for(let i=0; i<5; i++) { %>
+                                                        <span class="star <%= i < review.rating ? 'filled' : '' %>">★</span>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="review-text" title="<%= review.text %>">
+                                                    <%= review.text.length > 100 ? review.text.substring(0, 100) + '...' : review.text %>
+                                                </div>
+                                            </td>
+                                            <td><%= new Date(review.time).toLocaleDateString() %></td>
+                                            <td>
+                                                <span class="status-badge <%= review.isVisible ? 'status-active' : 'status-inactive' %>">
+                                                    <%= review.isVisible ? 'Visible' : 'Hidden' %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn-icon toggle-visibility" data-id="<%= review.id %>" title="<%= review.isVisible ? 'Hide' : 'Show' %>">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <% if (review.isVisible) { %>
+                                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                                                        <% } else { %>
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        <% } %>
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No reviews found. Click sync to fetch reviews.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .star { color: #ddd; }
+        .star.filled { color: #f1c40f; }
+        .avatar-sm { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; }
+        .user-info { display: flex; align-items: center; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .status-active { background: #e6f7ed; color: #2ecc71; }
+        .status-inactive { background: #fbeae9; color: #e74c3c; }
+        .icon-sync { margin-right: 8px; }
+        .spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+
+    <script src="/js/toast.js"></script>
+    <script>
+        document.getElementById('syncReviewsBtn').addEventListener('click', async function() {
+            const btn = this;
+            const icon = btn.querySelector('svg');
+            
+            btn.disabled = true;
+            icon.classList.add('spinning');
+            
+            try {
+                const response = await fetch('/admin/reviews/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Success', data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast('Error', data.message || 'Failed to sync reviews', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error', 'An unexpected error occurred', 'error');
+            } finally {
+                btn.disabled = false;
+                icon.classList.remove('spinning');
+            }
+        });
+
+        document.querySelectorAll('.toggle-visibility').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.getAttribute('data-id');
+                try {
+                    const response = await fetch(`/admin/reviews/${id}/toggle-visibility`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Error', 'Failed to toggle visibility', 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,20 +1,17 @@
 import { useEffect } from "react";
 import Layout from "@/components/LayoutShell";
 import Hero from "@/components/Hero";
-// import AboutPage from './about';
-// import WhyChooseUs from '@/components/WhyChooseUs';
-// import RoofingProducts from '@/components/RoofingProducts';
+import GoogleReviews from "@/components/GoogleReviews";
 import FeaturedProjects from "@/components/FeaturedProjects";
 import Testimonials from "@/components/Testimonials";
-// import QuoteForm from '@/components/QuoteForm';
-import { cleanupScrollTriggers } from "@/lib/animations";
 import Services from "@/components/Services";
 import Secondsechome from "@/components/Secondsechome";
 import OurProcess from "@/components/OurProcess";
 import SeoHead from "@/components/SeoHead";
+import Faq from "@/components/Faq";
+import { cleanupScrollTriggers } from "@/lib/animations";
 import { getSeoData } from "@/lib/api/seo";
 import apiClient from "@/lib/apiClient";
-import Faq from "@/components/Faq";
 
 
 export async function getServerSideProps() {
@@ -69,7 +66,7 @@ export default function HomePage({ seoData, services }) {
       <FeaturedProjects />
      
       <div id="testimonials">
-        <Testimonials />
+        <GoogleReviews />
       </div>
  <Faq />
     </Layout>

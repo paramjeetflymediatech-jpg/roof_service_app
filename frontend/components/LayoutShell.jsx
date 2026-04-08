@@ -293,6 +293,20 @@ export default function LayoutShell({ children }) {
                 {COMPANY_INFO.tagline ||
                   "Quality materials designed to protect your investment for decades."}
               </p>
+              <div className="flex justify-center md:justify-start pt-2">
+                <a
+                  href="https://www.bbb.org/ca/bc/surrey/profile/roofing-contractors/mainstreet-roofing-ltd-0037-2436326/customer-reviews"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block hover:opacity-80 transition-opacity"
+                >
+                  <img
+                    src="/BBB.png"
+                    alt="Better Business Bureau"
+                    className="w-32 md:w-36 lg:w-40 h-auto object-contain"
+                  />
+                </a>
+              </div>
             </div>
 
             {/* Quick Links */}

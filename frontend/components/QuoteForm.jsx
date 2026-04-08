@@ -242,7 +242,7 @@ export default function QuoteForm() {
                   <div>
                     <h4 className="font-bold text-gray-900 mb-1">Address</h4>
                     <p className="text-gray-600">
-                      12518, 97-B Ave Surrey, BC V3V 2H8
+                      9380 124 St, Surrey, BC V3V 4S4
                     </p>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function QuoteForm() {
             {/* Map */}
             <div className="w-full h-[300px] rounded-2xl overflow-hidden shadow-lg border-4 border-gray-50">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2607.729115206085!2d-122.8753229!3d49.1791163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5485d992e5a8ae67%3A0xe5a363d6f78f8b89!2s12518%2097b%20Ave%2C%20Surrey%2C%20BC%20V3V%202H8%2C%20Canada!5e0!3m2!1sen!2sus!4v1705912423000!5m2!1sen!2sus"
+                src="https://maps.google.com/maps?q=Mainstreet+Roofing+LTD,+Surrey,+BC&t=&z=13&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

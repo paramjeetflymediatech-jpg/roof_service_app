@@ -140,13 +140,21 @@ const EstimateController = {
         clientAddress,
         date,
         expiryDate,
-        timeEstimate,
         notes,
-        items, // Expecting an array of objects
+        timeEstimate,
+        items,
         leadId,
+        applyGst,
+        applyPst,
+        provincialTaxType,
+        provincialTaxRate,
       } = req.body;
+      
+      const isGst = applyGst === 'on' || applyGst === true || applyGst === 'true';
+      const isPst = applyPst === 'on' || applyPst === true || applyPst === 'true';
+      const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+      const pTaxType = provincialTaxType || 'PST';
 
-      // Calculate totals
       let subtotal = 0;
       const parsedItems = Array.isArray(items)
         ? items
@@ -157,7 +165,9 @@ const EstimateController = {
         subtotal += item.amount;
       });
 
-      const tax = subtotal * 0.05; // 5% GST
+      const gstAmount = isGst ? subtotal * 0.05 : 0;
+      const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+      const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
       // Generate estimate number (simple version)
@@ -173,11 +183,15 @@ const EstimateController = {
         expiryDate,
         items: parsedItems,
         subtotal,
+        applyGst: isGst,
+        applyPst: isPst,
+        provincialTaxType: pTaxType,
+        provincialTaxRate: pTaxRate,
         tax,
         total,
         timeEstimate,
         notes,
-        status: "Draft",
+        status: req.body.status || "Draft",
         createdById: req.user.id,
         leadId: leadId || null,
       });
@@ -233,18 +247,26 @@ const EstimateController = {
         clientAddress,
         date,
         expiryDate,
-        timeEstimate,
         notes,
+        timeEstimate,
         items,
         status,
+        applyGst,
+        applyPst,
+        provincialTaxType,
+        provincialTaxRate,
       } = req.body;
+      
+      const isGst = applyGst === 'on' || applyGst === true || applyGst === 'true';
+      const isPst = applyPst === 'on' || applyPst === true || applyPst === 'true';
+      const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+      const pTaxType = provincialTaxType || 'PST';
 
       const estimate = await Estimate.findByPk(req.params.id);
       if (!estimate) {
         return res.status(404).send("Estimate not found");
       }
 
-      // Recalculate totals
       let subtotal = 0;
       const parsedItems = Array.isArray(items)
         ? items
@@ -255,7 +277,9 @@ const EstimateController = {
         subtotal += item.amount;
       });
 
-      const tax = subtotal * 0.05;
+      const gstAmount = isGst ? subtotal * 0.05 : 0;
+      const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+      const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
       await estimate.update({
@@ -267,6 +291,10 @@ const EstimateController = {
         expiryDate,
         items: parsedItems,
         subtotal,
+        applyGst: isGst,
+        applyPst: isPst,
+        provincialTaxType: pTaxType,
+        provincialTaxRate: pTaxRate,
         tax,
         total,
         timeEstimate,

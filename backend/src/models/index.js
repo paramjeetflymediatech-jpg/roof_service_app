@@ -2,7 +2,6 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/mysql");
 
 // Import models
-// Import models
 const User = require("./User");
 const Lead = require("./Lead");
 const Service = require("./Service");
@@ -16,6 +15,7 @@ const DataDeletionRequest = require("./DataDeletionRequest");
 const Estimate = require("./Estimate");
 const Invoice = require("./Invoice");
 const JobWorkSession = require("./JobWorkSession");
+const Review = require("./Review");
 
 // Define associations
 // Lead associations
@@ -98,4 +98,5 @@ module.exports = {
   Estimate,
   Invoice,
   JobWorkSession,
+  Review,
 };
