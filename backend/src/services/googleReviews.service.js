@@ -13,20 +13,16 @@ class GoogleReviewsService {
 
         try {
             // Places API (New) v1 Endpoint
-            const url = `https://places.googleapis.com/v1/places/${placeId}`;
+            // const url = `https://places.googleapis.com/v1/places/${placeId}`;
+            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}`;
 
             console.log('Fetching Google Reviews from:', url);
-            const response = await axios.get(url, {
-                headers: {
-                    'X-Goog-Api-Key': apiKey,
-                    'X-Goog-FieldMask': 'reviews'
-                }
-            });
+            const response = await axios.get(url);
 
             console.log('Google API Response:', JSON.stringify(response.data, null, 2));
 
-            if (response.data && response.data.reviews) {
-                return response.data.reviews;
+            if (response.data && response.data.result.reviews) {
+                return response.data.result.reviews;
             }
             return [];
         } catch (error) {
@@ -42,15 +38,18 @@ class GoogleReviewsService {
             let count = 0;
 
             for (const gr of googleReviews) {
-                // Places API (New) data structure mapping
+                // Map the old Place Details API fields to our new model properties
                 const reviewData = {
-                    googleReviewId: gr.name, // Format: places/PLACE_ID/reviews/REVIEW_ID
-                    authorName: gr.authorAttribution?.displayName || 'Anonymous',
-                    authorPhoto: gr.authorAttribution?.photoUri || null,
+                    author_name: gr.author_name || 'Anonymous',
+                    author_url: gr.author_url || null,
+                    language: gr.language || null,
+                    original_language: gr.original_language || null,
+                    profile_photo_url: gr.profile_photo_url || null,
                     rating: gr.rating || 5,
-                    text: gr.text?.text || '',
-                    relativeTimeDescription: gr.relativePublishTimeDescription || '',
-                    time: gr.publishTime ? new Date(gr.publishTime) : new Date()
+                    relative_time_description: gr.relative_time_description || '',
+                    text: gr.text || '',
+                    time: gr.time || Math.floor(Date.now() / 1000),
+                    translated: gr.translated || false
                 };
 
                 await Review.upsert(reviewData);

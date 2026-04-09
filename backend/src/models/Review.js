@@ -7,17 +7,24 @@ const Review = sequelize.define('Review', {
         autoIncrement: true,
         primaryKey: true
     },
-    googleReviewId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    },
-    authorName: {
+    author_name: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    authorPhoto: {
+    author_url: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    language: {
         type: DataTypes.STRING,
+        allowNull: true
+    },
+    original_language: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    profile_photo_url: {
+        type: DataTypes.TEXT,
         allowNull: true
     },
     rating: {
@@ -28,17 +35,21 @@ const Review = sequelize.define('Review', {
             max: 5
         }
     },
+    relative_time_description: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     text: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    relativeTimeDescription: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
     time: {
-        type: DataTypes.DATE,
+        type: DataTypes.BIGINT,
         allowNull: false
+    },
+    translated: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     isVisible: {
         type: DataTypes.BOOLEAN,
@@ -47,7 +58,14 @@ const Review = sequelize.define('Review', {
 }, {
     tableName: 'reviews',
     timestamps: true,
-    underscored: true
+    underscored: true,
+    indexes: [
+        {
+            unique: true,
+            fields: ['author_name', 'time']
+        }
+    ]
 });
 
 module.exports = Review;
+

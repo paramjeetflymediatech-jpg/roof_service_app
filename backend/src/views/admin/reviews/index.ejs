@@ -46,8 +46,8 @@
                                         <tr>
                                             <td>
                                                 <div class="user-info">
-                                                    <img src="<%= review.authorPhoto %>" alt="<%= review.authorName %>" class="avatar-sm">
-                                                    <span><%= review.authorName %></span>
+                                                    <img src="<%= review.profile_photo_url %>" alt="<%= review.author_name %>" class="avatar-sm" referrerpolicy="no-referrer">
+                                                    <span><%= review.author_name %></span>
                                                 </div>
                                             </td>
                                             <td>
@@ -62,7 +62,7 @@
                                                     <%= review.text.length > 100 ? review.text.substring(0, 100) + '...' : review.text %>
                                                 </div>
                                             </td>
-                                            <td><%= new Date(review.time).toLocaleDateString() %></td>
+                                            <td><%= new Date(Number(review.time) * 1000).toLocaleDateString() %></td>
                                             <td>
                                                 <span class="status-badge <%= review.isVisible ? 'status-active' : 'status-inactive' %>">
                                                     <%= review.isVisible ? 'Visible' : 'Hidden' %>
