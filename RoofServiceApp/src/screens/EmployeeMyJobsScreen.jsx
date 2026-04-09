@@ -324,15 +324,18 @@ const EmployeeMyJobsScreen = () => {
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate('EmployeeDashboard')}
+          onPress={() => navigation.navigate('EmployeeMyJobs')}
         >
-          <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navLabel}>Home</Text>
-        </TouchableOpacity>
-        <View style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>💼</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>Jobs</Text>
-        </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('EmployeeTimesheet')}
+        >
+          <Text style={styles.navIcon}>⏰</Text>
+          <Text style={styles.navLabel}>Timesheet</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('EmployeeProfile')}

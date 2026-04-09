@@ -347,6 +347,13 @@ const EmployeeDashboardScreen = () => {
                   <Text style={styles.quickAccessIcon}>🖼️</Text>
                   <Text style={styles.quickAccessLabel}>Gallery</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.quickAccessCard}
+                  onPress={() => navigation.navigate('EmployeeTimesheet')}
+                >
+                  <Text style={styles.quickAccessIcon}>⏰</Text>
+                  <Text style={styles.quickAccessLabel}>Timesheet</Text>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.sectionHeader}>
@@ -389,6 +396,13 @@ const EmployeeDashboardScreen = () => {
         >
           <Text style={styles.navIcon}>💼</Text>
           <Text style={styles.navLabel}>Jobs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('EmployeeTimesheet')}
+        >
+          <Text style={styles.navIcon}>⏰</Text>
+          <Text style={styles.navLabel}>Timesheet</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
@@ -527,7 +541,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(8),
   },
   quickAccessLabel: {
-    fontSize: moderateScale(14),
+    fontSize: moderateScale(12),
     fontWeight: '600',
     color: COLORS.text,
   },

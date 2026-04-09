@@ -483,6 +483,13 @@ const EmployeeProfileScreen = () => {
           <Text style={styles.navIcon}>💼</Text>
           <Text style={styles.navLabel}>Jobs</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('EmployeeTimesheet')}
+        >
+          <Text style={styles.navIcon}>⏰</Text>
+          <Text style={styles.navLabel}>Timesheet</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => { }}>
           <Text style={[styles.navIcon, { color: COLORS.primary }]}>👤</Text>
           <Text style={[styles.navLabel, { color: COLORS.primary }]}>

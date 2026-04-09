@@ -297,6 +297,30 @@ const AdminDashboardScreen = () => {
             <Text style={styles.actionSubtext}>Billing & payments</Text>
           </TouchableOpacity>
         </View>
+
+        <View
+          style={[
+            styles.quickActionsContainer,
+            { marginTop: verticalScale(16) },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('AdminTimesheet')}
+          >
+            <View
+              style={[
+                styles.actionIconContainer,
+                { backgroundColor: '#fff7ed' },
+              ]}
+            >
+              <Text style={styles.actionIcon}>⏰</Text>
+            </View>
+            <Text style={styles.actionText}>Timesheets</Text>
+            <Text style={styles.actionSubtext}>Staff hours & overtime</Text>
+          </TouchableOpacity>
+          <View style={{ flex: 1 }} />
+        </View>
       </ScrollView>
 
       {/* Footer navigation */}

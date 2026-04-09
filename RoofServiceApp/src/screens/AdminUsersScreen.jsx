@@ -258,6 +258,14 @@ const AdminUsersScreen = () => {
       </View>
 
       <View style={styles.cardActions}>
+        {item.role === ROLES.EMPLOYEE && (
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.timesheetBtn]}
+            onPress={() => navigation.navigate('AdminTimesheet', { employeeId: item.id, employeeName: item.name })}
+          >
+            <Text style={styles.timesheetBtnText}>Timesheet</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={[styles.actionBtn, styles.deleteBtn]}
           onPress={() => handleDelete(item)}
@@ -751,6 +759,16 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     color: COLORS.error,
+    fontSize: moderateScale(12),
+    fontWeight: '600',
+  },
+  timesheetBtn: {
+    backgroundColor: '#f0f9ff',
+    borderRightWidth: 1,
+    borderRightColor: '#f0f0f0',
+  },
+  timesheetBtnText: {
+    color: COLORS.primary,
     fontSize: moderateScale(12),
     fontWeight: '600',
   },

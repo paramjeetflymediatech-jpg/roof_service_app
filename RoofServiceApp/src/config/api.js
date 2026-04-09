@@ -10,8 +10,10 @@ import { Platform } from 'react-native';
 // Falls back to localhost for development if .env is not configured
 // export const API_BASE_URL = ENV_API_BASE_URL || "http://localhost:5001/api";
 // export const SERVER_URL = ENV_SERVER_URL || 'http://localhost:5001';
-export const API_BASE_URL = ENV_API_BASE_URL || Platform.OS == "android" ? "http://10.0.2.2:5001/api" : "http://localhost:5001/api";
-export const SERVER_URL = ENV_SERVER_URL || Platform.OS === "android" ? 'http://10.0.2.2:5001' : 'http://localhost:5001';
+// export const API_BASE_URL = ENV_API_BASE_URL || Platform.OS == "android" ? "http://10.0.2.2:5001/api" : "http://localhost:5001/api";
+// export const SERVER_URL = ENV_SERVER_URL || Platform.OS === "android" ? 'http://10.0.2.2:5001' : 'http://localhost:5001';
+export const API_BASE_URL = ENV_API_BASE_URL || "https://mainstreet-roofing.ca/api";
+export const SERVER_URL = ENV_SERVER_URL || 'https://mainstreet-roofing.ca';
 console.log(API_BASE_URL, '------------a')
 
 const apiClient = axios.create({
@@ -161,6 +163,10 @@ export const api = {
   createInvoice: data => apiClient.post('/invoices', data),
   updateInvoice: (id, data) => apiClient.put(`/invoices/${id}`, data),
   deleteInvoice: id => apiClient.delete(`/invoices/${id}`),
+
+  // Timesheets
+  getTimesheet: (employeeId, params = {}) =>
+    apiClient.get(`/timesheets/employee/${employeeId}`, { params }),
 };
 
 export default apiClient;

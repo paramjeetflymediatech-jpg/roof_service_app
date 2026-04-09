@@ -135,6 +135,7 @@ import ClientServicesScreen from './src/screens/ClientServicesScreen';
 import ClientGalleryScreen from './src/screens/ClientGalleryScreen';
 import ClientMyQuotesScreen from './src/screens/ClientMyQuotesScreen';
 import EmployeeMyJobsScreen from './src/screens/EmployeeMyJobsScreen';
+import EmployeeTimesheetScreen from './src/screens/EmployeeTimesheetScreen';
 import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
 import TermsConditionsScreen from './src/screens/TermsConditionsScreen';
 import HelpSupportScreen from './src/screens/HelpSupportScreen';
@@ -145,6 +146,7 @@ import AdminEstimatesScreen from './src/screens/AdminEstimatesScreen';
 import AdminCreateEstimateScreen from './src/screens/AdminCreateEstimateScreen';
 import AdminInvoicesScreen from './src/screens/AdminInvoicesScreen';
 import AdminCreateInvoiceScreen from './src/screens/AdminCreateInvoiceScreen';
+import AdminTimesheetScreen from './src/screens/AdminTimesheetScreen';
 
 // Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -202,6 +204,7 @@ const RootNavigator = () => {
           <Stack.Screen name="AdminCreateEstimate" component={AdminCreateEstimateScreen} />
           <Stack.Screen name="AdminInvoices" component={AdminInvoicesScreen} />
           <Stack.Screen name="AdminCreateInvoice" component={AdminCreateInvoiceScreen} />
+          <Stack.Screen name="AdminTimesheet" component={AdminTimesheetScreen} />
           <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
           <Stack.Screen
             name="TermsConditions"
@@ -237,6 +240,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name="EmployeeGallery"
             component={EmployeeGalleryScreen}
+          />
+          <Stack.Screen
+            name="EmployeeTimesheet"
+            component={EmployeeTimesheetScreen}
           />
           <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
           <Stack.Screen

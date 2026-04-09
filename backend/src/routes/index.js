@@ -14,6 +14,7 @@ const pdfRoutes = require("./pdf.routes");
 const estimateApiRoutes = require("./estimate.api.routes");
 const invoiceApiRoutes = require("./invoice.api.routes");
 const reviewRoutes = require("./review.routes");
+const timesheetRoutes = require("./timesheet.routes");
 
 const { jwtAuth, checkAccountStatus } = require("../middlewares/auth.middleware");
 
@@ -35,5 +36,6 @@ router.use("/", pdfRoutes);
 router.use("/estimates", jwtAuth, checkAccountStatus, estimateApiRoutes);
 router.use("/invoices", jwtAuth, checkAccountStatus, invoiceApiRoutes);
 router.use("/reviews", reviewRoutes);
+router.use("/timesheets", jwtAuth, checkAccountStatus, timesheetRoutes);
 
 module.exports = router;
