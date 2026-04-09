@@ -26,18 +26,25 @@ async function runMigration() {
   console.log("✅ Connected to MySQL database for reviews migration");
 
   try {
-    console.log("📦 Creating reviews table...");
+    console.log("🗑️ Dropping existing reviews table (if any)...");
+    await connection.query(`DROP TABLE IF EXISTS reviews`);
+
+    console.log("📦 Creating reviews table with full schema...");
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS reviews (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        google_review_id VARCHAR(255) NOT NULL UNIQUE,
+        google_review_id VARCHAR(255) NULL UNIQUE,
         author_name VARCHAR(255) NOT NULL,
-        author_photo VARCHAR(500) NULL,
+        author_url TEXT NULL,
+        language VARCHAR(10) NULL,
+        original_language VARCHAR(10) NULL,
+        profile_photo_url TEXT NULL,
         rating INT NOT NULL,
-        text TEXT NULL,
         relative_time_description VARCHAR(255) NULL,
-        time DATETIME NOT NULL,
+        text TEXT NULL,
+        time BIGINT NOT NULL,
+        translated BOOLEAN DEFAULT FALSE,
         is_visible BOOLEAN DEFAULT TRUE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
