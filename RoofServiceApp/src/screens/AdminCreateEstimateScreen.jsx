@@ -240,14 +240,14 @@ const AdminCreateEstimateScreen = () => {
                     </View>
                 </View>
 
-                {/* Notes */}
+                {/* Terms & Conditions */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Notes</Text>
+                    <Text style={styles.sectionTitle}>Terms & Conditions</Text>
                     <TextInput
                         style={[styles.input, styles.inputMulti]}
                         value={form.notes}
                         onChangeText={v => setField('notes', v)}
-                        placeholder="Additional notes or terms..."
+                        placeholder="Add additional terms or specific conditions..."
                         placeholderTextColor={COLORS.textLight}
                         multiline
                         numberOfLines={4}

@@ -256,43 +256,45 @@ const drawNotesFooter = (doc, notes, startY) => {
         .text("AUTHORIZED SIGNATURE", 340, boxY + boxH - 10, { width: 205, align: "right" });
     doc.moveTo(340, boxY + boxH - 2).lineTo(545, boxY + boxH - 2).strokeColor(GREY).lineWidth(0.5).stroke();
 
-    // ======= Bottom Additions (Condensed) =======
-    let bottomY = boxY + boxH + 6;
+    // ======= Bottom Additions (Optimized Layout) =======
+    let bottomY = boxY + boxH + 8;
 
-    // --- Bottom Left (QR 1 + Credentials) ---
+    // --- Bottom Left: Review QR + Credentials ---
     try {
-        // Reviews QR (Business) - ENLARGED
-        doc.image(path.join(__dirname, "../../public/qr_reviews.png"), 50, bottomY, { width: 48 });
-        doc.font("Helvetica-Bold").fontSize(5.5).fillColor(GREY)
-            .text("SCAN TO VISIT", 50, bottomY + 50, { width: 48, align: "center" });
-        doc.text("OUR BUSINESS", 50, bottomY + 57, { width: 48, align: "center" });
+        // Reviews QR (Business)
+        doc.image(path.join(__dirname, "../../public/qr_reviews.png"), 50, bottomY, { width: 45 });
+        doc.font("Helvetica-Bold").fontSize(6).fillColor(GREY)
+            .text("Scan to visit our business", 50, bottomY + 48, { width: 55, align: "center" });
 
         // Insurance Credentials
-        doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEXT).text("Fully Insured Working", 100, bottomY + 10);
-        doc.text("WCB Covered", 100, bottomY + 20);
+        const credsX = 110;
+        doc.font("Helvetica-Bold").fontSize(8).fillColor(TEXT).text("Fully Insured Working", credsX, bottomY + 12);
+        doc.font("Helvetica-Bold").fontSize(8).fillColor(TEXT).text("WCB Covered", credsX, bottomY + 24);
+        
+        // Helper line for visuals
+        doc.rect(credsX - 10, bottomY + 8, 2, 28).fill(BLUE);
     } catch (e) {
         console.error("Missing bottom left assets", e);
     }
 
-    // --- Bottom Right (Horizontal row: Flag Stack -> QR Stack -> BBB Logo) ---
+    // --- Bottom Right: Flag Stack -> QR Stack -> BBB Logo ---
     try {
-        const rowY = bottomY + 5;
+        const rowY = bottomY + 2;
 
-        // 1. Canadian Flag Stack - SIZED TO MATCH BBB
-        const flagX = 300;
-        doc.image(path.join(__dirname, "../../public/flag.png"), flagX + 5, rowY - 5, { width: 55 });
+        // 1. Canadian Flag Stack
+        const flagX = 290;
+        doc.image(path.join(__dirname, "../../public/flag.png"), flagX + 5, rowY, { width: 50 });
         doc.font("Helvetica-Bold").fontSize(7).fillColor(TEXT)
-            .text("PROUDLY CANADIAN", flagX, rowY + 30, { width: 70, align: "center" });
+            .text("Proudly Canadian", flagX, rowY + 35, { width: 60, align: "center" });
 
-        // 2. Website QR Stack (Middle)
-        const qrX = 385;
-        doc.image(path.join(__dirname, "../../public/qr_website.png"), qrX + 10, rowY - 5, { width: 38 });
-        doc.font("Helvetica-Bold").fontSize(5.5).fillColor(GREY)
-            .text("SCAN TO VISIT", qrX, rowY + 35, { width: 55, align: "center" });
-        doc.text("OUR WEBSITE", qrX, rowY + 42, { width: 55, align: "center" });
+        // 2. Website QR Stack
+        const qrX = 380;
+        doc.image(path.join(__dirname, "../../public/qr_website.png"), qrX + 8, rowY, { width: 40 });
+        doc.font("Helvetica-Bold").fontSize(6).fillColor(GREY)
+            .text("Scan to visit our website", qrX, rowY + 45, { width: 56, align: "center" });
 
         // 3. BBB Logo
-        doc.image(path.join(__dirname, "../../public/BBB.png"), 485, rowY, { width: 55 });
+        doc.image(path.join(__dirname, "../../public/BBB.png"), 485, rowY + 5, { width: 55 });
 
     } catch(e) {
         console.error("Missing bottom right assets", e);

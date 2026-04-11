@@ -217,8 +217,8 @@
                                         <input type="date" name="dueDate" value="<%= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] %>" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 text-sm">
                                     </div>
                                     <div class="space-y-2">
-                                        <label class="block text-sm font-medium text-gray-700">Notes (Optional)</label>
-                                        <textarea name="notes" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Add additional terms or payment instructions..."><%= typeof estimate !== 'undefined' && estimate ? estimate.notes : '' %></textarea>
+                                        <label class="block text-sm font-medium text-gray-700">Terms & Conditions</label>
+                                        <textarea name="notes" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Add additional terms or specific conditions..."><%= typeof estimate !== 'undefined' && estimate ? estimate.notes : '' %></textarea>
                                     </div>
                                 </div>
 

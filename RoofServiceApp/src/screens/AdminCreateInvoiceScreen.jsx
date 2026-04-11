@@ -29,8 +29,12 @@ const AdminCreateInvoiceScreen = () => {
         date: existing?.date?.slice(0, 10) || today(),
         dueDate: existing?.dueDate?.slice(0, 10) || in14Days(),
         notes: src.notes || '',
-        status: existing?.status || 'draft',
+        status: existing?.status || 'Draft',
         leadId: route.params.leadId || '',
+        applyGst: existing?.hasOwnProperty('applyGst') ? existing.applyGst : true,
+        applyPst: existing?.hasOwnProperty('applyPst') ? existing.applyPst : false,
+        provincialTaxType: existing?.provincialTaxType || 'PST',
+        provincialTaxRate: String(existing?.provincialTaxRate || '7.0'),
     });
 
     const [items, setItems] = useState(
@@ -50,7 +54,10 @@ const AdminCreateInvoiceScreen = () => {
     };
 
     const subtotal = items.reduce((sum, it) => sum + (parseFloat(it.rate) || 0) * (parseFloat(it.qty) || 0), 0);
-    const tax = subtotal * 0.05;
+    const gstAmount = form.applyGst ? subtotal * 0.05 : 0;
+    const pstRate = parseFloat(form.provincialTaxRate) || 0;
+    const pstAmount = form.applyPst ? subtotal * (pstRate / 100) : 0;
+    const tax = gstAmount + pstAmount;
     const total = subtotal + tax;
 
     const handleSave = async () => {
@@ -69,6 +76,10 @@ const AdminCreateInvoiceScreen = () => {
                     amount: (parseFloat(it.rate) || 0) * (parseFloat(it.qty) || 1),
                 })),
                 subtotal, tax, total,
+                applyGst: form.applyGst,
+                applyPst: form.applyPst,
+                provincialTaxType: form.provincialTaxType,
+                provincialTaxRate: parseFloat(form.provincialTaxRate),
             };
 
             if (isEdit) {
@@ -194,10 +205,63 @@ const AdminCreateInvoiceScreen = () => {
                     })}
                 </View>
 
-                {/* Totals */}
+                {/* Totals & Taxes */}
                 <View style={styles.totalsBox}>
-                    <View style={styles.totalRow}><Text style={styles.totalLabel}>Subtotal</Text><Text style={styles.totalVal}>${subtotal.toFixed(2)}</Text></View>
-                    <View style={styles.totalRow}><Text style={styles.totalLabel}>GST (5%)</Text><Text style={styles.totalVal}>${tax.toFixed(2)}</Text></View>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Subtotal</Text>
+                        <Text style={styles.totalVal}>${subtotal.toFixed(2)}</Text>
+                    </View>
+
+                    <View style={styles.taxRow}>
+                        <TouchableOpacity 
+                            style={styles.taxToggle}
+                            onPress={() => setField('applyGst', !form.applyGst)}
+                        >
+                            <View style={[styles.checkbox, form.applyGst && { backgroundColor: GREEN, borderColor: GREEN }]}>
+                                {form.applyGst && <Text style={styles.checkMark}>✓</Text>}
+                            </View>
+                            <Text style={styles.taxLabel}>GST (5%)</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.totalVal}>${gstAmount.toFixed(2)}</Text>
+                    </View>
+
+                    <View style={styles.taxRow}>
+                        <View style={{ flex: 1 }}>
+                            <TouchableOpacity 
+                                style={styles.taxToggle}
+                                onPress={() => setField('applyPst', !form.applyPst)}
+                            >
+                                <View style={[styles.checkbox, form.applyPst && { backgroundColor: GREEN, borderColor: GREEN }]}>
+                                    {form.applyPst && <Text style={styles.checkMark}>✓</Text>}
+                                </View>
+                                <Text style={styles.taxLabel}>{form.provincialTaxType} ({form.provincialTaxRate}%)</Text>
+                            </TouchableOpacity>
+                            
+                            {form.applyPst && (
+                                <View style={styles.provinceList}>
+                                    {[
+                                        { label: 'BC (7%)', rate: '7.0', type: 'PST' },
+                                        { label: 'SK (6%)', rate: '6.0', type: 'PST' },
+                                        { label: 'MB (7%)', rate: '7.0', type: 'PST' },
+                                        { label: 'QC (9.975%)', rate: '9.975', type: 'QST' },
+                                    ].map((p) => (
+                                        <TouchableOpacity 
+                                            key={p.label}
+                                            style={[styles.provinceChip, form.provincialTaxRate === p.rate && { backgroundColor: '#E8F5E9', borderColor: GREEN }]}
+                                            onPress={() => {
+                                                setField('provincialTaxRate', p.rate);
+                                                setField('provincialTaxType', p.type);
+                                            }}
+                                        >
+                                            <Text style={[styles.provinceChipText, form.provincialTaxRate === p.rate && { color: GREEN }]}>{p.label}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                        <Text style={[styles.totalVal, { alignSelf: 'flex-start', marginTop: 8 }]}>${pstAmount.toFixed(2)}</Text>
+                    </View>
+
                     <View style={[styles.totalRow, styles.totalGrandRow]}>
                         <Text style={styles.totalGrandLabel}>Total CAD</Text>
                         <Text style={[styles.totalGrand, { color: GREEN }]}>${total.toFixed(2)}</Text>
@@ -206,9 +270,9 @@ const AdminCreateInvoiceScreen = () => {
 
                 {/* Notes */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Notes</Text>
+                    <Text style={styles.sectionTitle}>Terms & Conditions</Text>
                     <TextInput style={[styles.input, styles.inputMulti]} value={form.notes}
-                        onChangeText={v => setField('notes', v)} placeholder="Payment instructions or additional notes..."
+                        onChangeText={v => setField('notes', v)} placeholder="Add additional terms or specific conditions..."
                         placeholderTextColor={COLORS.textLight} multiline numberOfLines={4} />
                 </View>
 
@@ -266,6 +330,14 @@ const styles = StyleSheet.create({
     totalGrandRow: { borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: verticalScale(10), marginTop: verticalScale(4), marginBottom: 0 },
     totalGrandLabel: { fontSize: moderateScale(15), fontWeight: '700', color: COLORS.text },
     totalGrand: { fontSize: moderateScale(18), fontWeight: '800' },
+    taxRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12), alignItems: 'center' },
+    taxToggle: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(10) },
+    checkbox: { width: moderateScale(20), height: moderateScale(20), borderWidth: 2, borderColor: COLORS.border, borderRadius: moderateScale(4), justifyContent: 'center', alignItems: 'center' },
+    checkMark: { color: COLORS.white, fontSize: moderateScale(14), fontWeight: 'bold' },
+    taxLabel: { fontSize: moderateScale(13), color: COLORS.text, fontWeight: '600' },
+    provinceList: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(8), marginTop: verticalScale(10), paddingLeft: moderateScale(30) },
+    provinceChip: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: moderateScale(6), borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#F8F9FA' },
+    provinceChipText: { fontSize: moderateScale(10), color: COLORS.textLight, fontWeight: '700' },
     saveBtn: { borderRadius: moderateScale(12), paddingVertical: verticalScale(14), alignItems: 'center', marginBottom: verticalScale(10), ...SHADOWS.medium },
     saveBtnText: { color: COLORS.white, fontSize: moderateScale(15), fontWeight: '700' },
     cancelBtn: { backgroundColor: COLORS.white, borderRadius: moderateScale(12), paddingVertical: verticalScale(14), alignItems: 'center', borderWidth: 1, borderColor: COLORS.border },

@@ -58,6 +58,14 @@ const Invoice = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    provincialTaxType: {
+      type: DataTypes.STRING,
+      defaultValue: "PST",
+    },
+    provincialTaxRate: {
+      type: DataTypes.DECIMAL(5, 2),
+      defaultValue: 7.0,
+    },
     tax: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

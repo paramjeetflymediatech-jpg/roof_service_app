@@ -208,7 +208,7 @@ const ClientInvoiceScreen = () => {
         {/* ── Notes ── */}
         {invoice.notes ? (
           <View style={styles.notesCard}>
-            <Text style={styles.sectionLabel}>📝 NOTES</Text>
+            <Text style={styles.sectionLabel}>📝 TERMS & CONDITIONS</Text>
             <Text style={styles.notesText}>{invoice.notes}</Text>
           </View>
         ) : null}

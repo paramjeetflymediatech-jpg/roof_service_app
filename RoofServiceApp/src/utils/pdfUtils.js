@@ -218,7 +218,7 @@ export const generateInvoicePDF = async invoice => {
         Electronic transfers can be sent to <strong>${COMPANY_EMAIL}</strong>.</p>
       </div>
 
-      ${invoice.notes ? `<div class="notes-box"><h3>Notes</h3><p>${invoice.notes}</p></div>` : ''}
+      ${invoice.notes ? `<div class="notes-box"><h3>Terms & Conditions</h3><p>${invoice.notes}</p></div>` : ''}
 
       <div class="footer">Thank you for your business! — ${COMPANY_NAME}</div>
     </body>

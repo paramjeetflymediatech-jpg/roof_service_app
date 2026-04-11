@@ -136,6 +136,35 @@ const EmployeeTimesheetScreen = () => {
           </View>
         )}
       </View>
+
+      {item.sessions && item.sessions.length > 0 && (
+        <View style={styles.sessionsContainer}>
+          <Text style={styles.sessionsHeader}>Daily Sessions</Text>
+          {item.sessions.map((session, idx) => (
+            <View key={session.id || idx} style={styles.sessionItem}>
+              <View style={styles.sessionDot} />
+              <View style={styles.sessionInfo}>
+                <View style={styles.sessionRow}>
+                  <Text style={styles.sessionTime}>
+                    {LocalTime(session.startTime)} - {session.endTime ? LocalTime(session.endTime) : 'Active'}
+                  </Text>
+                  <Text style={styles.sessionDuration}>
+                    {session.duration ? (session.duration / 3600).toFixed(2) : '0.00'} hrs
+                  </Text>
+                </View>
+                <Text style={styles.sessionLead} numberOfLines={1}>
+                  {session.leadName} {session.serviceType ? `(${session.serviceType})` : ''}
+                </Text>
+                {session.leadAddress && (
+                  <Text style={styles.sessionAddress} numberOfLines={1}>
+                    📍 {session.leadAddress}
+                  </Text>
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
   
@@ -291,10 +320,18 @@ const EmployeeTimesheetScreen = () => {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={() => setShowFilterModal(false)}
+                style={[styles.modalBtn, styles.resetBtn]}
+                onPress={() => {
+                  const start = moment().startOf('month').format('YYYY-MM-DD');
+                  const end = moment().format('YYYY-MM-DD');
+                  setTempStart(start);
+                  setTempEnd(end);
+                  setStartDate(start);
+                  setEndDate(end);
+                  setShowFilterModal(false);
+                }}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={styles.resetBtnText}>Reset</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.applyBtn]}
@@ -303,6 +340,12 @@ const EmployeeTimesheetScreen = () => {
                 <Text style={styles.applyBtnText}>Apply</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={styles.closeModalBtn}
+              onPress={() => setShowFilterModal(false)}
+            >
+              <Text style={styles.closeModalBtnText}>Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -467,6 +510,61 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
   },
+  sessionsContainer: {
+    marginTop: verticalScale(16),
+    paddingTop: verticalScale(12),
+    borderTopWidth: 1,
+    borderTopColor: '#F0F4F8',
+  },
+  sessionsHeader: {
+    fontSize: moderateScale(11),
+    fontWeight: '700',
+    color: COLORS.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: verticalScale(10),
+  },
+  sessionItem: {
+    flexDirection: 'row',
+    marginBottom: verticalScale(12),
+  },
+  sessionDot: {
+    width: moderateScale(6),
+    height: moderateScale(6),
+    borderRadius: moderateScale(3),
+    backgroundColor: COLORS.primary,
+    marginTop: verticalScale(6),
+    marginRight: moderateScale(10),
+  },
+  sessionInfo: {
+    flex: 1,
+  },
+  sessionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(2),
+  },
+  sessionTime: {
+    fontSize: moderateScale(12),
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  sessionDuration: {
+    fontSize: moderateScale(11),
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  sessionLead: {
+    fontSize: moderateScale(12),
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  sessionAddress: {
+    fontSize: moderateScale(10),
+    color: COLORS.textLight,
+    marginTop: verticalScale(1),
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -539,6 +637,11 @@ const styles = StyleSheet.create({
   cancelBtn: {
     backgroundColor: '#F0F4F8',
   },
+  resetBtn: {
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+  },
   applyBtn: {
     backgroundColor: COLORS.primary,
   },
@@ -546,9 +649,24 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: '600',
   },
+  resetBtnText: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
   applyBtnText: {
     color: COLORS.white,
     fontWeight: '700',
+  },
+  closeModalBtn: {
+    marginTop: verticalScale(16),
+    paddingVertical: verticalScale(10),
+    alignItems: 'center',
+  },
+  closeModalBtnText: {
+    color: COLORS.textLight,
+    fontSize: moderateScale(14),
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   calculationCard: {
     backgroundColor: COLORS.white,

@@ -198,7 +198,7 @@ const ClientEstimateScreen = () => {
         {/* ── Notes ── */}
         {estimate.notes ? (
           <View style={styles.notesCard}>
-            <Text style={styles.sectionLabel}>📝 NOTES</Text>
+            <Text style={styles.sectionLabel}>📝 TERMS & CONDITIONS</Text>
             <Text style={styles.notesText}>{estimate.notes}</Text>
           </View>
         ) : null}

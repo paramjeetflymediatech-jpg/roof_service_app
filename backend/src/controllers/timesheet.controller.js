@@ -111,6 +111,18 @@ exports.getEmployeeTimesheet = async (req, res) => {
         breakHours: parseFloat((breakSeconds / 3600).toFixed(2)),
         isOvertime: totalHours > 8,
         overtimeHours: totalHours > 8 ? parseFloat((totalHours - 8).toFixed(2)) : 0,
+        sessions: day.sessions.map(s => ({
+            id: s.id,
+            jobId: s.jobId,
+            leadId: s.leadId,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            duration: s.duration,
+            jobNotes: s.job ? s.job.notes : null,
+            leadName: s.lead ? s.lead.name : "N/A",
+            leadAddress: s.lead ? s.lead.address : null,
+            serviceType: s.lead ? s.lead.serviceType : null
+        }))
       };
     });
 
