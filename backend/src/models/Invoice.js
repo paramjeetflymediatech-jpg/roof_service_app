@@ -81,7 +81,7 @@ const Invoice = sequelize.define(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM("Draft", "Unpaid", "Paid", "Overdue", "Sent"),
+      type: DataTypes.ENUM("Draft", "Unpaid", "Paid", "Overdue", "Sent", "Pending"),
       defaultValue: "Draft",
     },
     createdById: {
