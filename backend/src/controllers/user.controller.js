@@ -271,21 +271,27 @@ exports.uploadProfilePicture = async (req, res, next) => {
 
 // Delete current authenticated user's account and all associated data
 exports.deleteMyAccount = async (req, res, next) => {
-  const { Lead, Job, JobLog } = require("../models");
+  const { Lead, Job, JobLog, Invoice, Estimate, JobWorkSession } = require("../models");
 
   try {
     const userId = req.user?.id;
     if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Not authenticated" });
+      if (res) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Not authenticated" });
+      }
+      return; // If called from job, just return
     }
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      if (res) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+      return;
     }
 
     // Helper function to delete image files
@@ -323,19 +329,50 @@ exports.deleteMyAccount = async (req, res, next) => {
     const leadIds = userLeads.map((lead) => lead.id);
 
     // 2. Find all jobs - both jobs referencing user's leads AND jobs where user is employee/assigned by
-    const whereConditions = [{ employeeId: userId }, { assignedById: userId }];
-
+    const jobWhereConditions = [{ employeeId: userId }, { assignedById: userId }];
     if (leadIds.length > 0) {
-      whereConditions.push({ leadId: leadIds });
+      jobWhereConditions.push({ leadId: leadIds });
     }
 
     const userJobs = await Job.findAll({
       where: {
-        [Op.or]: whereConditions,
+        [Op.or]: jobWhereConditions,
       },
     });
 
-    // Delete job-related images
+    const jobIds = userJobs.map((job) => job.id);
+
+    // 3. Delete Job Work Sessions (must be before Jobs and Leads)
+    const sessionWhereConditions = [{ userId: userId }];
+    if (jobIds.length > 0) sessionWhereConditions.push({ jobId: jobIds });
+    if (leadIds.length > 0) sessionWhereConditions.push({ leadId: leadIds });
+
+    await JobWorkSession.destroy({
+      where: { [Op.or]: sessionWhereConditions },
+    });
+
+    // 4. Delete Job Logs
+    const logWhereConditions = [{ userId: userId }];
+    if (jobIds.length > 0) logWhereConditions.push({ jobId: jobIds });
+    if (leadIds.length > 0) logWhereConditions.push({ leadId: leadIds });
+
+    await JobLog.destroy({
+      where: { [Op.or]: logWhereConditions },
+    });
+
+    // 5. Delete Invoices and Estimates
+    const invoiceWhereConditions = [{ createdById: userId }];
+    if (leadIds.length > 0) invoiceWhereConditions.push({ leadId: leadIds });
+
+    await Invoice.destroy({
+      where: { [Op.or]: invoiceWhereConditions },
+    });
+
+    await Estimate.destroy({
+      where: { [Op.or]: invoiceWhereConditions }, // Same logic as invoices
+    });
+
+    // 6. Delete job-related images and then the jobs
     for (const job of userJobs) {
       deleteImagesFromArray(job.beforeImages);
       deleteImagesFromArray(job.afterImages);
@@ -344,40 +381,30 @@ exports.deleteMyAccount = async (req, res, next) => {
       }
     }
 
-    // 3. Delete job logs associated with all these jobs
-    const jobIds = userJobs.map((job) => job.id);
-    if (jobIds.length > 0) {
-      await JobLog.destroy({
-        where: { jobId: jobIds },
-      });
-    }
-
-    // 4. Delete all the jobs
     await Job.destroy({
       where: {
-        [Op.or]: whereConditions,
+        [Op.or]: jobWhereConditions,
       },
     });
 
-    // 5. Delete lead-related images
+    // 7. Delete lead-related images and then the leads
     for (const lead of userLeads) {
       deleteImagesFromArray(lead.clientImages);
       deleteImagesFromArray(lead.completionImages);
     }
 
-    // 6. Delete the leads (now safe since all referencing jobs are deleted)
     await Lead.destroy({
       where: {
         [Op.or]: [{ userId: userId }, { assignedToId: userId }],
       },
     });
 
-    // 7. Delete user's profile picture
+    // 8. Delete user's profile picture
     if (user.profilePicture) {
       deleteImageFile(user.profilePicture);
     }
 
-    // 8. Finally, delete the user account
+    // 9. Finally, delete the user account
     await user.destroy();
 
     if (res) {
