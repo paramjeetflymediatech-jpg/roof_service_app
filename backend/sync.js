@@ -4,10 +4,10 @@ const bcrypt = require('bcryptjs');
 
 async function syncAndSeed() {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log('✅ Tables synced successfully!');
-    
-    const adminCount = await User.count({ where: { email: 'admin@roofservice.com' }});
+
+    const adminCount = await User.count({ where: { email: 'admin@roofservice.com' } });
     if (adminCount === 0) {
       const hashedPassword = await bcrypt.hash('Admin@123', 10);
       await User.create({

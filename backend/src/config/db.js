@@ -4,9 +4,9 @@ async function connectDB() {
   try {
     await sequelize.authenticate();
     console.log('✅ MySQL connected successfully');
-    
+
     // Sync models with database
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log('✅ Database schema synced');
   } catch (err) {
     console.error('❌ MySQL connection error:', err.message);
