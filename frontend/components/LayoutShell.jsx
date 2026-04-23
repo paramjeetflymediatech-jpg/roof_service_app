@@ -303,7 +303,7 @@ export default function LayoutShell({ children }) {
                   <img
                     src="/BBB.png"
                     alt="Better Business Bureau"
-                    className="w-32 md:w-36 lg:w-40 h-auto object-contain"
+                    className="     w-full  h-auto object-contain"
                   />
                 </a>
               </div>
