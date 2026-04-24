@@ -14,13 +14,18 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
+import { moderateScale, verticalScale } from '../utils/responsive';
 import { api } from '../config/api';
 import { COLORS, ROLES, SHADOWS } from '../utils/constants';
-import { moderateScale, verticalScale } from '../utils/responsive';
+import ImageModal from '../components/ImageModal';
+import { SERVER_URL } from '../config/api';
+import BeautifulAlert from '../components/BeautifulAlert';
+
 
 const AdminUsersScreen = () => {
   const navigation = useNavigation();
@@ -41,6 +46,17 @@ const AdminUsersScreen = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(ROLES.CLIENT);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [selectedViewerImage, setSelectedViewerImage] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    confirmText: 'OK',
+    type: 'default',
+    onConfirm: () => setAlertVisible(false),
+    showCancel: false,
+  });
 
   // Initial load
   useEffect(() => {
@@ -141,24 +157,48 @@ const AdminUsersScreen = () => {
 
   const handleSave = async () => {
     if (!name.trim() || !email.trim()) {
-      Alert.alert('Validation', 'Name and email are required');
+      setAlertConfig({
+        title: 'Validation Error',
+        message: 'Name and email are required.',
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      Alert.alert('Validation', 'Please enter a valid email address');
+      setAlertConfig({
+        title: 'Validation Error',
+        message: 'Please enter a valid email address.',
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
       return;
     }
 
     if (!editingUser && !password.trim()) {
-      Alert.alert('Validation', 'Password is required when creating a user');
+      setAlertConfig({
+        title: 'Validation Error',
+        message: 'Password is required when creating a new user.',
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
       return;
     }
 
     if (phone.trim()) {
       const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
       if (!phoneRegex.test(phone.trim())) {
-        Alert.alert('Validation', 'Please enter a valid phone number');
+        setAlertConfig({
+          title: 'Validation Error',
+          message: 'Please enter a valid phone number (10-15 digits).',
+          type: 'destructive',
+          onConfirm: () => setAlertVisible(false),
+        });
+        setAlertVisible(true);
         return;
       }
     }
@@ -173,6 +213,23 @@ const AdminUsersScreen = () => {
       payload.password = password.trim();
     }
 
+    setAlertConfig({
+      title: editingUser ? 'Update User' : 'Create User',
+      message: editingUser 
+        ? `Are you sure you want to save changes for ${name}?` 
+        : `Are you sure you want to create a new ${role} account for ${name}?`,
+      confirmText: 'Save',
+      type: 'default',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await performSave(payload);
+      },
+    });
+    setAlertVisible(true);
+  };
+
+  const performSave = async (payload) => {
     try {
       setSaving(true);
       if (editingUser) {
@@ -185,39 +242,55 @@ const AdminUsersScreen = () => {
       setShowForm(false);
       resetForm();
       
-      // Reload list in background silently to avoid flickering
-      // Reload list from scratch silently to avoid flickering
       loadUsers(true);
       
-      Alert.alert('Success', 'User saved successfully');
+      setAlertConfig({
+        title: 'User Saved',
+        message: 'The user account has been successfully created or updated.',
+        confirmText: 'OK',
+        type: 'default',
+        onConfirm: () => setAlertVisible(false),
+        showCancel: false,
+      });
+      setAlertVisible(true);
     } catch (error) {
       const msg = error.response?.data?.message || 'Failed to save user';
-      Alert.alert('Error', msg);
+      setAlertConfig({
+        title: 'Error',
+        message: msg,
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = userToDelete => {
-    Alert.alert(
-      'Delete User',
-      `Are you sure you want to delete ${userToDelete.name || 'this user'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.deleteUser(userToDelete.id);
-              await loadUsers();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete user');
-            }
-          },
-        },
-      ],
-    );
+    setAlertConfig({
+      title: 'Delete User',
+      message: `Are you sure you want to delete ${userToDelete.name || 'this user'}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      type: 'destructive',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        try {
+          await api.deleteUser(userToDelete.id);
+          loadUsers(true);
+        } catch (error) {
+          setAlertConfig({
+            title: 'Delete Failed',
+            message: 'Failed to delete user. Please try again.',
+            type: 'destructive',
+            onConfirm: () => setAlertVisible(false),
+          });
+          setAlertVisible(true);
+        }
+      },
+    });
+    setAlertVisible(true);
   };
 
   const renderUserItem = ({ item }) => (
@@ -234,11 +307,26 @@ const AdminUsersScreen = () => {
           }
           activeOpacity={0.7}
         >
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>
-              {item.name ? item.name.charAt(0).toUpperCase() : 'U'}
-            </Text>
-          </View>
+          <TouchableOpacity 
+            style={styles.avatarContainer}
+            onPress={() => {
+              if (item.profilePicture) {
+                setSelectedViewerImage(item.profilePicture.startsWith('http') ? item.profilePicture : `${SERVER_URL}${item.profilePicture}`);
+                setViewerVisible(true);
+              }
+            }}
+          >
+            {item.profilePicture ? (
+              <Image 
+                source={{ uri: item.profilePicture.startsWith('http') ? item.profilePicture : `${SERVER_URL}${item.profilePicture}` }} 
+                style={styles.avatarImage} 
+              />
+            ) : (
+              <Text style={styles.avatarText}>
+                {item.name ? item.name.charAt(0).toUpperCase() : 'U'}
+              </Text>
+            )}
+          </TouchableOpacity>
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.userName}>{item.name}</Text>
@@ -555,6 +643,24 @@ const AdminUsersScreen = () => {
           <Text style={styles.navLabel}>Profile</Text>
         </TouchableOpacity>
       </View>
+ 
+      <ImageModal 
+        visible={viewerVisible} 
+        imageUrl={selectedViewerImage} 
+        onClose={() => setViewerVisible(false)} 
+      />
+
+      <BeautifulAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertVisible(false)}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        cancelText="Cancel"
+      />
     </View>
   );
 };
@@ -796,6 +902,12 @@ const styles = StyleSheet.create({
   editIconBtn: {
     paddingHorizontal: moderateScale(8),
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   editIcon: {
     fontSize: moderateScale(18),

@@ -4,11 +4,13 @@ import {
     ActivityIndicator, RefreshControl, Alert, Platform, StatusBar,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api, SERVER_URL } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Linking } from 'react-native';
 import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
+import BeautifulAlert from '../components/BeautifulAlert';
 
 const fmtDate = v => {
     if (!v) return '';
@@ -27,9 +29,19 @@ const statusColor = s => {
 
 const AdminEstimatesScreen = () => {
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const [estimates, setEstimates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        confirmText: 'OK',
+        type: 'default',
+        onConfirm: () => setAlertVisible(false),
+        showCancel: false,
+    });
     const [downloadingId, setDownloadingId] = useState(null);
 
     const fetchEstimates = async () => {
@@ -49,18 +61,30 @@ const AdminEstimatesScreen = () => {
 
     const onRefresh = () => { setRefreshing(true); fetchEstimates(); };
 
-    const handleDelete = (id) => {
-        Alert.alert('Delete Estimate', 'Are you sure?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Delete', style: 'destructive', onPress: async () => {
-                    try {
-                        await api.deleteEstimate(id);
-                        setEstimates(prev => prev.filter(e => e.id !== id));
-                    } catch (e) { Alert.alert('Error', 'Could not delete estimate.'); }
+    const confirmDelete = (id) => {
+        setAlertConfig({
+            title: 'Delete Estimate',
+            message: 'Are you sure you want to delete this estimate? This action cannot be undone.',
+            confirmText: 'Delete',
+            type: 'destructive',
+            showCancel: true,
+            onConfirm: async () => {
+                setAlertVisible(false);
+                try {
+                    await api.deleteEstimate(id);
+                    setEstimates(prev => prev.filter(e => e.id !== id));
+                } catch (error) {
+                    setAlertConfig({
+                        title: 'Error',
+                        message: 'Failed to delete estimate.',
+                        type: 'destructive',
+                        onConfirm: () => setAlertVisible(false),
+                    });
+                    setAlertVisible(true);
                 }
             }
-        ]);
+        });
+        setAlertVisible(true);
     };
 
     const handleDownloadPDF = async (est) => {
@@ -115,7 +139,7 @@ const AdminEstimatesScreen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.actionBtn, styles.deleteBtn]}
-                    onPress={() => handleDelete(item.id)}
+                    onPress={() => confirmDelete(item.id)}
                 >
                     <Text style={styles.deleteBtnText}>Delete</Text>
                 </TouchableOpacity>
@@ -156,9 +180,12 @@ const AdminEstimatesScreen = () => {
                 />
             )}
 
-            {/* Footer nav */}
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AdminDashboard')}>
+            {/* Footer navigation */}
+            <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate('AdminDashboard')}
+                >
                     <Text style={styles.navIcon}>📊</Text>
                     <Text style={styles.navLabel}>Dashboard</Text>
                 </TouchableOpacity>
@@ -175,6 +202,18 @@ const AdminEstimatesScreen = () => {
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>
             </View>
+
+            <BeautifulAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                confirmText={alertConfig.confirmText}
+                onConfirm={alertConfig.onConfirm}
+                onCancel={() => setAlertVisible(false)}
+                type={alertConfig.type}
+                showCancel={alertConfig.showCancel}
+                cancelText="Cancel"
+            />
         </View>
     );
 };
@@ -247,12 +286,17 @@ const styles = StyleSheet.create({
     },
     emptyBtnText: { color: COLORS.white, fontWeight: '700', fontSize: moderateScale(14) },
     footer: {
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        flexDirection: 'row', backgroundColor: COLORS.white,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        backgroundColor: COLORS.white,
         paddingVertical: verticalScale(12),
-        paddingBottom: Platform.OS === 'ios' ? verticalScale(30) : verticalScale(12),
-        borderTopWidth: 1, borderTopColor: COLORS.border,
-        justifyContent: 'space-around', ...SHADOWS.large,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.border,
+        justifyContent: 'space-around',
+        ...SHADOWS.large,
     },
     navItem: { alignItems: 'center' },
     navIcon: { fontSize: moderateScale(22), color: COLORS.textLight, marginBottom: verticalScale(2) },

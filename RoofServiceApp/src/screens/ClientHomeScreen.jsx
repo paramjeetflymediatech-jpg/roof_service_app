@@ -22,6 +22,7 @@ import {
   verticalScale,
   getMenuWidth,
 } from '../utils/responsive';
+import BeautifulAlert from '../components/BeautifulAlert';
 
 // Use a local image for Hero background if available, or a nice placeholder
 const HERO_IMAGE = require('../../assets/roofing-background.jpg'); // Ensure this exists or use a fallback
@@ -38,6 +39,15 @@ const ClientHomeScreen = () => {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    confirmText: 'OK',
+    type: 'default',
+    onConfirm: () => setAlertVisible(false),
+    showCancel: false,
+  });
 
   useEffect(() => {
     loadStats();
@@ -84,7 +94,19 @@ const ClientHomeScreen = () => {
   };
 
   const handleLogout = async () => {
-    await logout();
+    setIsMenuOpen(false);
+    setAlertConfig({
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out of your account?',
+      confirmText: 'Sign Out',
+      type: 'destructive',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await logout();
+      },
+    });
+    setAlertVisible(true);
   };
 
   const QuickActionCard = ({ title, icon, color, onPress, subtitle }) => (
@@ -314,6 +336,18 @@ const ClientHomeScreen = () => {
           </View>
         </View>
       )}
+
+      <BeautifulAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertVisible(false)}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        cancelText="Cancel"
+      />
     </View>
   );
 };

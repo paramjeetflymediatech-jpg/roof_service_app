@@ -18,6 +18,7 @@ import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, LEAD_STATUS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
+import BeautifulAlert from '../components/BeautifulAlert';
 
 // Reuse hero image
 const HERO_IMAGE = require('../../assets/roofing-background.jpg');
@@ -35,6 +36,15 @@ const AdminDashboardScreen = () => {
     inProgress: 0,
     completed: 0,
     total: 0,
+  });
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    confirmText: 'OK',
+    type: 'default',
+    onConfirm: () => setAlertVisible(false),
+    showCancel: false,
   });
 
   useFocusEffect(
@@ -76,14 +86,18 @@ const AdminDashboardScreen = () => {
   }, []);
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => await logout(),
+    setAlertConfig({
+      title: 'Logout Confirmation',
+      message: 'Are you sure you want to log out of your account?',
+      confirmText: 'Logout',
+      type: 'destructive',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await logout();
       },
-    ]);
+    });
+    setAlertVisible(true);
   };
 
   return (
@@ -369,6 +383,18 @@ const AdminDashboardScreen = () => {
           <Text style={styles.navLabel}>Profile</Text>
         </TouchableOpacity>
       </View>
+
+      <BeautifulAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertVisible(false)}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        cancelText="Cancel"
+      />
     </View>
   );
 };

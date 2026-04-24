@@ -26,7 +26,7 @@ const formatDateLocal = value => {
 };
  
 
-const TABS = ['All', 'Active', 'Completed', 'Self Created', 'Assigned'];
+const TABS = ['All', 'Active', 'Paused', 'Completed', 'Self Created', 'Assigned'];
 
 const EmployeeMyJobsScreen = () => {
   const { user } = useAuth();
@@ -54,6 +54,7 @@ const EmployeeMyJobsScreen = () => {
   const getStatusFilter = () => {
     if (activeTab === 'New') return JOB_STATUS.ASSIGNED; // Backend logic might need to be flexible for multiple statuses
     if (activeTab === 'Active') return JOB_STATUS.IN_PROGRESS;
+    if (activeTab === 'Paused') return JOB_STATUS.PAUSED;
     if (activeTab === 'Completed') return JOB_STATUS.COMPLETED;
     return null;
   };
@@ -100,8 +101,9 @@ const EmployeeMyJobsScreen = () => {
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,
           afterImages: job.afterImages,
-          actualHours: job.actualHours ? hoursToHMS(job.actualHours * 3600) : (job.actual_hours ? hoursToHMS(job.actual_hours * 3600) : ''),
-          actual_hours: job.actual_hours ? hoursToHMS(job.actual_hours * 3600) : (job.actualHours ? hoursToHMS(job.actualHours * 3600) : ''),
+          actualHours: job.actualHours ? (typeof job.actualHours === 'string' && job.actualHours.includes('h :') ? job.actualHours : hoursToHMS(parseFloat(job.actualHours) * 3600)) : '',
+          actual_hours: job.actual_hours ? (typeof job.actual_hours === 'string' && job.actual_hours.includes('h :') ? job.actual_hours : hoursToHMS(parseFloat(job.actual_hours) * 3600)) : '',
+          breakHours: job.breakHours ? (typeof job.breakHours === 'string' && job.breakHours.includes('h :') ? job.breakHours : hoursToHMS(parseFloat(job.breakHours) * 3600)) : '',
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });
@@ -146,6 +148,9 @@ const EmployeeMyJobsScreen = () => {
       case JOB_STATUS.COMPLETED:
       case 'completed':
         return COLORS.success;
+      case JOB_STATUS.PAUSED:
+      case 'paused':
+        return '#607D8B'; // Slate Blue/Grey for paused
       default:
         return COLORS.textLight;
     }
@@ -164,6 +169,9 @@ const EmployeeMyJobsScreen = () => {
       case JOB_STATUS.COMPLETED:
       case 'completed':
         return 'Completed';
+      case JOB_STATUS.PAUSED:
+      case 'paused':
+        return 'Paused';
       default:
         return status;
     }

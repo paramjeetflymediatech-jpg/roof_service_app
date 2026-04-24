@@ -232,19 +232,34 @@ exports.getJobById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
 
-    // Calculate actualHours from sessions if not a final value yet or for consistency
+    // Calculate actualHours and breakHours from sessions
     const allSessions = await JobWorkSession.findAll({
       where: { jobId: job.id },
+      order: [["startTime", "ASC"]],
     });
+    
     const totalDuration = allSessions.reduce(
       (sum, session) => sum + (parseFloat(session.duration) || 0),
       0
     );
 
+    let breakSeconds = 0;
+    for (let i = 0; i < allSessions.length - 1; i++) {
+      const currentEnd = allSessions[i].endTime;
+      const nextStart = allSessions[i + 1].startTime;
+      if (currentEnd && nextStart) {
+        const gap = (new Date(nextStart) - new Date(currentEnd)) / 1000;
+        if (gap > 0) breakSeconds += gap;
+      }
+    }
+
     // Create a plain object to add calculated field
     const jobData = job.get({ plain: true });
-    jobData.actualHours = job.status === 'completed' ? (job.actualHours || totalDuration.toFixed(2)) : totalDuration.toFixed(2);
-    jobData.actual_hours = jobData.actualHours; // Provide alias for user
+    const actualHoursVal = job.status === 'completed' ? (job.actualHours || (totalDuration / 3600).toFixed(2)) : (totalDuration / 3600).toFixed(2);
+    jobData.actualHours = actualHoursVal;
+    jobData.actual_hours = actualHoursVal;
+    jobData.breakHours = (breakSeconds / 3600).toFixed(2);
+    jobData.break_hours = jobData.breakHours;
 
     res.json({ success: true, data: jobData });
   } catch (error) {
@@ -485,19 +500,34 @@ exports.getEmployeeJobs = async (req, res) => {
       offset: offset,
     });
 
-    // Calculate actualHours for each job
+    // Calculate actualHours and breakHours for each job
     const jobsWithHours = await Promise.all(rows.map(async (job) => {
       const allSessions = await JobWorkSession.findAll({
         where: { jobId: job.id },
+        order: [["startTime", "ASC"]],
       });
+      
       const totalDuration = allSessions.reduce(
         (sum, session) => sum + (parseFloat(session.duration) || 0),
         0
       );
 
+      let breakSeconds = 0;
+      for (let i = 0; i < allSessions.length - 1; i++) {
+        const currentEnd = allSessions[i].endTime;
+        const nextStart = allSessions[i + 1].startTime;
+        if (currentEnd && nextStart) {
+          const gap = (new Date(nextStart) - new Date(currentEnd)) / 1000;
+          if (gap > 0) breakSeconds += gap;
+        }
+      }
+
       const jobData = job.get({ plain: true });
-      jobData.actualHours = job.status === 'completed' ? (job.actualHours || totalDuration.toFixed(2)) : totalDuration.toFixed(2);
-      jobData.actual_hours = jobData.actualHours; // Alias
+      const actualHoursVal = job.status === 'completed' ? (job.actualHours || (totalDuration / 3600).toFixed(2)) : (totalDuration / 3600).toFixed(2);
+      jobData.actualHours = actualHoursVal;
+      jobData.actual_hours = actualHoursVal;
+      jobData.breakHours = (breakSeconds / 3600).toFixed(2);
+      jobData.break_hours = jobData.breakHours;
       return jobData;
     }));
 

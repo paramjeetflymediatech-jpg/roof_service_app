@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import ImagePickerComponent from '../components/ImagePicker';
-import { COLORS, JOB_STATUS, SHADOWS, LocalTime, hoursToHMS } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS, LocalTime, hoursToHMS, LocalDateTime } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -378,7 +378,11 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.infoIcon}>⏲️</Text>
               <View>
                 <Text style={styles.infoLabel}>Total Work Hours</Text>
-                <Text style={styles.infoValue}>{hoursToHMS(currentJob.actualHours * 3600)}</Text>
+                <Text style={styles.infoValue}>
+                  {typeof currentJob.actualHours === 'number' 
+                    ? hoursToHMS(currentJob.actualHours * 3600) 
+                    : currentJob.actualHours}
+                </Text>
               </View>
             </View>
           ) : null}
@@ -563,6 +567,17 @@ const EmployeeJobDetailScreen = () => {
                 placeholder="Describe work done..."
               />
 
+              {(currentJob.breakHours || currentJob.break_hours) ? (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={styles.clockLabel}>Calculated Break Time</Text>
+                  <Text style={styles.infoValue}>
+                    {(typeof (currentJob.breakHours || currentJob.break_hours) === 'string' && (currentJob.breakHours || currentJob.break_hours).includes('h :'))
+                      ? (currentJob.breakHours || currentJob.break_hours)
+                      : hoursToHMS(parseFloat(currentJob.breakHours || currentJob.break_hours || 0) * 3600)}
+                  </Text>
+                </View>
+              ) : null}
+
               <View style={styles.actionButtons}>
                 <Button
                   title="Complete Job"
@@ -581,11 +596,23 @@ const EmployeeJobDetailScreen = () => {
                 Notes: {job.employeeNotes}
               </Text>
               <Text style={styles.completedTimeText}>
-                Work Time: {inTime} - {outTime}
+                Start: {LocalDateTime(job.lead?.inTime || job.startTime)}
+              </Text>
+              <Text style={styles.completedTimeText}>
+                End: {LocalDateTime(job.lead?.outTime || job.endTime)}
               </Text>
               {currentJob.actualHours ? (
                 <Text style={styles.completedTimeText}>
-                  Total Work Hours: {currentJob.actualHours}
+                  Total Work Hours: {(typeof currentJob.actualHours === 'string' && currentJob.actualHours.includes('h :')) 
+                    ? currentJob.actualHours 
+                    : hoursToHMS(parseFloat(currentJob.actualHours) * 3600)}
+                </Text>
+              ) : null}
+              {(currentJob.breakHours || currentJob.break_hours) ? (
+                <Text style={styles.completedTimeText}>
+                  Total Break Time: {(typeof (currentJob.breakHours || currentJob.break_hours) === 'string' && (currentJob.breakHours || currentJob.break_hours).includes('h :')) 
+                    ? (currentJob.breakHours || currentJob.break_hours) 
+                    : hoursToHMS(parseFloat(currentJob.breakHours || currentJob.break_hours) * 3600)}
                 </Text>
               ) : null}
               <Text style={styles.completedTimeText}>Job Date: {job.date}</Text>

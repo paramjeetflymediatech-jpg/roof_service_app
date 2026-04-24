@@ -18,6 +18,7 @@ import BrandLogo from '../components/BrandLogo';
 import { api } from '../config/api';
 import { COLORS, JOB_STATUS, SHADOWS, LocalTime } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
+import BeautifulAlert from '../components/BeautifulAlert';
 
 // Reuse existing hero image or a new one if available
 const HERO_IMAGE = require('../../assets/roofing-background.jpg');
@@ -47,6 +48,15 @@ const EmployeeDashboardScreen = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    confirmText: 'OK',
+    type: 'default',
+    onConfirm: () => setAlertVisible(false),
+    showCancel: false,
+  });
 
   useEffect(() => {
     loadJobs();
@@ -120,6 +130,9 @@ const EmployeeDashboardScreen = () => {
       case JOB_STATUS.COMPLETED:
       case 'completed':
         return COLORS.success;
+      case JOB_STATUS.PAUSED:
+      case 'paused':
+        return '#607D8B';
       default:
         return COLORS.textLight;
     }
@@ -138,20 +151,27 @@ const EmployeeDashboardScreen = () => {
       case JOB_STATUS.COMPLETED:
       case 'completed':
         return 'Completed';
+      case JOB_STATUS.PAUSED:
+      case 'paused':
+        return 'Paused';
       default:
         return status;
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => await logout(),
+    setAlertConfig({
+      title: 'Logout Confirmation',
+      message: 'Are you sure you want to log out of your account?',
+      confirmText: 'Logout',
+      type: 'destructive',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await logout();
       },
-    ]);
+    });
+    setAlertVisible(true);
   };
 
   const renderJobItem = ({ item }) => (
@@ -445,6 +465,18 @@ const EmployeeDashboardScreen = () => {
           <Text style={styles.navLabel}>Profile</Text>
         </TouchableOpacity>
       </View>
+
+      <BeautifulAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertVisible(false)}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        cancelText="Cancel"
+      />
     </View>
   );
 };

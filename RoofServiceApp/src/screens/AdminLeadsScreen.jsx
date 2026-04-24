@@ -89,7 +89,7 @@ const AdminLeadsScreen = ({ route }) => {
           assignedTo: item.assignedTo?.name || item.assignedEmployee?.name || null,
           inTime: item.employeeStartTime ? LocalTime(item.employeeStartTime) : null,
           outTime: (item.status === LEAD_STATUS.COMPLETED && item.updatedAt) ? LocalTime(item.updatedAt) : null,
-          actualHours: item.actualHours ? hoursToHMS(item.actualHours * 3600) : null,
+          actualHours: item.actualHours ? hoursToHMS(parseFloat(item.actualHours) * 3600) : null,
           createdAt: formatDateLocal(item.createdAt || item.created_at),
         }));
       

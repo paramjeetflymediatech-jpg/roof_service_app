@@ -22,6 +22,7 @@ export const JOB_STATUS = {
   ASSIGNED: 'assigned',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
+  PAUSED: 'paused',
 };
 
 // Colors
@@ -122,4 +123,20 @@ export const LocalTime = (value) => {
     minute: "2-digit",
     hour12: false,
   });
+};
+
+export const LocalDateTime = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  const date = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const time = d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${date} ${time}`;
 };

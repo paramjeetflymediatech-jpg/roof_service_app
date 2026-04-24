@@ -348,7 +348,11 @@ const AdminAssignScreen = ({ route }) => {
                   <InfoItem
                     icon="⏲️"
                     label="Total Work"
-                    value={hoursToHMS((selectedQuote.actualHours || selectedQuote.actual_hours) * 3600)}
+                    value={
+                      (typeof (selectedQuote.actualHours || selectedQuote.actual_hours) === 'string' && (selectedQuote.actualHours || selectedQuote.actual_hours).includes('h :'))
+                        ? (selectedQuote.actualHours || selectedQuote.actual_hours)
+                        : hoursToHMS(parseFloat(selectedQuote.actualHours || selectedQuote.actual_hours || 0) * 3600)
+                    }
                   />
                 )}
               </View>

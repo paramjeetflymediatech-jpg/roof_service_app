@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import BrandLogo from '../components/BrandLogo';
 import Card from '../components/Card';
-import { COLORS, FONTS, hoursToHMS, LocalTime } from '../utils/constants';
+import { COLORS, FONTS, hoursToHMS, LocalTime, LocalDateTime } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -79,14 +79,14 @@ const ClientLeadDetailScreen = () => {
           message:
             apiLead.message || apiLead.description || initialLead.message,
           employeeStartTime:
-            LocalTime(apiLead.inTime) || initialLead.employeeStartTime,
+            apiLead.inTime || initialLead.employeeStartTime,
           employeeEndTime:
-            LocalTime(apiLead.outTime) || initialLead.employeeEndTime,
+            apiLead.outTime || initialLead.employeeEndTime,
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
           clientImages: apiLead.clientImages || initialLead.clientImages,
-          actualHours: apiLead.actualHours ? hoursToHMS(apiLead.actualHours * 3600) : (initialLead.actualHours || ''),
-          actual_hours: apiLead.actual_hours ? hoursToHMS(apiLead.actual_hours * 3600) : (initialLead.actual_hours || ''),
+          actualHours: apiLead.actualHours ? hoursToHMS(parseFloat(apiLead.actualHours) * 3600) : (initialLead.actualHours && typeof initialLead.actualHours === 'number' ? hoursToHMS(initialLead.actualHours * 3600) : (initialLead.actualHours || '')),
+          actual_hours: apiLead.actual_hours ? hoursToHMS(parseFloat(apiLead.actual_hours) * 3600) : (initialLead.actual_hours && typeof initialLead.actual_hours === 'number' ? hoursToHMS(initialLead.actual_hours * 3600) : (initialLead.actual_hours || '')),
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
           preferedDate: apiLead.preferredDate
             ? formatDateLocal(apiLead.preferredDate)
@@ -386,10 +386,18 @@ const ClientLeadDetailScreen = () => {
         {!!(employeeStartTime || employeeEndTime) && (
           <View style={[styles.detailRow, { marginTop: verticalScale(8) }]}>
             <Text style={styles.detailLabel}>Work Time:</Text>
-            <Text style={styles.detailValue}>
-              {employeeStartTime || '--:--'}
-              {employeeEndTime ? ` - ${employeeEndTime}` : ''}
-            </Text>
+            <View style={{ flex: 1 }}>
+              {employeeStartTime && (
+                <Text style={styles.detailValue}>
+                  Start: {LocalDateTime(employeeStartTime)}
+                </Text>
+              )}
+              {employeeEndTime && (
+                <Text style={styles.detailValue}>
+                  End: {LocalDateTime(employeeEndTime)}
+                </Text>
+              )}
+            </View>
           </View>
         )}
 

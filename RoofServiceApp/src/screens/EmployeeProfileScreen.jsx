@@ -22,6 +22,8 @@ import Button from '../components/Button';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
+import ImageModal from '../components/ImageModal';
+import BeautifulAlert from '../components/BeautifulAlert';
 
 // Reuse the hero background
 const HERO_IMAGE = require('../../assets/roofing-background.jpg');
@@ -41,6 +43,17 @@ const EmployeeProfileScreen = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [selectedViewerImage, setSelectedViewerImage] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    confirmText: 'OK',
+    type: 'default',
+    onConfirm: () => setAlertVisible(false),
+    showCancel: false,
+  });
 
   const isPendingDeletion = user?.status === 'pending_deletion';
 
@@ -79,29 +92,61 @@ const EmployeeProfileScreen = () => {
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => await logout(),
+    setAlertConfig({
+      title: 'Logout Confirmation',
+      message: 'Are you sure you want to log out of your account?',
+      confirmText: 'Logout',
+      type: 'destructive',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await logout();
       },
-    ]);
+    });
+    setAlertVisible(true);
   };
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert('Validation', 'Name is required');
+      setAlertConfig({
+        title: 'Validation Error',
+        message: 'Name is required to update your profile.',
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
       return;
     }
 
     if (phone.trim()) {
       const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
       if (!phoneRegex.test(phone.trim())) {
-        Alert.alert('Validation', 'Please enter a valid phone number');
+        setAlertConfig({
+          title: 'Invalid Phone',
+          message: 'Please enter a valid phone number (10-15 digits).',
+          type: 'destructive',
+          onConfirm: () => setAlertVisible(false),
+        });
+        setAlertVisible(true);
         return;
       }
     }
+
+    setAlertConfig({
+      title: 'Update Profile',
+      message: 'Are you sure you want to save these changes to your profile?',
+      confirmText: 'Save',
+      type: 'default',
+      showCancel: true,
+      onConfirm: async () => {
+        setAlertVisible(false);
+        await performUpdateProfile();
+      },
+    });
+    setAlertVisible(true);
+  };
+
+  const performUpdateProfile = async () => {
     try {
       setSaving(true);
       const res = await api.updateProfile({
@@ -111,17 +156,48 @@ const EmployeeProfileScreen = () => {
       const updatedUser = res.data?.data || res.data || {};
       const merged = { ...(user || {}), ...updatedUser };
       await login(merged);
-      Alert.alert('Success', 'Profile updated successfully');
+      
+      setAlertConfig({
+        title: 'Profile Updated',
+        message: 'Your profile information has been successfully saved.',
+        confirmText: 'OK',
+        type: 'default',
+        showCancel: false,
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
+      
       setIsEditing(false);
     } catch (error) {
       console.log('Update profile error:', error.response || error);
-      Alert.alert('Error', 'Failed to update profile');
+      setAlertConfig({
+        title: 'Update Failed',
+        message: 'Failed to update profile. Please try again.',
+        type: 'destructive',
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
     } finally {
       setSaving(false);
     }
   };
 
   const handleUploadProfilePicture = async () => {
+    setAlertConfig({
+      title: 'Profile Picture',
+      message: 'Would you like to change your profile picture?',
+      confirmText: 'Choose Image',
+      type: 'default',
+      showCancel: true,
+      onConfirm: () => {
+        setAlertVisible(false);
+        setTimeout(performImageUpload, 500);
+      },
+    });
+    setAlertVisible(true);
+  };
+
+  const performImageUpload = async () => {
     try {
       const result = await ImagePicker.openPicker({
         mediaType: 'photo',
@@ -149,11 +225,25 @@ const EmployeeProfileScreen = () => {
       const merged = { ...(user || {}), ...updatedUser };
       await login(merged);
 
-      Alert.alert('Success', 'Profile picture updated successfully');
+      setAlertConfig({
+        title: 'Success',
+        message: 'Profile picture updated successfully.',
+        confirmText: 'OK',
+        type: 'default',
+        showCancel: false,
+        onConfirm: () => setAlertVisible(false),
+      });
+      setAlertVisible(true);
     } catch (error) {
       if (error.message !== 'User cancelled image selection') {
         console.log('Upload profile picture error:', error.response || error);
-        Alert.alert('Error', 'Failed to upload profile picture');
+        setAlertConfig({
+          title: 'Upload Error',
+          message: 'Failed to upload profile picture. Please try again.',
+          type: 'destructive',
+          onConfirm: () => setAlertVisible(false),
+        });
+        setAlertVisible(true);
       }
     } finally {
       setUploading(false);
@@ -268,7 +358,16 @@ const EmployeeProfileScreen = () => {
             </View>
 
             <View style={styles.profileHeaderContent}>
-              <View style={styles.avatarContainer}>
+              <TouchableOpacity 
+                style={styles.avatarContainer} 
+                onPress={() => {
+                  if (profilePicture) {
+                    setSelectedViewerImage(profilePicture.startsWith('http') ? profilePicture : `${SERVER_URL}${profilePicture}`);
+                    setViewerVisible(true);
+                  }
+                }}
+                activeOpacity={0.8}
+              >
                 {profilePicture ? (
                   <Image
                     source={{
@@ -294,7 +393,7 @@ const EmployeeProfileScreen = () => {
                     <Text style={styles.cameraIcon}>📷</Text>
                   )}
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
               <Text style={styles.userName}>{user?.name || 'Employee'}</Text>
               <Text style={styles.userEmail}>{user?.email || 'email@example.com'}</Text>
             </View>
@@ -569,6 +668,24 @@ const EmployeeProfileScreen = () => {
           </View>
         </View>
       </Modal>
+ 
+      <ImageModal 
+        visible={viewerVisible} 
+        imageUrl={selectedViewerImage} 
+        onClose={() => setViewerVisible(false)} 
+      />
+
+      <BeautifulAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertVisible(false)}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        cancelText="Cancel"
+      />
     </View>
   );
 };
