@@ -250,6 +250,9 @@ const EmployeeDashboardScreen = () => {
   const activeCount = jobs.filter(
     j => j.status !== JOB_STATUS.COMPLETED && j.status !== 'completed',
   ).length;
+  const hasActiveJob = jobs.some(
+    j => j.status === JOB_STATUS.IN_PROGRESS || j.status === 'in_progress'
+  );
   const completedCount = jobs.filter(
     j => j.status === JOB_STATUS.COMPLETED || j.status === 'completed',
   ).length;
@@ -327,6 +330,36 @@ const EmployeeDashboardScreen = () => {
           }
           ListHeaderComponent={() => (
             <View>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Quick Actions</Text>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.createJobHero, hasActiveJob && styles.createJobHeroDisabled]}
+                onPress={() => {
+                  if (hasActiveJob) {
+                    Alert.alert(
+                      'Job In Progress',
+                      'You already have an active job. Please pause or complete it before creating a new one.',
+                      [{ text: 'OK' }]
+                    );
+                  } else {
+                    navigation.navigate('EmployeeCreateJob');
+                  }
+                }}
+              >
+                <View style={styles.createJobContent}>
+                  <View style={styles.createJobIconContainer}>
+                    <Text style={styles.createJobIcon}>➕</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.createJobTitle}>Create Manual Job</Text>
+                    <Text style={styles.createJobSub}>Start work without pre-assignment</Text>
+                  </View>
+                </View>
+                <Text style={styles.createJobArrow}>→</Text>
+              </TouchableOpacity>
+
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Quick Access</Text>
               </View>
@@ -673,6 +706,52 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(10),
     color: COLORS.textLight,
     fontWeight: '600',
+  },
+  createJobHero: {
+    backgroundColor: COLORS.primary,
+    borderRadius: moderateScale(16),
+    padding: moderateScale(16),
+    marginBottom: verticalScale(20),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    ...SHADOWS.medium,
+  },
+  createJobContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  createJobIconContainer: {
+    width: moderateScale(45),
+    height: moderateScale(45),
+    borderRadius: moderateScale(12),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: moderateScale(15),
+  },
+  createJobIcon: {
+    fontSize: moderateScale(22),
+  },
+  createJobTitle: {
+    color: COLORS.white,
+    fontSize: moderateScale(16),
+    fontWeight: '700',
+  },
+  createJobSub: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: moderateScale(12),
+  },
+  createJobArrow: {
+    color: COLORS.white,
+    fontSize: moderateScale(20),
+    fontWeight: '700',
+    opacity: 0.8,
+  },
+  createJobHeroDisabled: {
+    backgroundColor: '#A0AEC0',
+    opacity: 0.8,
   },
 });
 

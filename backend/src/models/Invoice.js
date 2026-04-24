@@ -104,6 +104,11 @@ const Invoice = sequelize.define(
         key: "id",
       },
     },
+    images: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
   },
   {
     tableName: "invoices",

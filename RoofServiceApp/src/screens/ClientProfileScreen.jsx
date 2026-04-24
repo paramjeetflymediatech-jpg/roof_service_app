@@ -43,9 +43,7 @@ const ClientProfileScreen = () => {
   // Form State
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [profilePicture, setProfilePicture] = useState(
-    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
-  );
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -75,6 +73,18 @@ const ClientProfileScreen = () => {
 
     fetchStats();
   }, [user?.email]);
+
+  // Sync state with user context if it changes
+  useEffect(() => {
+    if (user?.profilePicture) {
+      setProfilePicture(user.profilePicture);
+    }
+  }, [user?.profilePicture]);
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.phone) setPhone(user.phone);
+  }, [user?.name, user?.phone]);
 
   const handleLogout = async () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -312,7 +322,7 @@ const ClientProfileScreen = () => {
                 {profilePicture ? (
                   <Image
                     source={{
-                      uri: profilePicture.startsWith('http')
+                      uri: profilePicture && profilePicture.startsWith('http')
                         ? profilePicture
                         : `${SERVER_URL}${profilePicture}`,
                     }}

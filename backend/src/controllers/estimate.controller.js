@@ -173,6 +173,15 @@ const EstimateController = {
       // Generate estimate number (simple version)
       const estimateNumber = `EST-${uuidv4()}`;
 
+      // Handle uploaded images
+      let estimateImages = [];
+      if (req.files && req.files.length > 0) {
+        estimateImages = req.files.map((file) => ({
+          filename: file.filename,
+          url: `/uploads/jobs/${file.filename}`,
+        }));
+      }
+
       await Estimate.create({
         estimateNumber,
         clientName,
@@ -194,6 +203,7 @@ const EstimateController = {
         status: req.body.status || "Draft",
         createdById: req.user.id,
         leadId: leadId || null,
+        images: estimateImages,
       });
 
       res.redirect("/admin/estimates");
@@ -282,6 +292,26 @@ const EstimateController = {
       const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
+      // Handle uploaded images
+      const keepImages = req.body.keepImages || [];
+      let estimateImages = [];
+      
+      // Preserve images that weren't removed
+      if (Array.isArray(estimate.images)) {
+        estimateImages = estimate.images.filter(img => 
+          Array.isArray(keepImages) ? keepImages.includes(img.url) : keepImages === img.url
+        );
+      }
+      
+      // Handle new uploads
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map((file) => ({
+          filename: file.filename,
+          url: `/uploads/jobs/${file.filename}`,
+        }));
+        estimateImages = [...estimateImages, ...newImages].slice(0, 5);
+      }
+
       await estimate.update({
         clientName,
         clientEmail,
@@ -300,6 +330,7 @@ const EstimateController = {
         timeEstimate,
         notes,
         status,
+        images: estimateImages,
       });
 
       res.redirect("/admin/estimates");

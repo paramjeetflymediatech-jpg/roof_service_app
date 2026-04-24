@@ -243,6 +243,15 @@ const InvoiceController = {
       const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
+      // Handle uploaded images
+      let invoiceImages = [];
+      if (req.files && req.files.length > 0) {
+        invoiceImages = req.files.map((file) => ({
+          filename: file.filename,
+          url: `/uploads/jobs/${file.filename}`, // Using jobs folder as per middleware config for generic/jobs
+        }));
+      }
+
       // Generate invoice number
       const invoiceNumber = `INV-${uuidv4()}`;
 
@@ -267,6 +276,7 @@ const InvoiceController = {
         createdById: req.user.id,
         estimateId: estimateId || null,
         leadId: req.body.leadId || null,
+        images: invoiceImages,
       });
 
       res.redirect("/admin/invoices");
@@ -367,6 +377,26 @@ const InvoiceController = {
       const tax = gstAmount + pstAmount;
       const total = subtotal + tax;
 
+      // Handle uploaded images
+      const keepImages = req.body.keepImages || [];
+      let invoiceImages = [];
+      
+      // Preserve images that weren't removed
+      if (Array.isArray(invoice.images)) {
+        invoiceImages = invoice.images.filter(img => 
+          Array.isArray(keepImages) ? keepImages.includes(img.url) : keepImages === img.url
+        );
+      }
+      
+      // Handle new uploads
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map((file) => ({
+          filename: file.filename,
+          url: `/uploads/jobs/${file.filename}`,
+        }));
+        invoiceImages = [...invoiceImages, ...newImages].slice(0, 5);
+      }
+
       await invoice.update({
         clientName,
         clientEmail,
@@ -385,6 +415,7 @@ const InvoiceController = {
         notes,
         status,
         leadId: leadId || null,
+        images: invoiceImages,
       });
 
       res.redirect("/admin/invoices");

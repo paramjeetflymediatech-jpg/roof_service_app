@@ -377,9 +377,37 @@
                                                     Number(invoice.total || 0).toLocaleString('en-US', {
                                                     minimumFractionDigits: 2 }) %></span>
                                         </div>
-                                    </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Evidence Images -->
+            <% 
+                let displayImages = [];
+                if (invoice.images) {
+                    if (Array.isArray(invoice.images)) {
+                        displayImages = invoice.images;
+                    } else if (typeof invoice.images === 'string') {
+                        try {
+                            displayImages = JSON.parse(invoice.images);
+                        } catch (e) {
+                            displayImages = [];
+                        }
+                    }
+                }
+            %>
+            <% if (displayImages && displayImages.length > 0) { %>
+                <div class="mt-6 pb-4 border-b border-gray-50">
+                    <span class="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] mb-3 block">Invoice Evidence & Site Photos</span>
+                    <div class="flex flex-wrap gap-3">
+                        <% displayImages.forEach(img => { %>
+                            <div class="w-24 h-24 rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex-shrink-0">
+                                <img src="<%= img.url %>" class="w-full h-full object-cover" alt="Evidence Photo">
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% } %>
 
             <!-- Terms & Signoff -->
             <div
@@ -462,9 +490,10 @@
                                 class="text-[5px] font-bold text-gray-500 uppercase tracking-tight text-center leading-none">Scan
                                 to visit<br>our website</span>
                         </div>
+                      
 
                         <!-- 3. BBB Logo (Now Right) -->
-                        <img src="/BBB.png" alt="BBB Logo" class="h-14 w-auto object-contain mb-1.5"
+                        <img src="/BBB.png" alt="BBB Logo" class="h-20 w-auto object-contain mb-1.5"
                             onerror="this.style.display='none'">
                     </div>
                 </div>

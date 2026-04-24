@@ -200,6 +200,8 @@ const AdminLeadsScreen = ({ route }) => {
       case LEAD_STATUS.APPROVED:
       case LEAD_STATUS.ASSIGNED:
         return COLORS.success;
+      case 'in_progress':
+        return '#0EA5E9'; // Sky blue for in progress
       case LEAD_STATUS.COMPLETED:
         return COLORS.primary;
       case LEAD_STATUS.REJECTED:
@@ -352,7 +354,7 @@ const AdminLeadsScreen = ({ route }) => {
 
         {/* Filters */}
         <View style={styles.filterRow}>
-          {['all', 'pending', 'assigned', 'completed'].map(f => (
+          {['all', 'pending', 'assigned', 'in_progress', 'completed'].map(f => (
             <TouchableOpacity
               key={f}
               style={[
@@ -370,7 +372,7 @@ const AdminLeadsScreen = ({ route }) => {
                   statusFilter === f && styles.filterChipTextActive,
                 ]}
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
               </Text>
             </TouchableOpacity>
           ))}

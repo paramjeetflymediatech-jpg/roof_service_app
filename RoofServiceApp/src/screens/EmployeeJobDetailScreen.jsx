@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import ImagePickerComponent from '../components/ImagePicker';
-import { COLORS, JOB_STATUS, SHADOWS } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS, LocalTime } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -25,12 +25,28 @@ const isValidHHMM = value => TIME_REGEX.test(value.trim());
 const EmployeeJobDetailScreen = () => {
   const navigation = useNavigation();
   const { job } = useRoute().params || {};
+  console.log(job, '----job')
   const [currentJob, setCurrentJob] = useState(job);
   const [images, setImages] = useState([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inTime, setInTime] = useState(job?.inTime || job?.employeeStartTime);
-  const [outTime, setOutTime] = useState(job?.outTime || job?.employeeEndTime);
+  const getDisplayTime = (val) => {
+    if (!val) return '';
+    const sVal = String(val);
+    if (sVal.includes(':') && !sVal.includes('T')) return sVal;
+    return LocalTime(val);
+  };
+
+  const [inTime, setInTime] = useState(getDisplayTime(job?.inTime || job?.startTime || job?.lead?.employeeStartTime));
+  const [outTime, setOutTime] = useState(getDisplayTime(job?.outTime || job?.endTime || job?.lead?.employeeEndTime));
+
+  // Sync state if job prop changes (e.g. from navigation)
+  React.useEffect(() => {
+    if (job) {
+      setInTime(getDisplayTime(job.inTime || job.startTime || job.lead?.employeeStartTime));
+      setOutTime(getDisplayTime(job.outTime || job.endTime || job.lead?.employeeEndTime));
+    }
+  }, [job]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -93,7 +109,8 @@ const EmployeeJobDetailScreen = () => {
       }));
       Alert.alert('Clocked In', `Started at ${timeString}`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to clock in.');
+      const msg = error.response?.data?.message || 'Failed to clock in.';
+      Alert.alert('Action Restricted', msg);
     } finally {
       setLoading(false);
     }
@@ -137,7 +154,8 @@ const EmployeeJobDetailScreen = () => {
       setCurrentJob(prev => ({ ...prev, ...updatedJob }));
       Alert.alert('Resumed', 'Job timer resumed.');
     } catch (error) {
-      Alert.alert('Error', 'Failed to resume job.');
+      const msg = error.response?.data?.message || 'Failed to resume job.';
+      Alert.alert('Action Restricted', msg);
     } finally {
       setLoading(false);
     }

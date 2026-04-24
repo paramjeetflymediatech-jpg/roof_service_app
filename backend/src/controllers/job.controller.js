@@ -9,6 +9,125 @@ const combineDateWithTime = (date, hhmm) => {
   return newDate;
 };
 
+// Create job by employee (self-assignment)
+exports.createSelfJob = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const {
+      name,
+      address,
+      phone,
+      serviceType,
+      notes,
+    } = req.body;
+
+    if (!name || !address || !serviceType) {
+      if (transaction) await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "Name, address, and service type are required",
+      });
+    }
+
+    // Check if employee already has an active work session
+    const activeSession = await JobWorkSession.findOne({
+      where: {
+        userId: req.user.id,
+        endTime: null,
+      },
+    });
+
+    if (activeSession) {
+      if (transaction) await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "You already have an active job. Please pause or complete it before creating a new one.",
+      });
+    }
+
+    // 1. Create a Lead
+    let clientImages = null;
+    if (req.files && req.files.length > 0) {
+      clientImages = req.files.map((file) => ({
+        filename: file.filename,
+        url: `uploads/leads/${file.filename}`,
+        mimeType: file.mimetype,
+        size: file.size,
+      }));
+    }
+
+    const lead = await Lead.create({
+      name,
+      address,
+      phone,
+      serviceType,
+      message: notes,
+      status: "in_progress",
+      assignedToId: req.user.id,
+      source: "mobile_app",
+      leadType: "appointment",
+      clientImages: clientImages,
+    }, { transaction });
+
+    // 2. Create a Job
+    const job = await Job.create({
+      leadId: lead.id,
+      employeeId: req.user.id,
+      assignedById: req.user.id, // Self-assigned
+      status: "in_progress",
+      priority: "medium",
+      scheduledDate: new Date(),
+      notes: notes,
+    }, { transaction });
+
+    // 3. Create a work session (start work immediately)
+    const now = new Date();
+    await JobWorkSession.create({
+      jobId: job.id,
+      leadId: lead.id,
+      userId: req.user.id,
+      startTime: now,
+    }, { transaction });
+
+    // Update lead with start time
+    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    await lead.update({
+      inTime: now,
+      employeeStartTime: hhmm,
+    }, { transaction });
+
+    // 4. Create job log
+    await JobLog.create({
+      jobId: job.id,
+      leadId: lead.id,
+      userId: req.user.id,
+      action: "job_started",
+      oldStatus: "pending",
+      newStatus: "in_progress",
+      notes: "Self-created job by employee",
+    }, { transaction });
+
+    await transaction.commit();
+
+    const createdJob = await Job.findByPk(job.id, {
+      include: [
+        { model: Lead, as: "lead" },
+        { model: User, as: "employee", attributes: ["id", "name"] },
+      ],
+    });
+   
+    res.status(201).json({
+      success: true,
+      data: createdJob,
+      message: "Job created and started successfully",
+    });
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    console.error("Create self job error:", error);
+    res.status(500).json({ success: false, message: "Failed to create job" });
+  }
+};
+
 // Get all jobs (admin)
 exports.getAllJobs = async (req, res) => {
   try {
@@ -322,11 +441,16 @@ exports.updateJobStatus = async (req, res) => {
 exports.getEmployeeJobs = async (req, res) => {
   try {
     const employeeId = req.params.employeeId || req.user.id;
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, isSelfCreated, page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const where = { employeeId };
     if (status) where.status = status;
+    if (isSelfCreated === 'true') {
+      where.assignedById = employeeId;
+    } else if (isSelfCreated === 'false') {
+      where.assignedById = { [Op.ne]: employeeId };
+    }
 
     const { count, rows } = await Job.findAndCountAll({
       where,
@@ -342,6 +466,8 @@ exports.getEmployeeJobs = async (req, res) => {
             "address",
             "city",
             "serviceType",
+            "inTime",
+            "outTime",
             "employee_notes",
             "message",
             "clientImages",
@@ -414,20 +540,25 @@ exports.startJob = async (req, res) => {
       now.getMinutes(),
     ).padStart(2, "0")}`;
 
-    // Prevent duplicate active sessions
+    // Prevent multiple active sessions for the same user across any job
     const activeSession = await JobWorkSession.findOne({
-      where: { jobId: job.id, endTime: null }
+      where: { userId: req.user.id, endTime: null }
     });
+    
+    if (activeSession) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "You already have another job in progress. Please pause or complete it first." 
+      });
+    }
 
-    if (!activeSession) {
-      // Create a new work session
-      await JobWorkSession.create({
+    // Create a new work session
+    await JobWorkSession.create({
         jobId: job.id,
         leadId: job.leadId,
         userId: req.user.id,
         startTime: startTimeDate,
       });
-    }
 
     await job.update({
       status: "in_progress",
@@ -581,6 +712,18 @@ exports.resumeJob = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Job is not paused" });
+    }
+
+    // Prevent multiple active sessions
+    const activeSession = await JobWorkSession.findOne({
+      where: { userId: req.user.id, endTime: null }
+    });
+
+    if (activeSession) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "You already have another job in progress. Please pause or complete it first." 
+      });
     }
 
     const now = new Date();

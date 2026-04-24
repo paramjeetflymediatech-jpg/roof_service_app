@@ -26,7 +26,7 @@ const formatDateLocal = value => {
 };
  
 
-const TABS = ['All', 'New', 'Active', 'Completed'];
+const TABS = ['All', 'Active', 'Completed', 'Self Created', 'Assigned'];
 
 const EmployeeMyJobsScreen = () => {
   const { user } = useAuth();
@@ -72,6 +72,7 @@ const EmployeeMyJobsScreen = () => {
         page: pageNum,
         limit: 10,
         status: status,
+        isSelfCreated: activeTab === 'Self Created' ? 'true' : activeTab === 'Assigned' ? 'false' : undefined,
       });
 
       const { data, total, pages } = response.data;
@@ -324,10 +325,17 @@ const EmployeeMyJobsScreen = () => {
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12) }]}>
         <TouchableOpacity
           style={styles.navItem}
+          onPress={() => navigation.navigate('EmployeeDashboard')}
+        >
+          <Text style={[styles.navIcon, { color: COLORS.primary }]}>🏠</Text>
+          <Text style={[styles.navLabel, { color: COLORS.primary }]}>Home</Text>
+        </TouchableOpacity>
+         <TouchableOpacity
+          style={styles.navItem}
           onPress={() => navigation.navigate('EmployeeMyJobs')}
         >
-          <Text style={[styles.navIcon, { color: COLORS.primary }]}>💼</Text>
-          <Text style={[styles.navLabel, { color: COLORS.primary }]}>Jobs</Text>
+          <Text style={styles.navIcon}>💼</Text>
+          <Text style={styles.navLabel}>Jobs</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}

@@ -136,6 +136,7 @@ import ClientGalleryScreen from './src/screens/ClientGalleryScreen';
 import ClientMyQuotesScreen from './src/screens/ClientMyQuotesScreen';
 import EmployeeMyJobsScreen from './src/screens/EmployeeMyJobsScreen';
 import EmployeeTimesheetScreen from './src/screens/EmployeeTimesheetScreen';
+import EmployeeCreateJobScreen from './src/screens/EmployeeCreateJobScreen';
 import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
 import TermsConditionsScreen from './src/screens/TermsConditionsScreen';
 import HelpSupportScreen from './src/screens/HelpSupportScreen';
@@ -244,6 +245,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name="EmployeeTimesheet"
             component={EmployeeTimesheetScreen}
+          />
+          <Stack.Screen
+            name="EmployeeCreateJob"
+            component={EmployeeCreateJobScreen}
           />
           <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
           <Stack.Screen

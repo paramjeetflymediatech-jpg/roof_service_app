@@ -32,6 +32,7 @@ const AdminDashboardScreen = () => {
     reviewed: 0,
     approved: 0,
     assigned: 0,
+    inProgress: 0,
     completed: 0,
     total: 0,
   });
@@ -58,6 +59,7 @@ const AdminDashboardScreen = () => {
           .length,
         assigned: rawItems.filter(q => q.status === LEAD_STATUS.ASSIGNED)
           .length,
+        inProgress: rawItems.filter(q => q.status === 'in_progress').length,
         completed: rawItems.filter(q => q.status === LEAD_STATUS.COMPLETED)
           .length,
         total: rawItems.length,
@@ -166,16 +168,30 @@ const AdminDashboardScreen = () => {
           </View>
           <View style={styles.row}>
             <StatCard
+              label="In Progress"
+              value={stats.inProgress}
+              color="#0EA5E9"
+              icon="⚡"
+            />
+            <StatCard
               label="Completed"
               value={stats.completed}
               color={COLORS.success}
               icon="✅"
             />
+          </View>
+          <View style={styles.row}>
             <StatCard
               label="Approved"
               value={stats.approved}
               color={COLORS.secondary}
               icon="👍"
+            />
+            <StatCard
+              label="Reviewed"
+              value={stats.reviewed}
+              color="#A855F7"
+              icon="👁️"
             />
           </View>
         </View>

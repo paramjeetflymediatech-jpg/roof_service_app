@@ -15,9 +15,11 @@ const storage = multer.diskStorage({
       cb(null, "public/uploads/leads/");
     } else if (
       req.originalUrl.includes("upload") ||
-      req.originalUrl.includes("jobs")
+      req.originalUrl.includes("jobs") ||
+      req.originalUrl.includes("invoices") ||
+      req.originalUrl.includes("estimates")
     ) {
-      // Generic upload or jobs
+      // Generic upload, jobs, or invoices
       cb(null, "public/uploads/jobs/");
     } else {
       cb(null, "public/uploads/services/");
@@ -31,6 +33,8 @@ const storage = multer.diskStorage({
       else if (req.user.role === "admin") prefix = "admin-";
     } else if (req.originalUrl.includes("gallery")) prefix = "gallery-";
     else if (req.originalUrl.includes("leads")) prefix = "lead-";
+    else if (req.originalUrl.includes("invoices")) prefix = "invoice-";
+    else if (req.originalUrl.includes("estimates")) prefix = "estimate-";
     else if (
       req.originalUrl.includes("upload") ||
       req.originalUrl.includes("jobs")

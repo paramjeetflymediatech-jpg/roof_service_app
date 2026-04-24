@@ -109,6 +109,7 @@ export const api = {
   },
   getJobById: jobId => apiClient.get(`/jobs/${jobId}`),
   createJob: data => apiClient.post('/jobs', data),
+  createSelfJob: (data, config = {}) => apiClient.post('/jobs/self-create', data, config),
   updateJob: (jobId, data) => apiClient.put(`/jobs/${jobId}`, data),
   updateJobStatus: (jobId, data) =>
     apiClient.put(`/jobs/${jobId}/status`, data),

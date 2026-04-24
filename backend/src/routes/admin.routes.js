@@ -335,6 +335,7 @@ router.post(
   "/estimates",
   isAuthenticated,
   isAdmin,
+  upload.array("estimateImages", 5),
   estimateController.createEstimate,
 );
 router.get(
@@ -347,6 +348,7 @@ router.post(
   "/estimates/:id",
   isAuthenticated,
   isAdmin,
+  upload.array("estimateImages", 5),
   estimateController.updateEstimate,
 );
 router.get(
@@ -379,6 +381,7 @@ router.post(
   "/invoices",
   isAuthenticated,
   isAdmin,
+  upload.array("invoiceImages", 5),
   invoiceController.createInvoice,
 );
 router.get(
@@ -391,6 +394,7 @@ router.post(
   "/invoices/:id",
   isAuthenticated,
   isAdmin,
+  upload.array("invoiceImages", 5),
   invoiceController.updateInvoice,
 );
 router.get(

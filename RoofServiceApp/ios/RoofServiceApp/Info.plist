@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>RoofServiceApp</string>
+	<string>MS Roofing</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>MS Roofing</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -36,13 +36,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>RoofServiceApp needs access to your camera so you can take live photos of roof damage for immediate service assessment.</string>
+	<string>MS Roofing needs access to your camera so you can take live photos of roof damage for immediate service assessment.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>RoofServiceApp needs access to your microphone if you choose to record video feedback or service walkthroughs.</string>
+	<string>MS Roofing needs access to your microphone if you choose to record video feedback or service walkthroughs.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>RoofServiceApp needs access to your photo library so you can upload photos of your roof for service requests and update your profile picture.</string>
+	<string>MS Roofing needs access to your photo library so you can upload photos of your roof for service requests and update your profile picture.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -52,8 +52,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

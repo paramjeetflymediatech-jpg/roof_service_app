@@ -30,14 +30,13 @@ const HERO_IMAGE = require('../../assets/roofing-background.jpg');
 const AdminProfileScreen = () => {
   const navigation = useNavigation();
   const { user, logout, login } = useAuth();
+  console.log(user,'sss')
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
-  const [profilePicture, setProfilePicture] = useState(
-    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
-  );
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
@@ -53,6 +52,18 @@ const AdminProfileScreen = () => {
   useEffect(() => {
     loadProfileStats();
   }, []);
+
+  // Sync state with user context if it changes
+  useEffect(() => {
+    if (user?.profilePicture) {
+      setProfilePicture(user.profilePicture);
+    }
+  }, [user?.profilePicture]);
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.phone) setPhone(user.phone);
+  }, [user?.name, user?.phone]);
 
   const loadProfileStats = async () => {
     try {
@@ -228,7 +239,7 @@ const AdminProfileScreen = () => {
               {profilePicture ? (
                 <Image
                   source={{
-                    uri: profilePicture.startsWith('http')
+                    uri: profilePicture && profilePicture.startsWith('http')
                       ? profilePicture
                       : `${SERVER_URL}${profilePicture}`,
                   }}

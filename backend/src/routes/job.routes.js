@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const jobController = require('../controllers/job.controller');
@@ -8,9 +9,11 @@ router.get("/", isAdmin, jobController.getAllJobs);
 router.post("/", isAdmin, jobController.createJob);
 router.delete("/:id", isAdmin, jobController.deleteJob);
 
+const upload = require('../middlewares/upload');
 // Employee routes
 router.get("/employee/:employeeId", isEmployeeOrAdmin, jobController.getEmployeeJobs);
 router.get("/my-jobs", isEmployeeOrAdmin, jobController.getEmployeeJobs);
+router.post("/self-create", isEmployeeOrAdmin, upload.array("images", 5), jobController.createSelfJob);
 router.get("/stats/:employeeId?", isEmployeeOrAdmin, jobController.getEmployeeStats);
 
 // Job operations (employee and admin)

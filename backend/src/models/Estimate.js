@@ -100,6 +100,12 @@ const Estimate = sequelize.define(
         key: "id",
       },
     },
+    images: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+      comment: "Array of { filename, url }",
+    },
   },
   {
     tableName: "estimates",

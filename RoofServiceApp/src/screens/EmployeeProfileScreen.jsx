@@ -36,9 +36,7 @@ const EmployeeProfileScreen = () => {
 
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [profilePicture, setProfilePicture] = useState(
-    user?.profilePicture ? SERVER_URL + user.profilePicture : null,
-  );
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
@@ -49,6 +47,18 @@ const EmployeeProfileScreen = () => {
   useEffect(() => {
     fetchStats();
   }, [user?.id]);
+
+  // Sync state with user context if it changes
+  useEffect(() => {
+    if (user?.profilePicture) {
+      setProfilePicture(user.profilePicture);
+    }
+  }, [user?.profilePicture]);
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.phone) setPhone(user.phone);
+  }, [user?.name, user?.phone]);
 
   const fetchStats = async () => {
     if (!user?.id) return;
@@ -254,7 +264,7 @@ const EmployeeProfileScreen = () => {
                 {profilePicture ? (
                   <Image
                     source={{
-                      uri: profilePicture.startsWith('http')
+                      uri: profilePicture && profilePicture.startsWith('http')
                         ? profilePicture
                         : `${SERVER_URL}${profilePicture}`,
                     }}
