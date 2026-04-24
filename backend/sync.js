@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 async function syncAndSeed() {
   try {
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log('✅ Tables synced successfully!');
 
     const adminCount = await User.count({ where: { email: 'admin@roofservice.com' } });
