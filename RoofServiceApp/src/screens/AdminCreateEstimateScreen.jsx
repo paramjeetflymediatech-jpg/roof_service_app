@@ -79,6 +79,13 @@ const AdminCreateEstimateScreen = () => {
                 total,
             };
 
+            if (form.clientPhone.trim()) {
+                const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+                if (!phoneRegex.test(form.clientPhone.trim())) {
+                    return Alert.alert('Validation', 'Please enter a valid phone number');
+                }
+            }
+
             if (isEdit) {
                 await api.updateEstimate(existing.id, payload);
                 Alert.alert('Success', 'Estimate updated!', [{ text: 'OK', onPress: () => navigation.goBack() }]);

@@ -82,7 +82,7 @@ const getDashboard = async (req, res) => {
   try {
     const totalUsers = await User.count();
     const totalLeads = await Lead.count();
-    const newLeads = await Lead.count({ where: { status: "new" } });
+    const newLeads = await Lead.count({ where: { status: "pending" } });
     const inProgressLeads = await Lead.count({
       where: { status: "in_progress" },
     });
@@ -227,10 +227,10 @@ const getLeadList = async (req, res) => {
     const where = {};
 
     if (search) {
-      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY"], true);
+      const parsedDate = moment(search, ["DD/MM/YYYY", "D/M/YYYY", "YYYY-MM-DD"], true);
 
       if (parsedDate.isValid()) {
-        where.created_at = {
+        where.createdAt = {
           [Op.between]: [
             parsedDate.startOf("day").toDate(),
             parsedDate.endOf("day").toDate(),
@@ -241,6 +241,8 @@ const getLeadList = async (req, res) => {
           { name: { [Op.like]: `%${search}%` } },
           { email: { [Op.like]: `%${search}%` } },
           { phone: { [Op.like]: `%${search}%` } },
+          { address: { [Op.like]: `%${search}%` } },
+          { city: { [Op.like]: `%${search}%` } },
         ];
       }
     }
@@ -269,7 +271,7 @@ const getLeadList = async (req, res) => {
 
     pendingLeadsCount = await Lead.count({
       where: {
-        status: { [Op.in]: ["new", "pending"] },
+        status: { [Op.in]: ["pending", "reviewed", "approved"] },
       },
     });
 
@@ -284,9 +286,10 @@ const getLeadList = async (req, res) => {
     // If AJAX request, return rendered partials
     if (req.xhr || req.query.ajax) {
       console.log(`[getLeadList] Rendering AJAX partials`);
-      return res.render("admin/leads/_table_rows", { leads }, (err, tableHtml) => {
+      const plainLeads = leads.map(l => l.get({ plain: true }));
+      return res.render("admin/leads/_table_rows", { leads: plainLeads }, (err, tableHtml) => {
         if (err) console.error("AJAX _table_rows error:", err);
-        res.render("admin/leads/_cards", { leads }, (err, cardHtml) => {
+        res.render("admin/leads/_cards", { leads: plainLeads }, (err, cardHtml) => {
           if (err) console.error("AJAX _cards error:", err);
           res.render(
             "admin/leads/_pagination",
@@ -315,7 +318,7 @@ const getLeadList = async (req, res) => {
     res.render("admin/leads/list", {
       title: "Lead List",
       userName: req.session.userName,
-      leads: leads.map((l) => l.get({ plain: false })),
+      leads: leads.map((l) => l.get({ plain: true })),
       currentPage: page,
       totalPages,
       totalLeads,

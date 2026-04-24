@@ -163,7 +163,13 @@ const ClientQuoteScreen = () => {
     if (!formData.email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = 'Invalid email';
-    if (!formData.phone) newErrors.phone = 'Phone is required';
+      
+    if (formData.phone && formData.phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        newErrors.phone = 'Invalid phone number';
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

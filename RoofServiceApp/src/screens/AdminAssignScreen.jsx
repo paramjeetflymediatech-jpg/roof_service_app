@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../App';
 import Button from '../components/Button';
 import { api, SERVER_URL } from '../config/api';
-import { COLORS, LEAD_STATUS, SHADOWS } from '../utils/constants';
+import { COLORS, LEAD_STATUS, SHADOWS, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
 const AdminAssignScreen = ({ route }) => {
@@ -348,7 +348,7 @@ const AdminAssignScreen = ({ route }) => {
                   <InfoItem
                     icon="⏲️"
                     label="Total Work"
-                    value={`${selectedQuote.actualHours || selectedQuote.actual_hours}`}
+                    value={hoursToHMS((selectedQuote.actualHours || selectedQuote.actual_hours) * 3600)}
                   />
                 )}
               </View>

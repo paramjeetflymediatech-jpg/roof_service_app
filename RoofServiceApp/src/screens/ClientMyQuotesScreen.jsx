@@ -93,8 +93,8 @@ const ClientMyQuotesScreen = () => {
           lead.assignedEmployee?.phone || lead.assignedTo?.phone || null,
         employeeStartTime: LocalTime(lead.inTime) || null,
         employeeEndTime: LocalTime(lead.outTime) || null,
-        actualHours: hoursToHMS(lead.actualHours || lead.actual_hours) || '',
-        actual_hours: hoursToHMS(lead.actual_hours || lead.actualHours) || '',
+        actualHours: lead.actualHours ? hoursToHMS(lead.actualHours * 3600) : (lead.actual_hours ? hoursToHMS(lead.actual_hours * 3600) : ''),
+        actual_hours: lead.actual_hours ? hoursToHMS(lead.actual_hours * 3600) : (lead.actualHours ? hoursToHMS(lead.actualHours * 3600) : ''),
         // Keep raw data for editing
         raw: lead,
       }));

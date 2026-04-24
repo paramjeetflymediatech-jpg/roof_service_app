@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Button from '../components/Button';
 import ImagePickerComponent from '../components/ImagePicker';
-import { COLORS, JOB_STATUS, SHADOWS, LocalTime } from '../utils/constants';
+import { COLORS, JOB_STATUS, SHADOWS, LocalTime, hoursToHMS } from '../utils/constants';
 import { api, SERVER_URL } from '../config/api';
 import { moderateScale, verticalScale } from '../utils/responsive';
 
@@ -378,7 +378,7 @@ const EmployeeJobDetailScreen = () => {
               <Text style={styles.infoIcon}>⏲️</Text>
               <View>
                 <Text style={styles.infoLabel}>Total Work Hours</Text>
-                <Text style={styles.infoValue}>{currentJob.actualHours} </Text>
+                <Text style={styles.infoValue}>{hoursToHMS(currentJob.actualHours * 3600)}</Text>
               </View>
             </View>
           ) : null}

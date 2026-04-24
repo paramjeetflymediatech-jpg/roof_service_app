@@ -16,7 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../config/api';
-import { COLORS, SHADOWS, LocalTime, ROLES } from '../utils/constants';
+import { COLORS, SHADOWS, LocalTime, ROLES, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 import moment from 'moment';
 
@@ -128,7 +128,7 @@ const AdminTimesheetScreen = () => {
         </View>
         <View style={[styles.hoursBadge, item.isOvertime && styles.overtimeBadge]}>
           <Text style={[styles.hoursText, item.isOvertime && styles.overtimeText]}>
-            {item.totalHours} hrs
+            {hoursToHMS(item.totalHours * 3600)}
           </Text>
         </View>
       </View>
@@ -168,7 +168,7 @@ const AdminTimesheetScreen = () => {
                     {LocalTime(session.startTime)} - {session.endTime ? LocalTime(session.endTime) : 'Active'}
                   </Text>
                   <Text style={styles.sessionDuration}>
-                    {session.duration ? (session.duration / 3600).toFixed(2) : '0.00'} hrs
+                    {session.duration ? hoursToHMS(session.duration) : '00 h : 00 m'}
                   </Text>
                 </View>
                 <Text style={styles.sessionLead} numberOfLines={1}>
@@ -204,7 +204,7 @@ const AdminTimesheetScreen = () => {
         <View style={styles.calcRow}>
           <View style={styles.calcCol}>
             <Text style={styles.calcLabel}>Total Hours</Text>
-            <Text style={styles.calcValue}>{summary.totalHours.toFixed(2)}</Text>
+            <Text style={styles.calcValue}>{hoursToHMS(summary.totalHours * 3600)}</Text>
           </View>
           <Text style={styles.calcOperator}>-</Text>
           <View style={styles.calcCol}>

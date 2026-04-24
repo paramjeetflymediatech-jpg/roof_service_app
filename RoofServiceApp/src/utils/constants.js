@@ -108,10 +108,8 @@ export const SCREENS = {
 export function hoursToHMS(totalSeconds) {
   totalSeconds = Math.floor(totalSeconds);
   const h = Math.floor(totalSeconds / 3600);
-  const m = Math.round((totalSeconds % 3600) / 60);
-  // const h = Math.floor(totalSeconds / 3600);
-  // const m = Math.floor((totalSeconds % 3600) / 60);
-  // const s = totalSeconds % 60;
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
 
   return `${String(h).padStart(2, "0")} h : ${String(m).padStart(2, "0")} m`;
 }

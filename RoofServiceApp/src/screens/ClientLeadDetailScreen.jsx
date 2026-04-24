@@ -85,8 +85,8 @@ const ClientLeadDetailScreen = () => {
           completionImages:
             apiLead.completionImages || initialLead.completionImages,
           clientImages: apiLead.clientImages || initialLead.clientImages,
-          actualHours: hoursToHMS(apiLead.actualHours) || initialLead.actualHours || '',
-          actual_hours: hoursToHMS(apiLead.actual_hours) || initialLead.actual_hours || '',
+          actualHours: apiLead.actualHours ? hoursToHMS(apiLead.actualHours * 3600) : (initialLead.actualHours || ''),
+          actual_hours: apiLead.actual_hours ? hoursToHMS(apiLead.actual_hours * 3600) : (initialLead.actual_hours || ''),
           date: formatDateLocal(apiLead.createdAt || initialLead.date),
           preferedDate: apiLead.preferredDate
             ? formatDateLocal(apiLead.preferredDate)

@@ -17,7 +17,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../App';
 import { api } from '../config/api';
-import { COLORS, SHADOWS, FONTS, LocalTime } from '../utils/constants';
+import { COLORS, SHADOWS, FONTS, LocalTime, hoursToHMS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 import moment from 'moment';
 
@@ -149,7 +149,7 @@ const EmployeeTimesheetScreen = () => {
                     {LocalTime(session.startTime)} - {session.endTime ? LocalTime(session.endTime) : 'Active'}
                   </Text>
                   <Text style={styles.sessionDuration}>
-                    {session.duration ? (session.duration / 3600).toFixed(2) : '0.00'} hrs
+                    {session.duration ? hoursToHMS(session.duration) : '00 h : 00 m'}
                   </Text>
                 </View>
                 <Text style={styles.sessionLead} numberOfLines={1}>
@@ -186,7 +186,7 @@ const EmployeeTimesheetScreen = () => {
         <View style={styles.calcRow}>
           <View style={styles.calcCol}>
             <Text style={styles.calcLabel}>Total Hours</Text>
-            <Text style={styles.calcValue}>{summary.totalHours.toFixed(2)}</Text>
+            <Text style={styles.calcValue}>{hoursToHMS(summary.totalHours * 3600)}</Text>
           </View>
           <Text style={styles.calcOperator}>-</Text>
           <View style={styles.calcCol}>

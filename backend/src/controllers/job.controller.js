@@ -654,7 +654,7 @@ exports.pauseJob = async (req, res) => {
       0
     );
 
-    const calculatedHours = Number(totalDuration.toFixed(2));
+    const calculatedHours = parseFloat((totalDuration / 3600).toFixed(2));
 
     await job.update({ status: "paused", actualHours: calculatedHours });
 
@@ -893,7 +893,7 @@ exports.completeJob = async (req, res) => {
       0
     );
 
-    const calculatedHours = Number(totalDuration.toFixed(2));
+    const calculatedHours = parseFloat((totalDuration / 3600).toFixed(2));
 
     // ----------------------------------------------------
     // 4️⃣ Update Job
@@ -943,6 +943,7 @@ exports.completeJob = async (req, res) => {
           `${String(completionTime.getHours()).padStart(2, "0")}:${String(
             completionTime.getMinutes()
           ).padStart(2, "0")}`,
+        actualHours: calculatedHours,
       },
       {
         where: { id: job.leadId },

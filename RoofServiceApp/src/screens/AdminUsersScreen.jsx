@@ -13,6 +13,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,8 +25,8 @@ import { moderateScale, verticalScale } from '../utils/responsive';
 const AdminUsersScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [saving, setSaving] = useState(false);
@@ -42,22 +43,18 @@ const AdminUsersScreen = () => {
     loadUsers();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredUsers(users);
-    } else {
-      const lower = searchQuery.toLowerCase();
-      const filtered = users.filter(
-        u =>
-          (u.name && u.name.toLowerCase().includes(lower)) ||
-          (u.email && u.email.toLowerCase().includes(lower)),
-      );
-      setFilteredUsers(filtered);
-    }
+  const filteredUsers = React.useMemo(() => {
+    if (searchQuery.trim() === '') return users;
+    const lower = searchQuery.toLowerCase();
+    return users.filter(
+      u =>
+        (u.name && u.name.toLowerCase().includes(lower)) ||
+        (u.email && u.email.toLowerCase().includes(lower)),
+    );
   }, [searchQuery, users]);
 
-  const loadUsers = async () => {
-    setLoading(true);
+  const loadUsers = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await api.getAllUsers({});
       const raw =
@@ -66,11 +63,10 @@ const AdminUsersScreen = () => {
         res.data?.users ||
         (Array.isArray(res.data) ? res.data : []);
       setUsers(raw);
-      setFilteredUsers(raw);
     } catch (error) {
       console.log('Load users error:', error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -121,6 +117,14 @@ const AdminUsersScreen = () => {
       return;
     }
 
+    if (phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        Alert.alert('Validation', 'Please enter a valid phone number');
+        return;
+      }
+    }
+
     const payload = {
       name: name.trim(),
       email: email.trim(),
@@ -138,12 +142,16 @@ const AdminUsersScreen = () => {
       } else {
         await api.createUser(payload);
       }
-      await loadUsers();
-      resetForm();
+      
+      // Close modal and reset form immediately for smooth UI
       setShowForm(false);
+      resetForm();
+      
+      // Reload list in background silently to avoid flickering
+      loadUsers(true);
+      
       Alert.alert('Success', 'User saved successfully');
     } catch (error) {
-      // Extract error message if available from backend
       const msg = error.response?.data?.message || 'Failed to save user';
       Alert.alert('Error', msg);
     } finally {
@@ -182,6 +190,7 @@ const AdminUsersScreen = () => {
             navigation.navigate('AdminLeads', {
               userId: item.id,
               userName: item.name,
+              userRole: item.role,
             })
           }
           activeOpacity={0.7}
@@ -341,7 +350,7 @@ const AdminUsersScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.keyboardView}
           >
             <View style={styles.modalContainer}>
@@ -585,7 +594,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: moderateScale(20),
     padding: moderateScale(24),
-    maxHeight: '85%',
+    maxHeight: '90%',
+    width: '100%',
     ...SHADOWS.large,
   },
   modalHeader: {

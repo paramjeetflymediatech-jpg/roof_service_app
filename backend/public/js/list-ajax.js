@@ -80,11 +80,11 @@ $(document).ready(function () {
         if ($(this).is('a')) {
             e.preventDefault();
             const baseUrl = $(this).attr('href');
-            updateList(baseUrl);
             searchForm[0].reset();
-            // Optional: clear explicit values if reset() doesn't catch everything
+            // Clear explicit values because reset() only reverts to initial HTML values
             searchForm.find('input[type="text"]').val('');
             searchForm.find('select').val('');
+            updateList(baseUrl);
         }
     });
 });

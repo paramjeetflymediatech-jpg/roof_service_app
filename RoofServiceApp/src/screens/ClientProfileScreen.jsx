@@ -102,6 +102,14 @@ const ClientProfileScreen = () => {
       Alert.alert('Validation', 'Name is required');
       return;
     }
+
+    if (phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        Alert.alert('Validation', 'Please enter a valid phone number');
+        return;
+      }
+    }
     try {
       setSaving(true);
       const res = await api.updateProfile({

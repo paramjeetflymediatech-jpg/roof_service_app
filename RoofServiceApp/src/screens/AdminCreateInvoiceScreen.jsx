@@ -82,6 +82,13 @@ const AdminCreateInvoiceScreen = () => {
                 provincialTaxRate: parseFloat(form.provincialTaxRate),
             };
 
+            if (form.clientPhone.trim()) {
+                const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+                if (!phoneRegex.test(form.clientPhone.trim())) {
+                    return Alert.alert('Validation', 'Please enter a valid phone number');
+                }
+            }
+
             if (isEdit) {
                 await api.updateInvoice(existing.id, payload);
                 Alert.alert('Success', 'Invoice updated!', [{ text: 'OK', onPress: () => navigation.goBack() }]);

@@ -48,7 +48,13 @@ const RegisterScreen = () => {
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = 'Invalid email format';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+
+    if (formData.phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        newErrors.phone = 'Invalid phone number format';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

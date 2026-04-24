@@ -100,8 +100,8 @@ const EmployeeMyJobsScreen = () => {
           employeeNotes: lead.employee_notes || job.employeeNotes || '',
           lead: lead,
           afterImages: job.afterImages,
-          actualHours: hoursToHMS(job.actualHours || job.actual_hours) || '',
-          actual_hours: hoursToHMS(job.actual_hours || job.actualHours) || '',
+          actualHours: job.actualHours ? hoursToHMS(job.actualHours * 3600) : (job.actual_hours ? hoursToHMS(job.actual_hours * 3600) : ''),
+          actual_hours: job.actual_hours ? hoursToHMS(job.actual_hours * 3600) : (job.actualHours ? hoursToHMS(job.actualHours * 3600) : ''),
           completedDate: completedDate ? formatDateLocal(completedDate) : '',
         };
       });

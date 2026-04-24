@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ const formatDateLocal = value => {
 const AdminLeadsScreen = ({ route }) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { userId, userName } = route.params || {};
+  const { userId, userName, userRole } = route.params || {};
 
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,14 +42,16 @@ const AdminLeadsScreen = ({ route }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const isFirstRender = useRef(true);
 
   const loadQuotes = useCallback(
     async (
-      search = '',
-      date = null,
+      search = searchQuery,
+      date = dateFilter,
+      status = statusFilter,
       pageNum = 1,
       shouldAppend = false,
-      filterUserId = null,
+      filterUserId = userId,
     ) => {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
@@ -58,52 +60,37 @@ const AdminLeadsScreen = ({ route }) => {
         const params = { page: pageNum, limit: 10 };
         if (search) params.search = search;
         if (date) params.date = date;
-        if (statusFilter !== 'all') params.status = statusFilter;
-        // Use passed userId or fallback to component state userId (if available in closure, but safer to pass)
-        if (filterUserId) params.userId = filterUserId;
+        if (status !== 'all') params.status = status;
+        if (filterUserId) {
+          if (userRole === 'employee') {
+            params.assignedToId = filterUserId;
+          } else {
+            params.userId = filterUserId;
+          }
+        }
 
         const response = await api.getLeads(params);
         const rawItems =
           response.data?.items ||
           response.data?.data ||
           (Array.isArray(response.data) ? response.data : []);
+        
         const normalizedItems = rawItems.map(item => ({
           id: item.id || item._id || item.lead_id,
           clientName: item.clientName || item.client_name || item.name || 'N/A',
           service: item.serviceType || item.service_name || 'N/A',
-          address: `${item.address} ${item?.city}` || 'N/A',
+          address: item.address ? `${item.address}${item.city ? ', ' + item.city : ''}` : 'N/A',
           phone: item.phone || item.phone_number || 'N/A',
           status: item.status || LEAD_STATUS.PENDING,
-          date: formatDateLocal(item.date || item.created_at || item.createdAt),
+          date: formatDateLocal(item.date || item.createdAt || item.created_at),
           email: item.email || 'N/A',
-          client_images: item.clientImages || 'N/A',
-          preferedDate: formatDateLocal(
-            item.preferredDate || item.prefered_date || item.preferedDate,
-          ),
-          scheduledAt:
-            item.preferredDate || item.prefered_date || item.preferedDate,
-          assignedTo:
-            item.assignedEmployee?.name ||
-            item.assignedTo?.name ||
-            item.assigned_to ||
-            null,
-          assignedEmployee: item.assignedEmployee || item.assignedTo || null,
-          employeeStartTime: item.employeeStartTime || null,
-          employeeEndTime: item.updatedAt || null,
-          inTime:
-            item.employeeStartTime != null
-              ? `${LocalTime(item.inTime)} - ${formatDateLocal(item.inTime)}`
-              : null,
-          outTime:
-            item.employeeEndTime != null
-              ? `${LocalTime(item.outTime)} - ${formatDateLocal(item.outTime)}`
-              : null,
-          employeeNotes: item.employeeNotes || null,
-          completionImages: item.completionImages || null,
-          actualHours: item.actualHours ? hoursToHMS(item.actualHours) : '',
-          actual_hours: item.actual_hours ? hoursToHMS(item.actual_hours) : '',
-          createdAt: formatDateLocal(item.createdAt || item.created_at || item.created_at),
-          updatedAt: formatDateLocal(item.updatedAt || item.updated_at || item.updated_at),
+          client_images: item.clientImages || null,
+          preferedDate: formatDateLocal(item.preferredDate || item.prefered_date),
+          assignedTo: item.assignedTo?.name || item.assignedEmployee?.name || null,
+          inTime: item.employeeStartTime ? LocalTime(item.employeeStartTime) : null,
+          outTime: (item.status === LEAD_STATUS.COMPLETED && item.updatedAt) ? LocalTime(item.updatedAt) : null,
+          actualHours: item.actualHours ? hoursToHMS(item.actualHours * 3600) : null,
+          createdAt: formatDateLocal(item.createdAt || item.created_at),
         }));
       
         if (shouldAppend) {
@@ -112,11 +99,7 @@ const AdminLeadsScreen = ({ route }) => {
           setQuotes(normalizedItems);
         }
 
-        if (normalizedItems.length < 10) {
-          setHasMore(false);
-        } else {
-          setHasMore(true);
-        }
+        setHasMore(normalizedItems.length === 10);
       } catch (error) {
         console.log('Admin load quotes error:', error);
       } finally {
@@ -124,36 +107,42 @@ const AdminLeadsScreen = ({ route }) => {
         setLoadingMore(false);
       }
     },
-    [statusFilter],
+    [searchQuery, dateFilter, statusFilter, userId],
   );
 
-  // Immediate refresh on focus (e.g. returning from a lead)
-  useFocusEffect(
-    useCallback(() => {
-      loadQuotes(searchQuery, dateFilter, 1, false, userId);
-    }, [loadQuotes, searchQuery, dateFilter, userId]),
-  );
-
-  const isFirstRender = React.useRef(true);
-
-  // Immediate fetch when status or userId changes, but NOT on first render (useFocusEffect handles that)
+  // Initial load
   useEffect(() => {
-    if (isFirstRender.current) return;
-    loadQuotes(searchQuery, dateFilter, 1, false, userId);
-  }, [statusFilter, userId, loadQuotes]);
+    loadQuotes(searchQuery, dateFilter, statusFilter, 1, false, userId);
+  }, []);
 
-  // Debounced fetch for search and date filters
+  // Debounced search and date filter
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
+
     const timeout = setTimeout(() => {
       setPage(1);
-      loadQuotes(searchQuery, dateFilter, 1, false, userId);
+      loadQuotes(searchQuery, dateFilter, statusFilter, 1, false, userId);
     }, 500);
+
     return () => clearTimeout(timeout);
-  }, [searchQuery, dateFilter, loadQuotes]); // Only watch search and date (and loadQuotes which includes status) here
+  }, [searchQuery, dateFilter]);
+
+  // Immediate fetch for status or userId changes
+  useEffect(() => {
+    if (isFirstRender.current) return;
+    setPage(1);
+    loadQuotes(searchQuery, dateFilter, statusFilter, 1, false, userId);
+  }, [statusFilter, userId]);
+
+  // Initial load or on focus
+  useFocusEffect(
+    useCallback(() => {
+      loadQuotes(searchQuery, dateFilter, statusFilter, 1, false, userId);
+    }, [loadQuotes]),
+  );
 
 
   const onRefresh = useCallback(async () => {
@@ -168,7 +157,7 @@ const AdminLeadsScreen = ({ route }) => {
     if (!loading && !loadingMore && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      loadQuotes(searchQuery, dateFilter, nextPage, true, userId);
+      loadQuotes(searchQuery, dateFilter, statusFilter, nextPage, true, userId);
     }
   };
 
@@ -314,9 +303,20 @@ const AdminLeadsScreen = ({ route }) => {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top : verticalScale(20) }]}>
-        <Text style={styles.headerTitle}>
-          {userName ? `Leads: ${userName}` : 'All Leads'}
-        </Text>
+        <View style={styles.headerTopRow}>
+          {userId && (
+            <TouchableOpacity 
+              onPress={() => navigation.setParams({ userId: null, userName: null, userRole: null })}
+              style={styles.backBtn}
+            >
+              <Text style={styles.backBtnText}>←</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.headerTitle}>
+            {userName ? `Leads: ${userName}` : 'All Leads'}
+          </Text>
+          {userId && <View style={{ width: 40 }} />}
+        </View>
       </View>
 
       <View style={styles.contentContainer}>
@@ -353,29 +353,32 @@ const AdminLeadsScreen = ({ route }) => {
         </View>
 
         {/* Filters */}
-        <View style={styles.filterRow}>
-          {['all', 'pending', 'assigned', 'in_progress', 'completed'].map(f => (
-            <TouchableOpacity
-              key={f}
-              style={[
-                styles.filterChip,
-                statusFilter === f && styles.filterChipActive,
-              ]}
-              onPress={() => {
-                setStatusFilter(f);
-                setPage(1);
-              }}
-            >
-              <Text
+        <View style={styles.tabsContainer}>
+          <FlatList
+            data={['all', 'pending', 'paused', 'approved', 'assigned', 'in_progress', 'completed']}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
                 style={[
-                  styles.filterChipText,
-                  statusFilter === f && styles.filterChipTextActive,
+                  styles.tabItem,
+                  statusFilter === item && styles.tabItemActive,
                 ]}
+                onPress={() => setStatusFilter(item)}
               >
-                {f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.tabText,
+                    statusFilter === item && styles.tabTextActive,
+                  ]}
+                >
+                  {item === 'in_progress' ? 'In Progress' : item.charAt(0).toUpperCase() + item.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.tabsContent}
+          />
         </View>
 
         {/* List */}
@@ -504,9 +507,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...SHADOWS.small,
   },
-  headerTitle: {
-    fontSize: moderateScale(18),
-    fontWeight: '700',
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  backBtn: {
+    position: 'absolute',
+    left: 0,
+    padding: moderateScale(8),
+  },
+  backBtnText: {
+    fontSize: moderateScale(24),
     color: COLORS.text,
   },
   contentContainer: {
@@ -565,30 +578,29 @@ const styles = StyleSheet.create({
   filterIconText: {
     fontSize: moderateScale(20),
   },
-  filterRow: {
-    flexDirection: 'row',
-    paddingHorizontal: moderateScale(20),
-    marginBottom: verticalScale(16),
-    gap: moderateScale(8),
-  },
-  filterChip: {
-    paddingHorizontal: moderateScale(12),
-    paddingVertical: verticalScale(6),
-    borderRadius: moderateScale(20),
+  tabsContainer: {
     backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    paddingBottom: verticalScale(12),
   },
-  filterChipActive: {
+  tabsContent: {
+    paddingHorizontal: moderateScale(20),
+    gap: moderateScale(12),
+  },
+  tabItem: {
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: verticalScale(8),
+    borderRadius: moderateScale(20),
+    backgroundColor: '#F0F4F8',
+  },
+  tabItemActive: {
     backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
   },
-  filterChipText: {
-    fontSize: moderateScale(12),
-    color: COLORS.textLight,
+  tabText: {
+    fontSize: moderateScale(14),
     fontWeight: '600',
+    color: COLORS.textLight,
   },
-  filterChipTextActive: {
+  tabTextActive: {
     color: COLORS.white,
   },
   listContent: {

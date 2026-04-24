@@ -129,6 +129,10 @@ const Lead = sequelize.define('Lead', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  actualHours: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+  },
 }, {
   tableName: 'leads',
   timestamps: true,
