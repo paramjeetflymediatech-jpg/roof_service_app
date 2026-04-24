@@ -5,13 +5,19 @@ const path = require("path");
 // Get all users (optionally filtered by role)
 exports.getallusers = async (req, res, next) => {
   try {
-    const { role } = req.query;
+    const { role, search } = req.query;
 
     const where = {};
     if (role) where.role = role;
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+      ];
+    }
 
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
+    const limit = parseInt(req.query.limit, 10) || 100;
     const offset = (page - 1) * limit;
 
     const { count, rows } = await User.findAndCountAll({

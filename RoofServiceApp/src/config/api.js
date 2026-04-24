@@ -8,10 +8,8 @@ import { Platform } from 'react-native';
 
 // Use environment variables from .env file 
 // Falls back to localhost for development if .env is not configured
-export const API_BASE_URL = ENV_API_BASE_URL || "http://localhost:5001/api";
-export const SERVER_URL = ENV_SERVER_URL || 'http://localhost:5001';
-// export const API_BASE_URL = ENV_API_BASE_URL || Platform.OS == "android" ? "http://10.0.2.2:5001/api" : "http://localhost:5001/api";
-// export const SERVER_URL = ENV_SERVER_URL || Platform.OS === "android" ? 'http://10.0.2.2:5001' : 'http://localhost:5001';
+export const API_BASE_URL = ENV_API_BASE_URL || (Platform.OS === 'android' ? "http://10.0.2.2:5001/api" : "http://localhost:5001/api");
+export const SERVER_URL = ENV_SERVER_URL || (Platform.OS === 'android' ? "http://10.0.2.2:5001" : "http://localhost:5001");
 console.log(API_BASE_URL, '------------a')
 
 const apiClient = axios.create({
@@ -152,15 +150,15 @@ export const api = {
   // Estimates
   getEstimates: (params = {}) => apiClient.get('/estimates', { params }),
   getEstimateById: id => apiClient.get(`/estimates/${id}`),
-  createEstimate: data => apiClient.post('/estimates', data),
-  updateEstimate: (id, data) => apiClient.put(`/estimates/${id}`, data),
+  createEstimate: (data, config = {}) => apiClient.post('/estimates', data, config),
+  updateEstimate: (id, data, config = {}) => apiClient.put(`/estimates/${id}`, data, config),
   deleteEstimate: id => apiClient.delete(`/estimates/${id}`),
 
   // Invoices
   getInvoices: (params = {}) => apiClient.get('/invoices', { params }),
   getInvoiceById: id => apiClient.get(`/invoices/${id}`),
-  createInvoice: data => apiClient.post('/invoices', data),
-  updateInvoice: (id, data) => apiClient.put(`/invoices/${id}`, data),
+  createInvoice: (data, config = {}) => apiClient.post('/invoices', data, config),
+  updateInvoice: (id, data, config = {}) => apiClient.put(`/invoices/${id}`, data, config),
   deleteInvoice: id => apiClient.delete(`/invoices/${id}`),
 
   // Timesheets

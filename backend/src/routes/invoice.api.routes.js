@@ -3,6 +3,7 @@ const router = express.Router();
 const { Invoice, Estimate, User } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const { jwtAuth } = require('../middlewares/auth.middleware');
+const upload = require('../middlewares/upload.middleware');
 
 // All routes require JWT
 router.use(jwtAuth);
@@ -66,25 +67,42 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/invoices - create
-router.post('/', async (req, res) => {
+router.post('/', upload.array('invoiceImages', 5), async (req, res) => {
     try {
         const {
             clientName, clientEmail, clientPhone, clientAddress,
             date, dueDate, notes, status, items = [], estimateId, leadId,
+            applyGst, applyPst, provincialTaxType, provincialTaxRate,
         } = req.body;
-
+ 
         if (!clientName) return res.status(400).json({ success: false, message: 'clientName is required' });
-
+ 
         const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
         let subtotal = 0;
         parsedItems.forEach(item => {
             item.amount = parseFloat(item.rate || 0) * parseFloat(item.qty || 1);
             subtotal += item.amount;
         });
-        const tax = subtotal * 0.05;
+ 
+        const isGst = applyGst === 'true' || applyGst === true;
+        const isPst = applyPst === 'true' || applyPst === true;
+        const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+ 
+        const gstAmount = isGst ? subtotal * 0.05 : 0;
+        const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+        const tax = gstAmount + pstAmount;
         const total = subtotal + tax;
         const invoiceNumber = `INV-${uuidv4().slice(0, 8).toUpperCase()}`;
-
+ 
+        // Handle images
+        let invoiceImages = [];
+        if (req.files && req.files.length > 0) {
+            invoiceImages = req.files.map(file => ({
+                filename: file.filename,
+                url: `/uploads/jobs/${file.filename}`
+            }));
+        }
+ 
         const invoice = await Invoice.create({
             invoiceNumber,
             clientName, clientEmail, clientPhone, clientAddress,
@@ -92,11 +110,16 @@ router.post('/', async (req, res) => {
             dueDate: dueDate || null,
             items: parsedItems,
             subtotal, tax, total,
+            applyGst: isGst,
+            applyPst: isPst,
+            provincialTaxType: provincialTaxType || 'PST',
+            provincialTaxRate: pTaxRate,
             notes,
             status: status || 'Pending',
             createdById: req.user?.id || null,
             estimateId: estimateId || null,
             leadId: leadId || null,
+            images: invoiceImages,
         });
 
         res.status(201).json({ success: true, data: invoice });
@@ -107,30 +130,60 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/invoices/:id - update
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.array('invoiceImages', 5), async (req, res) => {
     try {
         const invoice = await Invoice.findByPk(req.params.id);
         if (!invoice) return res.status(404).json({ success: false, message: 'Not found' });
-
+ 
         const {
             clientName, clientEmail, clientPhone, clientAddress,
             date, dueDate, notes, status, items, leadId,
+            applyGst, applyPst, provincialTaxType, provincialTaxRate,
+            keepImages,
         } = req.body;
-
+ 
         const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
         let subtotal = 0;
         parsedItems.forEach(item => {
             item.amount = parseFloat(item.rate || 0) * parseFloat(item.qty || 1);
             subtotal += item.amount;
         });
-        const tax = subtotal * 0.05;
+ 
+        const isGst = applyGst === 'true' || applyGst === true;
+        const isPst = applyPst === 'true' || applyPst === true;
+        const pTaxRate = parseFloat(provincialTaxRate) || 7.0;
+ 
+        const gstAmount = isGst ? subtotal * 0.05 : 0;
+        const pstAmount = isPst ? subtotal * (pTaxRate / 100) : 0;
+        const tax = gstAmount + pstAmount;
         const total = subtotal + tax;
-
+ 
+        // Handle images
+        let invoiceImages = [];
+        const keep = Array.isArray(keepImages) ? keepImages : (keepImages ? [keepImages] : []);
+        
+        if (Array.isArray(invoice.images)) {
+            invoiceImages = invoice.images.filter(img => keep.includes(img.url));
+        }
+ 
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => ({
+                filename: file.filename,
+                url: `/uploads/jobs/${file.filename}`
+            }));
+            invoiceImages = [...invoiceImages, ...newImages].slice(0, 5);
+        }
+ 
         await invoice.update({
             clientName, clientEmail, clientPhone, clientAddress,
             date, dueDate: dueDate || null,
             items: parsedItems, subtotal, tax, total,
+            applyGst: isGst,
+            applyPst: isPst,
+            provincialTaxType: provincialTaxType || 'PST',
+            provincialTaxRate: pTaxRate,
             notes, status, leadId: leadId || invoice.leadId,
+            images: invoiceImages,
         });
 
         res.json({ success: true, data: invoice });

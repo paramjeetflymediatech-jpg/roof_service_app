@@ -3,6 +3,7 @@ const router = express.Router();
 const { Estimate, Invoice, User } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const { jwtAuth } = require('../middlewares/auth.middleware');
+const upload = require('../middlewares/upload.middleware');
 
 // All routes require JWT
 router.use(jwtAuth);
@@ -65,15 +66,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/estimates - create
-router.post('/', async (req, res) => {
+router.post('/', upload.array('estimateImages', 5), async (req, res) => {
     try {
         const {
             clientName, clientEmail, clientPhone, clientAddress,
             date, expiryDate, notes, status, items = [], leadId,
         } = req.body;
-
+ 
         if (!clientName) return res.status(400).json({ success: false, message: 'clientName is required' });
-
+ 
         const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
         let subtotal = 0;
         parsedItems.forEach(item => {
@@ -83,7 +84,16 @@ router.post('/', async (req, res) => {
         const tax = subtotal * 0.05;
         const total = subtotal + tax;
         const estimateNumber = `EST-${uuidv4().slice(0, 8).toUpperCase()}`;
-
+ 
+        // Handle images
+        let estimateImages = [];
+        if (req.files && req.files.length > 0) {
+            estimateImages = req.files.map(file => ({
+                filename: file.filename,
+                url: `/uploads/jobs/${file.filename}`
+            }));
+        }
+ 
         const estimate = await Estimate.create({
             estimateNumber,
             clientName, clientEmail, clientPhone, clientAddress,
@@ -95,6 +105,7 @@ router.post('/', async (req, res) => {
             status: status || 'Draft',
             createdById: req.user?.id || null,
             leadId: leadId || null,
+            images: estimateImages,
         });
 
         res.status(201).json({ success: true, data: estimate });
@@ -105,16 +116,17 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/estimates/:id - update
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.array('estimateImages', 5), async (req, res) => {
     try {
         const estimate = await Estimate.findByPk(req.params.id);
         if (!estimate) return res.status(404).json({ success: false, message: 'Not found' });
-
+ 
         const {
             clientName, clientEmail, clientPhone, clientAddress,
             date, expiryDate, notes, status, items, leadId,
+            keepImages,
         } = req.body;
-
+ 
         const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
         let subtotal = 0;
         parsedItems.forEach(item => {
@@ -123,12 +135,29 @@ router.put('/:id', async (req, res) => {
         });
         const tax = subtotal * 0.05;
         const total = subtotal + tax;
-
+ 
+        // Handle images
+        let estimateImages = [];
+        const keep = Array.isArray(keepImages) ? keepImages : (keepImages ? [keepImages] : []);
+        
+        if (Array.isArray(estimate.images)) {
+            estimateImages = estimate.images.filter(img => keep.includes(img.url));
+        }
+ 
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => ({
+                filename: file.filename,
+                url: `/uploads/jobs/${file.filename}`
+            }));
+            estimateImages = [...estimateImages, ...newImages].slice(0, 5);
+        }
+ 
         await estimate.update({
             clientName, clientEmail, clientPhone, clientAddress,
             date, expiryDate: expiryDate || null,
             items: parsedItems, subtotal, tax, total,
             notes, status, leadId: leadId || estimate.leadId,
+            images: estimateImages,
         });
 
         res.json({ success: true, data: estimate });

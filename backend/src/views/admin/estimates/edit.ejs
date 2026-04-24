@@ -117,10 +117,10 @@
                                     <% if (estimate.images && estimate.images.length > 0) { %>
                                         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                                             <% estimate.images.forEach(img => { %>
-                                                <div class="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group shadow-sm existing-image-container">
+                                                <div class="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group shadow-sm existing-image-container cursor-pointer" onclick="openLightbox('<%= img.url %>')">
                                                     <img src="<%= img.url %>" class="w-full h-full object-cover">
                                                     <input type="hidden" name="keepImages[]" value="<%= img.url %>">
-                                                    <button type="button" class="remove-existing-image absolute top-1 right-1 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md">
+                                                    <button type="button" class="remove-existing-image absolute top-1 right-1 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md" onclick="event.stopPropagation()">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                     </button>
                                                 </div>
@@ -370,10 +370,11 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const div = document.createElement('div');
-                        div.className = 'relative aspect-square rounded-lg overflow-hidden border border-gray-200 group animate-in zoom-in-95';
+                        div.className = 'relative aspect-square rounded-lg overflow-hidden border border-gray-200 group animate-in zoom-in-95 cursor-pointer';
+                        div.onclick = () => openLightbox(e.target.result);
                         div.innerHTML = `
                             <img src="${e.target.result}" class="w-full h-full object-cover">
-                            <button type="button" onclick="removeNewFile(${index})" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md">
+                            <button type="button" onclick="event.stopPropagation(); removeNewFile(${index})" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 shadow-md">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         `;
@@ -446,5 +447,6 @@
         });
  Broadway
     </script>
+    <%- include('../../partials/lightbox') %>
 </body>
 </html>

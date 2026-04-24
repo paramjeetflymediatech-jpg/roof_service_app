@@ -28,6 +28,9 @@ const AdminUsersScreen = () => {
   const { height: windowHeight } = useWindowDimensions();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [saving, setSaving] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -39,34 +42,69 @@ const AdminUsersScreen = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(ROLES.CLIENT);
 
+  // Initial load
   useEffect(() => {
-    loadUsers();
+    loadUsers(true);
   }, []);
 
-  const filteredUsers = React.useMemo(() => {
-    if (searchQuery.trim() === '') return users;
-    const lower = searchQuery.toLowerCase();
-    return users.filter(
-      u =>
-        (u.name && u.name.toLowerCase().includes(lower)) ||
-        (u.email && u.email.toLowerCase().includes(lower)),
-    );
-  }, [searchQuery, users]);
+  // Handle search with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadUsers(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const loadUsers = async (silent = false) => {
-    if (!silent) setLoading(true);
+  const loadUsers = async (reset = false) => {
+    if (reset) {
+      setPage(1);
+      setLoading(true);
+    } else {
+      if (!hasMore || loadingMore) return;
+      setLoadingMore(true);
+    }
+
     try {
-      const res = await api.getAllUsers({});
+      const currentPage = reset ? 1 : page;
+      const params = { page: currentPage, limit: 20 };
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      
+      const res = await api.getAllUsers(params);
+      
       const raw =
         res.data?.items ||
         res.data?.data ||
         res.data?.users ||
         (Array.isArray(res.data) ? res.data : []);
-      setUsers(raw);
+      
+      if (reset) {
+        setUsers(raw);
+        setPage(2);
+      } else {
+        setUsers(prev => [...prev, ...raw]);
+        setPage(prev => prev + 1);
+      }
+      
+      // If we got fewer items than the limit, there are no more pages
+      setHasMore(raw.length === 20);
     } catch (error) {
       console.log('Load users error:', error);
     } finally {
-      if (!silent) setLoading(false);
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    setHasMore(true);
+    loadUsers(true);
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && !loadingMore && hasMore) {
+      loadUsers(false);
     }
   };
 
@@ -148,6 +186,7 @@ const AdminUsersScreen = () => {
       resetForm();
       
       // Reload list in background silently to avoid flickering
+      // Reload list from scratch silently to avoid flickering
       loadUsers(true);
       
       Alert.alert('Success', 'User saved successfully');
@@ -317,9 +356,8 @@ const AdminUsersScreen = () => {
         </View>
       </View>
 
-      {/* List */}
       <FlatList
-        data={filteredUsers}
+        data={users}
         keyExtractor={item => String(item.id)}
         renderItem={renderUserItem}
         contentContainerStyle={styles.listContent}
@@ -327,9 +365,18 @@ const AdminUsersScreen = () => {
         refreshControl={
           <RefreshControl
             refreshing={loading}
-            onRefresh={loadUsers}
+            onRefresh={handleRefresh}
             tintColor={COLORS.primary}
           />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() => 
+          loadingMore ? (
+            <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+              <Text style={{ color: COLORS.textLight }}>Loading more...</Text>
+            </View>
+          ) : null
         }
         ListEmptyComponent={
           !loading && (

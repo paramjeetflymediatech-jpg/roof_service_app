@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
-    ActivityIndicator, Alert, Platform, StatusBar, KeyboardAvoidingView,
+    ActivityIndicator, Alert, Platform, StatusBar, KeyboardAvoidingView, Image,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../config/api';
+import { api, SERVER_URL } from '../config/api';
 import { COLORS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
+import ImageModal from '../components/ImageModal';
+ 
+const getImageUrl = path => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${SERVER_URL}${path}`;
+};
 
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -36,6 +44,12 @@ const AdminCreateEstimateScreen = () => {
     );
 
     const [saving, setSaving] = useState(false);
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [existingImages, setExistingImages] = useState(existing?.images || []);
+    const [removedImages, setRemovedImages] = useState([]);
+ 
+    const [viewerVisible, setViewerVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const setField = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
@@ -58,6 +72,35 @@ const AdminCreateEstimateScreen = () => {
     const subtotal = calcSubtotal();
     const tax = subtotal * 0.05;
     const total = subtotal + tax;
+ 
+    const handleChooseImage = async () => {
+        if (selectedImages.length + existingImages.length >= 5) {
+            return Alert.alert('Limit reached', 'You can only upload up to 5 images.');
+        }
+ 
+        const result = await launchImageLibrary({
+            mediaType: 'photo',
+            selectionLimit: 5 - (selectedImages.length + existingImages.length),
+        });
+ 
+        if (result.assets && result.assets.length > 0) {
+            const newImages = result.assets.map(asset => ({
+                uri: asset.uri,
+                type: asset.type || 'image/jpeg',
+                name: asset.fileName || `upload_${Date.now()}.jpg`,
+            }));
+            setSelectedImages(prev => [...prev, ...newImages]);
+        }
+    };
+ 
+    const removeSelectedImage = (index) => {
+        setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    };
+ 
+    const removeExistingImage = (img) => {
+        setExistingImages(prev => prev.filter(i => i.url !== img.url));
+        setRemovedImages(prev => [...prev, img.url]);
+    };
 
     const handleSave = async () => {
         if (!form.clientName.trim()) return Alert.alert('Validation', 'Client name is required.');
@@ -65,32 +108,49 @@ const AdminCreateEstimateScreen = () => {
 
         setSaving(true);
         try {
-            const payload = {
-                ...form,
-                leadId: leadId || existing?.leadId || undefined,
-                items: items.map(it => ({
-                    description: it.description,
-                    rate: parseFloat(it.rate) || 0,
-                    qty: parseFloat(it.qty) || 1,
-                    amount: (parseFloat(it.rate) || 0) * (parseFloat(it.qty) || 1),
-                })),
-                subtotal,
-                tax,
-                total,
-            };
-
-            if (form.clientPhone.trim()) {
-                const phoneRegex = /^\+?[\d\s\-()]{10,15}$/;
-                if (!phoneRegex.test(form.clientPhone.trim())) {
-                    return Alert.alert('Validation', 'Please enter a valid phone number');
-                }
-            }
-
+            const formData = new FormData();
+            
+            // Add basic fields
+            Object.keys(form).forEach(key => {
+                formData.append(key, form[key]);
+            });
+ 
+            // Add items as JSON string
+            formData.append('items', JSON.stringify(items.map(it => ({
+                description: it.description,
+                rate: parseFloat(it.rate) || 0,
+                qty: parseFloat(it.qty) || 1,
+                amount: (parseFloat(it.rate) || 0) * (parseFloat(it.qty) || 1),
+            }))));
+ 
+            formData.append('subtotal', subtotal);
+            formData.append('tax', tax);
+            formData.append('total', total);
+            formData.append('leadId', leadId || existing?.leadId || '');
+ 
+            // Add images
+            selectedImages.forEach(img => {
+                formData.append('estimateImages', {
+                    uri: img.uri,
+                    type: img.type,
+                    name: img.name,
+                });
+            });
+ 
             if (isEdit) {
-                await api.updateEstimate(existing.id, payload);
+                // Add images to keep
+                existingImages.forEach(img => {
+                    formData.append('keepImages', img.url);
+                });
+                
+                await api.updateEstimate(existing.id, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 Alert.alert('Success', 'Estimate updated!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
             } else {
-                await api.createEstimate(payload);
+                await api.createEstimate(formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 Alert.alert('Success', 'Estimate created!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
             }
         } catch (e) {
@@ -247,6 +307,57 @@ const AdminCreateEstimateScreen = () => {
                     </View>
                 </View>
 
+                {/* Images */}
+                <View style={styles.section}>
+                    <View style={styles.sectionRow}>
+                        <Text style={styles.sectionTitle}>Project Photos</Text>
+                        <TouchableOpacity onPress={handleChooseImage} style={styles.addItemBtn}>
+                            <Text style={styles.addItemBtnText}>+ Add Photo</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.imageGrid}>
+                        {existingImages.map((img, idx) => (
+                            <TouchableOpacity 
+                                key={`ex-${idx}`} 
+                                style={styles.imageWrapper}
+                                onPress={() => {
+                                    setSelectedImage(getImageUrl(img.url));
+                                    setViewerVisible(true);
+                                }}
+                            >
+                                <Image source={{ uri: getImageUrl(img.url) }} style={styles.previewImg} />
+                                <TouchableOpacity style={styles.removeImgBtn} onPress={() => removeExistingImage(img)}>
+                                    <Text style={styles.removeImgText}>✕</Text>
+                                </TouchableOpacity>
+                            </TouchableOpacity>
+                        ))}
+                        {selectedImages.map((img, idx) => (
+                            <TouchableOpacity 
+                                key={`sel-${idx}`} 
+                                style={styles.imageWrapper}
+                                onPress={() => {
+                                    setSelectedImage(img.uri);
+                                    setViewerVisible(true);
+                                }}
+                            >
+                                <Image source={{ uri: img.uri }} style={styles.previewImg} />
+                                <TouchableOpacity style={styles.removeImgBtn} onPress={() => removeSelectedImage(idx)}>
+                                    <Text style={styles.removeImgText}>✕</Text>
+                                </TouchableOpacity>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    {(existingImages.length === 0 && selectedImages.length === 0) && (
+                        <Text style={styles.emptyImgText}>No photos added yet (Max 5)</Text>
+                    )}
+                </View>
+ 
+                <ImageModal 
+                    visible={viewerVisible} 
+                    imageUrl={selectedImage} 
+                    onClose={() => setViewerVisible(false)} 
+                />
+ 
                 {/* Terms & Conditions */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Terms & Conditions</Text>
@@ -366,6 +477,12 @@ const styles = StyleSheet.create({
         borderWidth: 1, borderColor: COLORS.border,
     },
     cancelBtnText: { color: COLORS.textLight, fontSize: moderateScale(14), fontWeight: '600' },
+    imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10) },
+    imageWrapper: { width: moderateScale(60), height: moderateScale(60), borderRadius: moderateScale(8), overflow: 'hidden', backgroundColor: '#eee' },
+    previewImg: { width: '100%', height: '100%' },
+    removeImgBtn: { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 10, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
+    removeImgText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+    emptyImgText: { fontSize: moderateScale(12), color: COLORS.textLight, fontStyle: 'italic', textAlign: 'center', marginTop: 10 },
 });
 
 export default AdminCreateEstimateScreen;

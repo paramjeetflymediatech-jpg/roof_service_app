@@ -9,12 +9,20 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Image,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { COLORS, FONTS, SHADOWS } from '../utils/constants';
 import { moderateScale, verticalScale } from '../utils/responsive';
 import { SERVER_URL } from '../config/api';
+import ImageModal from '../components/ImageModal';
+ 
+const getImageUrl = path => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${SERVER_URL}${path}`;
+};
 
 const fmtCurrency = value =>
   `CAD $${Number(value || 0).toLocaleString(undefined, {
@@ -46,7 +54,9 @@ const ClientEstimateScreen = () => {
   const navigation = useNavigation();
   const { estimate } = useRoute().params;
   const [downloading, setDownloading] = useState(false);
-
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+ 
   if (!estimate) return null;
 
   const statusColors = getStatusColor(estimate.status);
@@ -202,6 +212,33 @@ const ClientEstimateScreen = () => {
             <Text style={styles.notesText}>{estimate.notes}</Text>
           </View>
         ) : null}
+
+        {/* Project Photos */}
+        {(estimate.images && estimate.images.length > 0) ? (
+          <View style={styles.imageCard}>
+            <Text style={styles.sectionLabel}>📸 PROJECT PHOTOS</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
+              {estimate.images.map((img, idx) => (
+                <TouchableOpacity 
+                  key={idx} 
+                  style={styles.imageWrapper}
+                  onPress={() => {
+                    setSelectedImage(getImageUrl(img.url));
+                    setViewerVisible(true);
+                  }}
+                >
+                  <Image source={{ uri: getImageUrl(img.url) }} style={styles.projectImage} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
+ 
+        <ImageModal 
+          visible={viewerVisible} 
+          imageUrl={selectedImage} 
+          onClose={() => setViewerVisible(false)} 
+        />
 
         {/* ── Full-width Download ── */}
         <TouchableOpacity
@@ -466,6 +503,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.5,
   },
+  imageCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: moderateScale(12),
+    padding: moderateScale(16),
+    marginBottom: verticalScale(16),
+    ...SHADOWS.small,
+  },
+  imageScroll: { gap: moderateScale(12), paddingRight: moderateScale(16) },
+  imageWrapper: {
+    width: moderateScale(120),
+    height: moderateScale(120),
+    borderRadius: moderateScale(8),
+    overflow: 'hidden',
+    backgroundColor: '#eee',
+  },
+  projectImage: { width: '100%', height: '100%', resizeMode: 'cover' },
 });
 
 export default ClientEstimateScreen;

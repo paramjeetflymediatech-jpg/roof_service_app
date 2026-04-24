@@ -412,7 +412,7 @@
                     <span class="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] mb-3 block"></span>
                     <div class="flex flex-wrap gap-3">
                         <% displayImages.forEach(img => { %>
-                            <div class="w-24 h-24 rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex-shrink-0">
+                            <div class="w-24 h-24 rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onclick="openLightbox('<%= img.url %>')">
                                 <img src="<%= img.url %>" class="w-full h-full object-cover" alt="Evidence Photo">
                             </div>
                         <% }) %>
@@ -534,6 +534,7 @@
         <p class="text-sm font-semibold text-gray-400 tracking-tight">© <%= new Date().getFullYear() %> Mainstreet
                 Roofing LTD. • Professional Estimates Engine</p>
     </div>
+    <%- include('../../partials/lightbox') %>
 </body>
 
 </html>
