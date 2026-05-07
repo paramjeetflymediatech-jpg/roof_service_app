@@ -24,7 +24,7 @@ transporter.verify((error, success) => {
 const sendLeadNotification = async (leadData) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
-    to: process.env.EMAIL_USER, // Send to your email
+    to: "mainstreetroofting@gmail.com,anujguptaflymedia@gmail.com,", // Send to your email
     subject: `New Lead: ${leadData.name}`,
     html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; color:black;margin: 0 auto;">
