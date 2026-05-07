@@ -74,6 +74,10 @@ export default function LayoutShell({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col max-w-full">
+      {/* Google Tag Manager (noscript) */}
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5RQJK48" height="0" width="0"
+        style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
+      {/* End Google Tag Manager (noscript) */}
       {/* Header & Top Bar Wrapper (Fixed) */}
       <div className="fixed top-0 left-0 right-0 z-50">
         {/* Top Bar */}
