@@ -46,7 +46,7 @@
                                                             
                                                             <!-- Main Pages -->
                                                             <optgroup label="Main Pages">
-                                                                <% const mainPages = ['home', 'about', 'services', 'gallery', 'projects', 'products', 'company','data-deletion','privacy_policy', 'blogs', 'contact']; %>
+                                                                <% const mainPages = ['home', 'about', 'services', 'gallery', 'projects', 'products', 'company','data-deletion','privacy_policy', 'blogs', 'contact','thank-you']; %>
                                                                 <% mainPages.forEach(page => { %>
                                                                     <option value="<%= page %>" <%= seoPage.pageName === page ? 'selected' : '' %>><%= page.charAt(0).toUpperCase() + page.slice(1) %></option>
                                                                 <% }) %>
