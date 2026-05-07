@@ -24,7 +24,7 @@ router.use("/", apiRoutes);
 router.use("/auth", authRoutes);
 
 // Apply checkAccountStatus after authentication to restrict pending_deletion accounts
-router.use("/leads", jwtAuth, checkAccountStatus, leadRoutes);
+router.use("/leads",  leadRoutes);
 router.use("/services", serviceRoutes);
 router.use("/users", jwtAuth, checkAccountStatus, userRoutes);
 router.use("/jobs", jwtAuth, checkAccountStatus, jobRoutes);

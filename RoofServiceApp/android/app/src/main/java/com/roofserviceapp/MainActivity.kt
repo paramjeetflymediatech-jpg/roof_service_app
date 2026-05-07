@@ -11,7 +11,8 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
-    super.onCreate(savedInstanceState)
+   /* super.onCreate(savedInstanceState)*/
+    super.onCreate(null)
   }
 
   /**
