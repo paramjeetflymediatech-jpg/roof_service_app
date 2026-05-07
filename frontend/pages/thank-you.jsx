@@ -5,18 +5,30 @@ import { motion } from "framer-motion";
 import { HiCheckCircle, HiHome, HiPhone, HiMail } from "react-icons/hi";
 import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
+import { getSeoData } from '@/lib/api/seo';
 
-export default function ThankYouPage() {
+export async function getServerSideProps() {
+    try {
+        const data = await getSeoData('thank-you');
+        return {
+            props: {
+                seoData: data.success ? data.data : null,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching Thank You SEO data:', error);
+        return {
+            props: {
+                seoData: null,
+            },
+        };
+    }
+}
+export default function ThankYouPage({ seoData }) {
   return (
     <LayoutShell>
-      <SeoHead 
-        initialSeoData={{
-          pageTitle: "Thank You | Mainstreet Roofing Ltd",
-          metaDescription: "Thank you for your request. We have received your quote request and will get back to you shortly.",
-          metaRobots: "noindex, follow"
-        }}
-      />
-      
+      <SeoHead pageName="thank-you" initialSeoData={seoData} />
+
       <section className="min-h-[70vh] flex items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container-custom max-w-3xl text-center">
           <motion.div
