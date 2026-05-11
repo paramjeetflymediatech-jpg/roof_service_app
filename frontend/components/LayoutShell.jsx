@@ -305,7 +305,7 @@ export default function LayoutShell({ children }) {
                   className="inline-block hover:opacity-80 transition-opacity"
                 >
                   <img
-                    src="/BBB.png"
+                    src="/BBB23.png"
                     alt="Better Business Bureau"
                     className="     w-full  h-auto object-contain"
                   />
