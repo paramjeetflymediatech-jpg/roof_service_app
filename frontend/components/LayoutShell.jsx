@@ -97,15 +97,15 @@ export default function LayoutShell({ children }) {
               <a href={`${SOCIAL_LINKS.facebook}`} className="flex gap-2">
                 <FaFacebook />
               </a>
-              <a href={`${SOCIAL_LINKS.twitter}`} className="flex gap-2">
+              {/* <a href={`${SOCIAL_LINKS.twitter}`} className="flex gap-2">
                 <FaTwitter />
-              </a>
+              </a> */}
               <a href={`${SOCIAL_LINKS.instagram}`} className="flex gap-2">
                 <FaInstagram />
               </a>
-              <a href={`${SOCIAL_LINKS.pinterest}`} className="flex gap-2">
+              {/* <a href={`${SOCIAL_LINKS.pinterest}`} className="flex gap-2">
                 <FaPinterest />
-              </a>
+              </a> */}
               <a href={`${SOCIAL_LINKS.youtube}`} className="flex gap-2">
                 <FaYoutube />
               </a>
@@ -549,14 +549,14 @@ export default function LayoutShell({ children }) {
                 >
                   <FaFacebook />
                 </a>
-                <a
+                {/* <a
                   href={SOCIAL_LINKS.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
                 >
                   <FaTwitter />
-                </a>
+                </a> */}
                 <a
                   href={SOCIAL_LINKS.instagram}
                   target="_blank"
@@ -565,14 +565,14 @@ export default function LayoutShell({ children }) {
                 >
                   <FaInstagram />
                 </a>
-                <a
+                {/* <a
                   href={SOCIAL_LINKS.pinterest}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all"
                 >
                   <FaPinterest />
-                </a>
+                </a> */}
                 <a
                   href={SOCIAL_LINKS.youtube}
                   target="_blank"
