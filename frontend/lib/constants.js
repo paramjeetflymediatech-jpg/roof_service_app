@@ -15,9 +15,9 @@ export const COMPANY_INFO = {
 export const SOCIAL_LINKS = {
     youtube: 'https://www.youtube.com/@mainstreetroofingltd',
     facebook: 'https://www.facebook.com/profile.php?id=61550475260377',
-    twitter: 'https://x.com/mainstreet54102',
+    // twitter: 'https://x.com/mainstreet54102',
     instagram: 'https://www.instagram.com/mainstreetroofingltd/',
-    pinterest: 'https://www.pinterest.com/mainstreetroofingltd/',
+    // pinterest: 'https://www.pinterest.com/mainstreetroofingltd/',
 };
 // export const SOCIAL_LINKS = {
 //     facebook: 'https://www.facebook.com/profile.php?id=61550475260377',
