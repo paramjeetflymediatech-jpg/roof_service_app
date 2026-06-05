@@ -1,0 +1,66 @@
+<% if (totalPages > 1) { %>
+    <% 
+        // Create a copy of the query safely
+        let cleanedQuery = {};
+        if (typeof query !== 'undefined' && query) {
+            cleanedQuery = JSON.parse(JSON.stringify(query));
+            delete cleanedQuery.page;
+            delete cleanedQuery.ajax;
+        }
+        const queryString = new URLSearchParams(cleanedQuery).toString();
+        const separator = queryString ? '&' : '';
+    %>
+    <div class="pagination flex justify-center items-center gap-2 mt-8 text-black">
+        <% if (currentPage > 1) { %>
+            <a href="/admin/locations?page=<%= currentPage - 1 %><%= separator %><%= queryString %>"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                Previous
+            </a>
+        <% } %>
+
+        <div class="flex items-center gap-1">
+            <% 
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+            %>
+
+            <% if (startPage > 1) { %>
+                <a href="/admin/locations?page=1<%= separator %><%= queryString %>"
+                    class="w-10 h-10 flex items-center justify-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                    1
+                </a>
+                <% if (startPage > 2) { %>
+                    <span class="px-2 text-gray-400">...</span>
+                <% } %>
+            <% } %>
+
+            <% for(let i = startPage; i <= endPage; i++) { %>
+                <a href="/admin/locations?page=<%= i %><%= separator %><%= queryString %>"
+                    class="w-10 h-10 flex items-center justify-center text-sm font-medium transition-all duration-200 rounded-lg shadow-sm
+                    <%= currentPage === i 
+                        ? 'bg-indigo-600 text-white border border-indigo-600' 
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:text-indigo-600' %>">
+                    <%= i %>
+                </a>
+            <% } %>
+
+            <% if (endPage < totalPages) { %>
+                <% if (endPage < totalPages - 1) { %>
+                    <span class="px-2 text-gray-400">...</span>
+                <% } %>
+                <a href="/admin/locations?page=<%= totalPages %><%= separator %><%= queryString %>"
+                    class="w-10 h-10 flex items-center justify-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                    <%= totalPages %>
+                </a>
+            <% } %>
+        </div>
+
+        <% if (currentPage < totalPages) { %>
+            <a href="/admin/locations?page=<%= currentPage + 1 %><%= separator %><%= queryString %>"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                Next
+            </a>
+        <% } %>
+    </div>
+<% } %>

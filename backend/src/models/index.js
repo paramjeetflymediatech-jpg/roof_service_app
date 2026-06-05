@@ -16,6 +16,8 @@ const Estimate = require("./Estimate");
 const Invoice = require("./Invoice");
 const JobWorkSession = require("./JobWorkSession");
 const Review = require("./Review");
+const Location = require("./Location");
+const LocationService = require("./LocationService");
 
 // Define associations
 // Lead associations
@@ -82,6 +84,20 @@ Estimate.hasMany(Invoice, { foreignKey: "estimateId", as: "invoices" });
 Lead.hasMany(Invoice, { foreignKey: "leadId", as: "invoices" });
 Invoice.belongsTo(Lead, { foreignKey: "leadId", as: "lead" });
 
+// Service / Location many-to-many associations
+Service.belongsToMany(Location, {
+  through: LocationService,
+  foreignKey: "serviceId",
+  otherKey: "locationId",
+  as: "locations",
+});
+Location.belongsToMany(Service, {
+  through: LocationService,
+  foreignKey: "locationId",
+  otherKey: "serviceId",
+  as: "services",
+});
+
 // Export sequelize and models
 module.exports = {
   sequelize,
@@ -99,4 +115,6 @@ module.exports = {
   Invoice,
   JobWorkSession,
   Review,
+  Location,
+  LocationService,
 };

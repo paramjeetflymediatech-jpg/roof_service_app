@@ -252,6 +252,7 @@ export const NAV_LINKS = [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about' },
     { label: 'Services', href: '/services' },
+    { label: 'Locations', href: '/locations' },
     { label: 'Gallery', href: '/gallery' },
     { label: 'Contact Us', href: '/contact' },
     { label: 'Blogs', href: '/blogs', showInHeader: false },

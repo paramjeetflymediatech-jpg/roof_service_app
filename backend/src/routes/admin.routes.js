@@ -253,6 +253,44 @@ router.post(
   adminController.deleteService,
 );
 
+// Location management routes
+router.get(
+  "/locations",
+  isAuthenticated,
+  isAdmin,
+  adminController.getLocationList,
+);
+router.get(
+  "/locations/create",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCreateLocation,
+);
+router.post(
+  "/locations",
+  isAuthenticated,
+  isAdmin,
+  adminController.postCreateLocation,
+);
+router.get(
+  "/locations/:id/edit",
+  isAuthenticated,
+  isAdmin,
+  adminController.getEditLocation,
+);
+router.post(
+  "/locations/:id",
+  isAuthenticated,
+  isAdmin,
+  adminController.postUpdateLocation,
+);
+router.post(
+  "/locations/:id/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteLocation,
+);
+
 // Gallery management routes
 router.get(
   "/gallery",

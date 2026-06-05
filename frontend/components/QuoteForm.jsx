@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { submitLead } from "@/lib/api/leads";
 import { getServices } from "@/lib/api/service";
 
-export default function QuoteForm() {
+export default function QuoteForm({ initialCity = "" }) {
   const router = useRouter();
   const fileInputRef = useRef(null);
   const [form, setForm] = useState({
@@ -13,7 +13,7 @@ export default function QuoteForm() {
     email: "",
     phone: "",
     address: "",
-    city: "",
+    city: initialCity,
     serviceType: "",
     preferredDate: "",
     message: "",
@@ -21,6 +21,12 @@ export default function QuoteForm() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    if (initialCity) {
+      setForm((prev) => ({ ...prev, city: initialCity }));
+    }
+  }, [initialCity]);
 
   useEffect(() => {
     const fetchServices = async () => {

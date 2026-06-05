@@ -1,0 +1,57 @@
+<%- include('../../partials/header') %>
+<body <% if (error && error.length > 0) { %>data-flash-error="<%= error %>"<% } %> <% if (success && success.length > 0) { %>data-flash-success="<%= success %>"<% } %>>
+    <div id="toast-container"></div>
+    <div class="admin-wrapper text-black">
+        <%- include('../../partials/sidebar') %>
+        <main class="main-content">
+            <%- include('../../partials/top-header') %>
+            <div class="content">
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1>Add New Location</h1>
+                        <p>Add a new service area location</p>
+                    </div>
+                </div>
+                <div class="form-card">
+                    <form action="/admin/locations" method="POST" class="form-grid">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required class="form-input" placeholder="e.g. Surrey">
+                        </div>
+                        <div class="form-group">
+                            <label for="slug" class="form-label">Slug <span class="text-red-500">*</span></label>
+                            <input type="text" id="slug" name="slug" required class="form-input" placeholder="e.g. surrey">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="image" class="form-label">Image URL</label>
+                            <input type="text" id="image" name="image" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" rows="3" class="form-input" placeholder="Describe this service location..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="neighborhoods" class="form-label">Neighborhoods (One per line)</label>
+                            <textarea id="neighborhoods" name="neighborhoods" rows="6" class="form-input" placeholder="e.g.&#10;Cloverdale&#10;Guildford&#10;Fleetwood"></textarea>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary">Create Location</button>
+                            <a href="/admin/locations" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/toast.js"></script>
+    <script>
+        const nameInput = document.getElementById('name');
+        const slugInput = document.getElementById('slug');
+        if (nameInput && slugInput) {
+            nameInput.addEventListener('input', function(e) {
+                slugInput.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            });
+        }
+    </script>
+</body>
+</html>

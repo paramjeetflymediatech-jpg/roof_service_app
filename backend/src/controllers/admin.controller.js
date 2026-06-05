@@ -10,6 +10,7 @@ const {
   Invoice,
   Estimate,
   JobWorkSession,
+  Location,
 } = require("../models");
 const moment = require("moment");
 const fs = require("fs");
@@ -1801,13 +1802,15 @@ const getServiceList = async (req, res) => {
 // GET /admin/services/create - Render create service form
 const getCreateService = async (req, res) => {
   try {
-    const categories = await ServiceCategory.findAll({
-      order: [["name", "ASC"]],
-    });
+    const [categories, locations] = await Promise.all([
+      ServiceCategory.findAll({ order: [["name", "ASC"]] }),
+      Location.findAll({ order: [["name", "ASC"]] }),
+    ]);
     res.render("admin/services/create", {
       title: "Add New Service",
       userName: req.session.userName,
       categories: categories.map((c) => c.toJSON()),
+      locations: locations.map((l) => l.toJSON()),
     });
   } catch (error) {
     console.error("Create service view error:", error);
@@ -1829,6 +1832,7 @@ const postCreateService = async (req, res) => {
       basePrice,
       status,
       whyChooseUs,
+      locationIds,
     } = req.body;
 
     if (!name || !slug) {
@@ -1843,6 +1847,15 @@ const postCreateService = async (req, res) => {
         .filter((item) => item.length > 0)
       : [];
 
+    let locationIdsArray = [];
+    if (locationIds) {
+      if (Array.isArray(locationIds)) {
+        locationIdsArray = locationIds.map(id => parseInt(id, 10));
+      } else {
+        locationIdsArray = [parseInt(locationIds, 10)];
+      }
+    }
+
     const existingService = await Service.findOne({ where: { slug } });
     if (existingService) {
       req.flash("error", "Service with this slug already exists");
@@ -1854,7 +1867,7 @@ const postCreateService = async (req, res) => {
       featuredImageUrl = `/uploads/services/${req.file.filename}`;
     }
 
-    await Service.create({
+    const service = await Service.create({
       name,
       slug: slug.toLowerCase(),
       categoryId: categoryId || null,
@@ -1866,6 +1879,10 @@ const postCreateService = async (req, res) => {
       featuredImageUrl,
       whyChooseUs: whyChooseUsArray,
     });
+
+    if (locationIdsArray && locationIdsArray.length > 0) {
+      await service.setLocations(locationIdsArray);
+    }
 
     req.flash("success", "Service created successfully");
     res.redirect("/admin/services");
@@ -1879,21 +1896,28 @@ const postCreateService = async (req, res) => {
 // GET /admin/services/:id/edit - Render edit service form
 const getEditService = async (req, res) => {
   try {
-    const service = await Service.findByPk(req.params.id);
-    const categories = await ServiceCategory.findAll({
-      order: [["name", "ASC"]],
+    const service = await Service.findByPk(req.params.id, {
+      include: [{ model: Location, as: "locations" }],
     });
+    const [categories, locations] = await Promise.all([
+      ServiceCategory.findAll({ order: [["name", "ASC"]] }),
+      Location.findAll({ order: [["name", "ASC"]] }),
+    ]);
 
     if (!service) {
       req.flash("error", "Service not found");
       return res.redirect("/admin/services");
     }
 
+    const serviceJson = service.toJSON();
+    serviceJson.locationIds = (service.locations || []).map((l) => l.id);
+
     res.render("admin/services/edit", {
       title: "Edit Service",
       userName: req.session.userName,
-      service: service.toJSON(),
+      service: serviceJson,
       categories: categories.map((c) => c.toJSON()),
+      locations: locations.map((l) => l.toJSON()),
     });
   } catch (error) {
     console.error("Edit service error:", error);
@@ -1915,6 +1939,7 @@ const postUpdateService = async (req, res) => {
       basePrice,
       status,
       whyChooseUs,
+      locationIds,
     } = req.body;
     const serviceId = req.params.id;
 
@@ -1929,6 +1954,15 @@ const postUpdateService = async (req, res) => {
         .map((item) => item.trim())
         .filter((item) => item.length > 0)
       : [];
+
+    let locationIdsArray = [];
+    if (locationIds) {
+      if (Array.isArray(locationIds)) {
+        locationIdsArray = locationIds.map(id => parseInt(id, 10));
+      } else {
+        locationIdsArray = [parseInt(locationIds, 10)];
+      }
+    }
 
     const service = await Service.findByPk(serviceId);
     if (!service) {
@@ -1948,7 +1982,7 @@ const postUpdateService = async (req, res) => {
       return res.redirect(`/admin/services/${serviceId}/edit`);
     }
 
-    let featuredImageUrl = req.body.featuredImageUrl; // Keep existing if not updating, or use hidden input value
+    let featuredImageUrl = req.body.featuredImageUrl;
     if (req.file) {
       featuredImageUrl = `/uploads/services/${req.file.filename}`;
       if (service.featuredImageUrl) {
@@ -1985,6 +2019,8 @@ const postUpdateService = async (req, res) => {
       { where: { id: serviceId } },
     );
 
+    await service.setLocations(locationIdsArray);
+
     req.flash("success", "Service updated successfully");
     res.redirect("/admin/services");
   } catch (error) {
@@ -2011,6 +2047,221 @@ const deleteService = async (req, res) => {
     console.error("Delete service error:", error);
     req.flash("error", "Error deleting service");
     res.redirect("/admin/services");
+  }
+};
+
+// GET /admin/locations - Render location list
+const getLocationList = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+    const { search } = req.query;
+
+    const { Op } = require("sequelize");
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { slug: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    const { count: totalLocations, rows: locations } = await Location.findAndCountAll({
+      where,
+      order: [["name", "ASC"]],
+      limit,
+      offset,
+    });
+
+    const totalPages = Math.ceil(totalLocations / limit);
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/locations/_table_rows", { locations }, (err, tableHtml) => {
+        res.render("admin/locations/_cards", { locations }, (err, cardHtml) => {
+          res.render(
+            "admin/locations/_pagination",
+            {
+              totalPages,
+              currentPage: page,
+              limit,
+              totalItems: totalLocations,
+              query: req.query,
+            },
+            (err, paginationHtml) => {
+              return res.json({
+                success: true,
+                tableHtml,
+                cardHtml: cardHtml || "",
+                paginationHtml,
+                totalItems: totalLocations,
+              });
+            },
+          );
+        });
+      });
+    }
+
+    res.render("admin/locations/list", {
+      title: "Location Management",
+      userName: req.session.userName,
+      locations,
+      currentPage: page,
+      totalPages,
+      totalItems: totalLocations,
+      totalLocations,
+      limit,
+      query: req.query,
+    });
+  } catch (error) {
+    console.error("Location list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading locations" });
+    }
+    req.flash("error", "Error loading locations");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+// GET /admin/locations/create - Render create location form
+const getCreateLocation = (req, res) => {
+  res.render("admin/locations/create", {
+    title: "Add New Location",
+    userName: req.session.userName,
+  });
+};
+
+// POST /admin/locations - Create new location
+const postCreateLocation = async (req, res) => {
+  try {
+    const { name, slug, description, image, neighborhoods } = req.body;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect("/admin/locations/create");
+    }
+
+    const existingLocation = await Location.findOne({ where: { slug } });
+    if (existingLocation) {
+      req.flash("error", "Location with this slug already exists");
+      return res.redirect("/admin/locations/create");
+    }
+
+    const neighborhoodsArray = neighborhoods
+      ? neighborhoods
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+      : [];
+
+    await Location.create({
+      name,
+      slug: slug.toLowerCase(),
+      description,
+      image: image || "",
+      neighborhoods: neighborhoodsArray,
+    });
+
+    req.flash("success", "Location created successfully");
+    res.redirect("/admin/locations");
+  } catch (error) {
+    console.error("Create location error:", error);
+    req.flash("error", "Error creating location");
+    res.redirect("/admin/locations/create");
+  }
+};
+
+// GET /admin/locations/:id/edit - Render edit location form
+const getEditLocation = async (req, res) => {
+  try {
+    const location = await Location.findByPk(req.params.id);
+    if (!location) {
+      req.flash("error", "Location not found");
+      return res.redirect("/admin/locations");
+    }
+
+    res.render("admin/locations/edit", {
+      title: "Edit Location",
+      userName: req.session.userName,
+      location: location.toJSON(),
+    });
+  } catch (error) {
+    console.error("Edit location error:", error);
+    req.flash("error", "Error loading location");
+    res.redirect("/admin/locations");
+  }
+};
+
+// POST /admin/locations/:id - Update location
+const postUpdateLocation = async (req, res) => {
+  try {
+    const { name, slug, description, image, neighborhoods } = req.body;
+    const locationId = req.params.id;
+
+    if (!name || !slug) {
+      req.flash("error", "Name and slug are required");
+      return res.redirect(`/admin/locations/${locationId}/edit`);
+    }
+
+    const location = await Location.findByPk(locationId);
+    if (!location) {
+      req.flash("error", "Location not found");
+      return res.redirect("/admin/locations");
+    }
+
+    // Check unique slug
+    const existingLocation = await Location.findOne({
+      where: {
+        slug: slug.toLowerCase(),
+        id: { [require("sequelize").Op.ne]: locationId },
+      },
+    });
+
+    if (existingLocation) {
+      req.flash("error", "Location with this slug already exists");
+      return res.redirect(`/admin/locations/${locationId}/edit`);
+    }
+
+    const neighborhoodsArray = neighborhoods
+      ? neighborhoods
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+      : [];
+
+    await Location.update(
+      {
+        name,
+        slug: slug.toLowerCase(),
+        description,
+        image: image || "",
+        neighborhoods: neighborhoodsArray,
+      },
+      { where: { id: locationId } },
+    );
+
+    req.flash("success", "Location updated successfully");
+    res.redirect("/admin/locations");
+  } catch (error) {
+    console.error("Update location error:", error);
+    req.flash("error", "Error updating location");
+    res.redirect(`/admin/locations/${req.params.id}/edit`);
+  }
+};
+
+// POST /admin/locations/:id/delete - Delete location
+const deleteLocation = async (req, res) => {
+  try {
+    const locationId = req.params.id;
+    await Location.destroy({ where: { id: locationId } });
+
+    req.flash("success", "Location deleted successfully");
+    res.redirect("/admin/locations");
+  } catch (error) {
+    console.error("Delete location error:", error);
+    req.flash("error", "Error deleting location");
+    res.redirect("/admin/locations");
   }
 };
 
@@ -2423,4 +2674,10 @@ module.exports = {
   getJobList,
   getJobDetail,
   deleteJob,
+  getLocationList,
+  getCreateLocation,
+  postCreateLocation,
+  getEditLocation,
+  postUpdateLocation,
+  deleteLocation,
 };

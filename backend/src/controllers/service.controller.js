@@ -1,4 +1,4 @@
-const { Service } = require("../models");
+const { Service, Location } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
@@ -31,13 +31,19 @@ exports.getServices = async (req, res, next) => {
         order: [["createdAt", "DESC"]],
         limit: limit,
         offset: offset,
-        raw: true,
+        include: [{ model: Location, as: "locations", attributes: ["id"] }],
       }),
       Service.count(),
     ]);
 
+    const serializedItems = items.map((item) => {
+      const plain = item.get({ plain: true });
+      plain.locationIds = (plain.locations || []).map((l) => l.id);
+      return plain;
+    });
+
     res.json({
-      items,
+      items: serializedItems,
       total,
       page,
       pages: Math.ceil(total / limit),
@@ -51,10 +57,15 @@ exports.getServices = async (req, res, next) => {
 exports.getServiceById = async (req, res, next) => {
   try {
     const service = await Service.findByPk(req.params.id, {
-      include: ["category"],
+      include: [
+        "category",
+        { model: Location, as: "locations", attributes: ["id"] },
+      ],
     });
     if (!service) return res.status(404).json({ message: "Service not found" });
-    res.json(service.dataValues || service);
+    const serviceJson = service.toJSON();
+    serviceJson.locationIds = (service.locations || []).map((l) => l.id);
+    res.json(serviceJson);
   } catch (err) {
     next(err);
   }
@@ -65,11 +76,16 @@ exports.getServiceBySlug = async (req, res, next) => {
   try {
     const service = await Service.findOne({
       where: { slug: req.params.slug },
-      include: ["category"],
+      include: [
+        "category",
+        { model: Location, as: "locations", attributes: ["id"] },
+      ],
     });
 
     if (!service) return res.status(404).json({ message: "Service not found" });
-    res.json(service.dataValues || service);
+    const serviceJson = service.toJSON();
+    serviceJson.locationIds = (service.locations || []).map((l) => l.id);
+    res.json(serviceJson);
   } catch (err) {
     next(err);
   }
