@@ -12,7 +12,7 @@ export async function getServerSideProps() {
     // Attempt to load SEO data, services, and dynamic locations
     const [seoResponse, servicesResponse, locationsResponse] = await Promise.all([
       apiClient.get("/seo/locations").catch(() => null),
-      apiClient.get("/services?limit=100").catch(() => null),
+      apiClient.get("/services/location-services?limit=100").catch(() => null),
       apiClient.get("/locations?limit=100").catch(() => null),
     ]);
 

@@ -17,7 +17,7 @@ export async function getServerSideProps({ params }) {
     // Fetch location and services dynamically
     const [locationResponse, servicesResponse] = await Promise.all([
       apiClient.get(`/locations/slug/${locationSlug}`).catch(() => null),
-      apiClient.get("/services?limit=100").catch(() => null),
+      apiClient.get("/services/location-services?limit=100").catch(() => null),
     ]);
 
     const location = locationResponse?.data || null;

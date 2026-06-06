@@ -53,6 +53,39 @@ exports.getServices = async (req, res, next) => {
     next(err);
   }
 };
+// Get all services (with basic pagination)
+exports.getlocation_services = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const offset = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Service.findAll({
+        order: [["createdAt", "DESC"]],
+        limit: limit,
+        offset: offset,
+        include: [{ model: Location, as: "locations", attributes: ["id"] }],
+      }),
+      Service.count({ where: { status: "published" } }),
+    ]);
+
+    const serializedItems = items.map((item) => {
+      const plain = item.get({ plain: true });
+      plain.locationIds = (plain.locations || []).map((l) => l.id);
+      return plain;
+    });
+
+    res.json({
+      items: serializedItems,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // Get single service by id
 exports.getServiceById = async (req, res, next) => {
