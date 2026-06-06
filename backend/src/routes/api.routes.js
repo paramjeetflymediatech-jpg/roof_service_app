@@ -4,7 +4,7 @@ const SeoMeta = require("../models/SeoMeta");
 const blogController = require("../controllers/blog.controller");
 
 // GET /api/seo/:pageName - Get SEO meta tags for a specific page
-router.get("/seo/:pageName", async (req, res) => {
+router.get("/seo/:pageName(*)", async (req, res) => {
   try {
     const { pageName } = req.params;
 

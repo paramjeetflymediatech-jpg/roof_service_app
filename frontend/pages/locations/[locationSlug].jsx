@@ -6,6 +6,7 @@ import SeoHead from "@/components/SeoHead";
 import QuoteForm from "@/components/QuoteForm";
 import Faq from "@/components/Faq";
 import apiClient from "@/lib/apiClient";
+import { getSeoData } from "@/lib/api/seo";
 import { HiLocationMarker, HiPhone, HiChevronRight, HiCheckCircle } from "react-icons/hi";
 
 
@@ -41,8 +42,12 @@ export async function getServerSideProps({ params }) {
       }
     }
 
-    // Dynamically build local SEO
-    const seoData = {
+    // Fetch SEO data from the database
+    const seoPath = `locations/${locationSlug}`;
+    const seoResponse = await getSeoData(seoPath).catch(() => null);
+
+    // Dynamically build local SEO (fallback)
+    const fallbackSeo = {
       pageTitle: `Roofing Services in ${location.name} BC | Mainstreet Roofing Ltd`,
       metaDescription: `Looking for top-rated roofing contractors in ${location.name}, BC? Mainstreet Roofing offers expert residential and commercial roofing solutions, including metal roofs, torch-on, and emergency repairs.`,
       metaRobots: "index, follow",
@@ -50,6 +55,21 @@ export async function getServerSideProps({ params }) {
       ogDescription: `Mainstreet Roofing offers durable and affordable roofing services in ${location.name}. Free estimates, certified professionals, and guaranteed quality.`,
       ogImage: location.image,
     };
+
+    let seoData = fallbackSeo;
+    if (seoResponse && seoResponse.success && seoResponse.data) {
+      const dbSeo = seoResponse.data;
+      seoData = {
+        ...fallbackSeo,
+        ...dbSeo,
+        pageTitle: dbSeo.pageTitle || fallbackSeo.pageTitle,
+        metaDescription: dbSeo.metaDescription || fallbackSeo.metaDescription,
+        metaRobots: dbSeo.metaRobots || fallbackSeo.metaRobots,
+        ogTitle: dbSeo.ogTitle || fallbackSeo.ogTitle,
+        ogDescription: dbSeo.ogDescription || fallbackSeo.ogDescription,
+        ogImage: dbSeo.ogImage || fallbackSeo.ogImage,
+      };
+    }
 
     return {
       props: {
@@ -104,7 +124,7 @@ export default function LocationDetailPage({ location, services = [], seoData })
 
   return (
     <LayoutShell>
-      <SeoHead pageName={`location-${location.slug}`} initialSeoData={seoData} />
+      <SeoHead pageName={`locations/${location.slug}`} initialSeoData={seoData} />
 
       {/* Hero Section */}
       <div className="relative h-[40vh] min-h-[350px] flex items-center justify-center bg-gray-900 overflow-hidden">
