@@ -159,7 +159,7 @@ const SeoHead = ({ pageName, initialSeoData }) => {
         />
       )}
          {/* Google Tag Manager */}
-        <script
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `(function (w, d, s, l, i) {
                 w[l] = w[l] || []; w[l].push({
@@ -169,7 +169,7 @@ const SeoHead = ({ pageName, initialSeoData }) => {
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-N5RQJK48');`,
           }}
-        />
+        /> */}
         {/* End Google Tag Manager */}
 
         {/* Global Header Scripts */}
