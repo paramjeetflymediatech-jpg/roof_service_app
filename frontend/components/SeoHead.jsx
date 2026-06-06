@@ -1,6 +1,55 @@
 import Head from "next/head";
 import { useSeo } from "@/hooks/useSeo";
 
+// Helper to parse raw HTML header scripts into React elements
+const parseHeaderScripts = (htmlString) => {
+  if (!htmlString) return null;
+  const elements = [];
+  const tagRegex = /<([a-zA-Z0-9:-]+)([^>]*)(?:>([\s\S]*?)<\/\1>|\s*\/?>)/g;
+  
+  let match;
+  let index = 0;
+  while ((match = tagRegex.exec(htmlString)) !== null) {
+    const tagName = match[1].toLowerCase();
+    const rawAttrs = match[2] || "";
+    const content = match[3] || "";
+    
+    const attrs = {};
+    const attrRegex = /([a-zA-Z0-9:-]+)(?:\s*=\s*(?:['"]([^'"]*)['"]|([^\s>]+)))?/g;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(rawAttrs)) !== null) {
+      const attrName = attrMatch[1];
+      let attrValue = attrMatch[2] ?? attrMatch[3] ?? true;
+      if (attrName === "class") {
+        attrs.className = attrValue;
+      } else {
+        attrs[attrName] = attrValue;
+      }
+    }
+    
+    const key = `hdr-scr-${tagName}-${index++}`;
+    
+    if (tagName === "script") {
+      elements.push(
+        <script key={key} {...attrs} dangerouslySetInnerHTML={{ __html: content }} />
+      );
+    } else if (tagName === "style") {
+      elements.push(
+        <style key={key} {...attrs} dangerouslySetInnerHTML={{ __html: content }} />
+      );
+    } else if (tagName === "meta") {
+      elements.push(<meta key={key} {...attrs} />);
+    } else if (tagName === "link") {
+      elements.push(<link key={key} {...attrs} />);
+    } else if (tagName === "noscript") {
+      elements.push(
+        <noscript key={key} {...attrs} dangerouslySetInnerHTML={{ __html: content }} />
+      );
+    }
+  }
+  return elements;
+};
+
 const SeoHead = ({ pageName, initialSeoData }) => {
   const {
     seoData: fetchedData,
@@ -122,6 +171,12 @@ const SeoHead = ({ pageName, initialSeoData }) => {
           }}
         />
         {/* End Google Tag Manager */}
+
+        {/* Global Header Scripts */}
+        {seoData.globalHeaderScripts && parseHeaderScripts(seoData.globalHeaderScripts)}
+
+        {/* Page Specific Header Scripts */}
+        {seoData.headerScripts && parseHeaderScripts(seoData.headerScripts)}
       
     </Head>
   );

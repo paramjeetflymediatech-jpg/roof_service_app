@@ -65,6 +65,10 @@ const SeoMeta = sequelize.define('SeoMeta', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  headerScripts: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   faqSchema: {
     type: DataTypes.JSON,
     allowNull: true,

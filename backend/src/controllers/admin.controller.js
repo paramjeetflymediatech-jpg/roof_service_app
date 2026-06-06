@@ -1039,8 +1039,19 @@ const deleteAllUsers = async (req, res) => {
 // GET /admin/seo - Render SEO list
 const getSeoList = async (req, res) => {
   try {
+    // Ensure global SEO record exists
+    await SeoMeta.findOrCreate({
+      where: { pageName: 'global' },
+      defaults: {
+        pageTitle: 'Global SEO / Scripts',
+        metaDescription: 'Global settings and header scripts for all pages',
+        metaRobots: 'noindex, nofollow',
+        headerScripts: '',
+      },
+    });
+
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = 12;
+    const limit = 10;
     const offset = (page - 1) * limit;
     const { search } = req.query;
 
@@ -1072,6 +1083,16 @@ const getSeoList = async (req, res) => {
       raw: true,
     });
 
+    const totalIndexable = await SeoMeta.count({
+      where: {
+        ...where,
+        metaRobots: {
+          [Op.notLike]: "%noindex%"
+        }
+      }
+    });
+    const totalNoIndex = count - totalIndexable;
+
     if (req.xhr || req.query.ajax) {
       return res.render("admin/seo/_table_rows", { seoPages }, (err, tableHtml) => {
         res.render("admin/seo/_cards", { seoPages }, (err, cardHtml) => {
@@ -1101,6 +1122,8 @@ const getSeoList = async (req, res) => {
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       totalItems: count,
+      totalIndexable,
+      totalNoIndex,
       limit,
       query: req.query,
     });
@@ -1206,6 +1229,7 @@ const postCreateSeo = async (req, res) => {
       ogImage,
       canonicalUrl,
       schemaMarkup,
+      headerScripts,
       googleAnalyticsId,
       googleTagManagerId,
     } = req.body;
@@ -1215,7 +1239,22 @@ const postCreateSeo = async (req, res) => {
       return res.redirect("/admin/seo/create");
     }
 
-    const formattedPageName = pageName.toLowerCase();
+    const cleanPageName = (name) => {
+      if (!name) return "";
+      let cleaned = name.trim().toLowerCase();
+      if (cleaned === "/" || cleaned === "") {
+        return "home";
+      }
+      if (cleaned.startsWith("/")) {
+        cleaned = cleaned.substring(1);
+      }
+      if (cleaned.endsWith("/")) {
+        cleaned = cleaned.slice(0, -1);
+      }
+      return cleaned;
+    };
+
+    const formattedPageName = cleanPageName(pageName);
 
     // Check SEO already exists
     const existingPage = await SeoMeta.findOne({
@@ -1239,6 +1278,7 @@ const postCreateSeo = async (req, res) => {
         ogImage: ogImage || "",
         canonicalUrl: canonicalUrl || "",
         schemaMarkup: schemaMarkup || "",
+        headerScripts: headerScripts || "",
         googleAnalyticsId: googleAnalyticsId || "",
         googleTagManagerId: googleTagManagerId || "",
       },
@@ -1266,6 +1306,7 @@ const postCreateSeo = async (req, res) => {
               ogImage: ogImage || "",
               canonicalUrl: canonicalUrl || "",
               schemaMarkup: schemaMarkup || "",
+              headerScripts: headerScripts || "",
               googleAnalyticsId: googleAnalyticsId || "",
               googleTagManagerId: googleTagManagerId || "",
             },
@@ -1399,6 +1440,7 @@ const postUpdateSeo = async (req, res) => {
       ogImage,
       canonicalUrl,
       schemaMarkup,
+      headerScripts,
       googleAnalyticsId,
       googleTagManagerId,
     } = req.body;
@@ -1410,7 +1452,22 @@ const postUpdateSeo = async (req, res) => {
       return res.redirect(`/admin/seo/${seoId}/edit`);
     }
 
-    const formattedPageName = pageName.toLowerCase();
+    const cleanPageName = (name) => {
+      if (!name) return "";
+      let cleaned = name.trim().toLowerCase();
+      if (cleaned === "/" || cleaned === "") {
+        return "home";
+      }
+      if (cleaned.startsWith("/")) {
+        cleaned = cleaned.substring(1);
+      }
+      if (cleaned.endsWith("/")) {
+        cleaned = cleaned.slice(0, -1);
+      }
+      return cleaned;
+    };
+
+    const formattedPageName = cleanPageName(pageName);
 
     const seoPage = await SeoMeta.findByPk(seoId);
     if (!seoPage) {
@@ -1448,6 +1505,7 @@ const postUpdateSeo = async (req, res) => {
         ogImage: ogImage || "",
         canonicalUrl: canonicalUrl || "",
         schemaMarkup: schemaMarkup || "",
+        headerScripts: headerScripts || "",
         googleAnalyticsId: googleAnalyticsId || "",
         googleTagManagerId: googleTagManagerId || "",
       },
@@ -1478,6 +1536,7 @@ const postUpdateSeo = async (req, res) => {
               ogImage: ogImage || "",
               canonicalUrl: canonicalUrl || "",
               schemaMarkup: schemaMarkup || "",
+              headerScripts: headerScripts || "",
               googleAnalyticsId: googleAnalyticsId || "",
               googleTagManagerId: googleTagManagerId || "",
             },

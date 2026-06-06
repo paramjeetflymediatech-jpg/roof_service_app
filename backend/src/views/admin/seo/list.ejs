@@ -53,19 +53,19 @@
                                             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
                                                 <p class="text-sm font-medium text-gray-500 uppercase">Total Pages</p>
                                                 <p class="text-2xl font-bold text-gray-900">
-                                                    <%= seoPages.length %>
+                                                    <%= totalItems %>
                                                 </p>
                                             </div>
                                             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
                                                 <p class="text-sm font-medium text-gray-500 uppercase">Indexable</p>
                                                 <p class="text-2xl font-bold text-gray-900">
-                                                    <%= seoPages.filter(p=> !p.metaRobots.includes('noindex')).length %>
+                                                    <%= totalIndexable %>
                                                 </p>
                                             </div>
                                             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
                                                 <p class="text-sm font-medium text-gray-500 uppercase">No Index</p>
                                                 <p class="text-2xl font-bold text-gray-900">
-                                                    <%= seoPages.filter(p=> p.metaRobots.includes('noindex')).length %>
+                                                    <%= totalNoIndex %>
                                                 </p>
                                             </div>
                                         </div>

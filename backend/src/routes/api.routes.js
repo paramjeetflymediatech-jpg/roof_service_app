@@ -14,10 +14,20 @@ router.get("/seo/:pageName", async (req, res) => {
       },
     });
 
+    const globalSeo = await SeoMeta.findOne({
+      where: {
+        pageName: "global",
+      },
+    });
+
+    const globalHeaderScripts = globalSeo ? globalSeo.headerScripts : "";
+
     if (!seoData) {
       return res.status(200).json({
         success: true,
-        data: {},
+        data: {
+          globalHeaderScripts,
+        },
         message: "SEO data not found for this page",
       });
     }
@@ -32,9 +42,11 @@ router.get("/seo/:pageName", async (req, res) => {
         ogDescription: seoData.ogDescription || seoData.metaDescription,
         ogImage: seoData.ogImage,
         canonicalUrl: seoData.canonicalUrl,
-        schemaMarkup: seoData.schemaMarkup,
-        googleAnalyticsId: seoData.googleAnalyticsId,
-        googleTagManagerId: seoData.googleTagManagerId,
+        schemaMarkup:globalSeo?.schemaMarkup || seoData.schemaMarkup,
+        headerScripts: seoData.headerScripts || "",
+        globalHeaderScripts: globalHeaderScripts || "",
+        googleAnalyticsId: globalSeo?.googleAnalyticsId || seoData.googleAnalyticsId,
+        googleTagManagerId: globalSeo?.googleTagManagerId || seoData.googleTagManagerId,
       },
     });
   } catch (error) {

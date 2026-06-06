@@ -37,40 +37,16 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                   Page Name <span class="text-red-500">*</span>
                 </label>
-                <select
+                <input
+                  type="text"
                   name="pageName"
                   required
+                  placeholder="e.g. /home, /about, global, services/slug"
                   class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="" disabled selected>Select a page...</option>
-
-                  <!-- Main Pages -->
-                  <optgroup label="Main Pages">
-                    <option value="home">Home</option>
-                    <option value="about">About Us</option>
-                    <option value="services">Services (Main)</option>
-                    <option value="gallery">Gallery</option>
-                    <option value="projects">Projects</option>
-                    <option value="products">Products</option>
-                    <option value="company">Company</option> 
-                    <option value="contact">Contact Us</option>
-                    <option value="privacy_policy">Privacy Policy</option>
-                    <option value="data_deletion">Data Deletion</option>
-                    <option value="blogs">Blogs</option>
-                    <option value="thank-you">Thank You</option>
-                  </optgroup>
-
-                
-
-                  <!-- Service Pages -->
-                  <optgroup label="Services">
-                    <% services.forEach(service => { %>
-                      <option value="services/<%= service.slug %>"><%= service.name %></option>
-                    <% }) %>
-                  </optgroup>
-                </select>
+                  oninput="updatePreview()"
+                />
                 <p class="text-xs text-gray-400 mt-1">
-                  Select the page you want to configure SEO for.
+                  Enter the URL path or page identifier (e.g., /home, /about, global, services/roof-repair).
                 </p>
               </div>
 
@@ -202,6 +178,22 @@
               </p>
             </div>
 
+            <!-- Header Scripts -->
+            <div class="w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Header Scripts (HTML tags like script, style, meta, link, pixel etc.)</label
+              >
+              <textarea
+                name="headerScripts"
+                rows="5"
+                class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-sm"
+                placeholder='<script src="https://example.com/api.js"></script>'
+              ></textarea>
+              <p class="text-xs text-gray-400 mt-1">
+                These scripts will be injected into the HTML &lt;head&gt; of the page (or all pages if page name is "global").
+              </p>
+            </div>
+
             <!-- Google Tracking -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div class="w-full">
@@ -292,7 +284,7 @@
           document.getElementById("metaDescription").value ||
           "Your meta description will appear here...";
         const slug =
-          document.querySelector('select[name="pageName"]').value || "page";
+          document.querySelector('input[name="pageName"]').value || "page";
 
         document.getElementById("previewTitle").innerText = title;
         document.getElementById("previewDesc").innerText = desc;
