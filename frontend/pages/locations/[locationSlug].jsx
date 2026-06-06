@@ -43,7 +43,7 @@ export async function getServerSideProps({ params }) {
     }
 
     // Fetch SEO data from the database
-    const seoPath = `locations/${locationSlug}`;
+    const seoPath = `services/${locationSlug}`;
     const seoResponse = await getSeoData(seoPath).catch(() => null);
 
     // Dynamically build local SEO (fallback)
@@ -68,6 +68,12 @@ export async function getServerSideProps({ params }) {
         ogTitle: dbSeo.ogTitle || fallbackSeo.ogTitle,
         ogDescription: dbSeo.ogDescription || fallbackSeo.ogDescription,
         ogImage: dbSeo.ogImage || fallbackSeo.ogImage,
+        canonicalUrl: dbSeo.canonicalUrl || fallbackSeo.canonicalUrl,
+        schemaMarkup: dbSeo.schemaMarkup || fallbackSeo.schemaMarkup,
+        headerScripts: dbSeo.headerScripts || fallbackSeo.headerScripts,
+        globalHeaderScripts: dbSeo.globalHeaderScripts || fallbackSeo.globalHeaderScripts,
+        googleAnalyticsId: dbSeo.googleAnalyticsId || fallbackSeo.googleAnalyticsId,
+        googleTagManagerId: dbSeo.googleTagManagerId || fallbackSeo.googleTagManagerId,
       };
     }
 
@@ -124,7 +130,7 @@ export default function LocationDetailPage({ location, services = [], seoData })
 
   return (
     <LayoutShell>
-      <SeoHead pageName={`locations/${location.slug}`} initialSeoData={seoData} />
+      <SeoHead pageName={`services-${location.slug}`} initialSeoData={seoData} />
 
       {/* Hero Section */}
       <div className="relative h-[40vh] min-h-[350px] flex items-center justify-center bg-gray-900 overflow-hidden">

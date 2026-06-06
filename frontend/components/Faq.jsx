@@ -92,7 +92,7 @@ export default function Faq({ data = FAQS, title = "Questions", highlight = "Hav
                             >
                                 {data.map((faq, index) => (
                                     <FaqItem
-                                        key={faq.id}
+                                        key={index}
                                         question={faq.question}
                                         answer={faq.answer}
                                         isOpen={openIndex === index}

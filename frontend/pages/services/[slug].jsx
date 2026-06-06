@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { HiPhone, HiChevronRight } from "react-icons/hi";
 import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
+import { getSeoData } from "@/lib/api/seo";
 import { getServiceBySlug } from "@/lib/api/service";
 import RenderDynamicContent from "@/hooks/htmlconversion";
 import { COMPANY_INFO, SERVICE_SUB_FAQS, TILE_ROOF_FAQS, LEAK_REPAIR_FAQS, EPDM_ROOFING_FAQS, WALL_METAL_FAQS, REROOFING_FAQS, ROOF_INSULATION_FAQS, RAIN_STORM_DAMAGE_FAQS, METAL_GUTTERS_FAQS, TORCH_ON_FAQS, METAL_ROOFING_FAQS, NEW_CONSTRUCTION_FAQS } from "@/lib/constants";
@@ -24,17 +25,23 @@ export async function getServerSideProps({ params, query }) {
 
   // Transform service data to SEO format (if needed, or usage of existing fields)
   const service = data;
+  // Fetch global SEO data
+  const globalSeoResponse = await getSeoData('global').catch(() => null);
+  const globalSeo = globalSeoResponse && globalSeoResponse.success && globalSeoResponse.data ? globalSeoResponse.data : {};
+  // Merge service-specific SEO (already in service.seo) with global fallback values
   const seoData = {
-    pageTitle: service.seo?.pageTitle || service.name || null,
-    metaDescription: service.seo?.metaDescription || service.shortDescription || null,
-    metaRobots: service.seo?.metaRobots || "index, follow",
-    ogTitle: service.seo?.ogTitle || service.name || null,
-    ogDescription: service.seo?.ogDescription || service.shortDescription || null,
-    ogImage: service.seo?.ogImage || service.featuredImageUrl || null,
-    canonicalUrl: service.seo?.canonicalUrl || null,
-    schemaMarkup: service.seo?.schemaMarkup || null,
-    googleAnalyticsId: service.seo?.googleAnalyticsId || null,
-    googleTagManagerId: service.seo?.googleTagManagerId || null,
+    pageTitle: service.seo?.pageTitle || service.name || globalSeo.pageTitle || null,
+    metaDescription: service.seo?.metaDescription || service.shortDescription || globalSeo.metaDescription || null,
+    metaRobots: service.seo?.metaRobots || globalSeo.metaRobots || "index, follow",
+    ogTitle: service.seo?.ogTitle || service.name || globalSeo.ogTitle || null,
+    ogDescription: service.seo?.ogDescription || service.shortDescription || globalSeo.ogDescription || null,
+    ogImage: service.seo?.ogImage || service.featuredImageUrl || globalSeo.ogImage || null,
+    canonicalUrl: service.seo?.canonicalUrl || globalSeo.canonicalUrl || null,
+    schemaMarkup: service.seo?.schemaMarkup || globalSeo.schemaMarkup || null,
+    googleAnalyticsId: service.seo?.googleAnalyticsId || globalSeo.googleAnalyticsId || null,
+    googleTagManagerId: service.seo?.googleTagManagerId || globalSeo.googleTagManagerId || null,
+    headerScripts: service.seo?.headerScripts || globalSeo.headerScripts || "",
+    globalHeaderScripts: globalSeo.globalHeaderScripts || globalSeo.headerScripts || "",
   };
 
   return {

@@ -168,6 +168,7 @@ exports.getServiceBySlug = async (req, res, next) => {
           serviceJson.longDescription = locService.longDescription || serviceJson.longDescription;
           serviceJson.whyChooseUs = locService.whyChooseUs || serviceJson.whyChooseUs;
           serviceJson.seo = locService.seo || serviceJson.seo;
+          serviceJson.pagename=slug
         }
       }
     }
