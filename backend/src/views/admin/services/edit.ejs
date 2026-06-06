@@ -135,21 +135,12 @@
                                                                 class="form-input"><%= service.shortDescription %></textarea>
                                                         </div>
 
-                                                        <div class="form-group full-width">
-                                                            <label for="longDescription" class="form-label">Service
-                                                                Content (Supports JSON: [{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": ""}])</label>
-                                                            <div class="json-helper-btns mb-2">
-                                                                <button type="button" class="btn btn-xs btn-secondary"
-                                                                    onclick="insertJsonTemplate('longDescription')">Use
-                                                                    JSON Template</button>
-                                                            </div>
-                                                            <textarea id="longDescription" name="longDescription"
-                                                                rows="10" class="form-input json-input"
-                                                                placeholder="Enter service description or use the JSON template..."><%= service.longDescription %></textarea>
-                                                            <p id="longDescription-error"
-                                                                class="text-xs text-red-500 mt-1 hidden">Invalid JSON
-                                                                format</p>
-                                                        </div>
+                                                         <div class="form-group full-width">
+                                                             <label for="longDescription" class="form-label">Service Content</label>
+                                                             <textarea id="longDescription" name="longDescription"
+                                                                 rows="10" class="form-input"
+                                                                 placeholder="Enter service description..."><%= service.longDescription %></textarea>
+                                                         </div>
  
 
                                                         <div class="form-buttons">
@@ -163,45 +154,52 @@
                                             </div>
                                     </main>
                             </div>
+                            <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+                            <style>
+                                .ck-editor__editable_inline {
+                                    min-height: 300px;
+                                    border-bottom-left-radius: 0.5rem !important;
+                                    border-bottom-right-radius: 0.5rem !important;
+                                }
+                                .ck-editor__top {
+                                    border-top-left-radius: 0.5rem !important;
+                                    border-top-right-radius: 0.5rem !important;
+                                }
+                                .ck.ck-editor {
+                                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                                    border-radius: 0.5rem;
+                                    margin-top: 0.5rem;
+                                }
+                                .ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-focused {
+                                    border-color: #6366f1 !important;
+                                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+                                }
+                            </style>
                             <script src="/js/toast.js"></script>
                             <script>
-                                function insertJsonTemplate(id) {
-                                    const el = document.getElementById(id);
-                                    const template = '[{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": "Content here..."}]';
+                                let editorInstance = null;
 
-                                    if (el.value.trim() === '') {
-                                        el.value = template;
-                                    } else {
-                                        if (confirm('Replace current content with JSON template?')) {
-                                            el.value = template;
-                                        }
-                                    }
-                                    validateJson(el, document.getElementById(id + '-error'));
-                                }
-
-                                function validateJson(el, errorEl) {
-                                    const val = el.value.trim();
-                                    if (val.startsWith('[') || val.startsWith('{')) {
-                                        try {
-                                            JSON.parse(val);
-                                            errorEl.classList.add('hidden');
-                                            el.classList.remove('border-red-500');
-                                        } catch (e) {
-                                            errorEl.classList.remove('hidden');
-                                            el.classList.add('border-red-500');
-                                        }
-                                    } else {
-                                        errorEl.classList.add('hidden');
-                                        el.classList.remove('border-red-500');
-                                    }
-                                }
-
-                                document.querySelectorAll('.json-input').forEach(el => {
-                                    const errorEl = document.getElementById(el.id + '-error');
-                                    el.addEventListener('input', () => validateJson(el, errorEl));
-                                    // Initial validation
-                                    validateJson(el, errorEl);
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    ClassicEditor.create(document.getElementById('longDescription'), {
+                                        toolbar: [
+                                            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 
+                                            'blockQuote', 'insertTable', 'undo', 'redo'
+                                        ]
+                                    }).then(editor => {
+                                        editorInstance = editor;
+                                    }).catch(error => {
+                                        console.error("CKEditor initialization failed:", error);
+                                    });
                                 });
+
+                                const mainForm = document.querySelector('form');
+                                if (mainForm) {
+                                    mainForm.addEventListener('submit', () => {
+                                        if (editorInstance) {
+                                            document.getElementById('longDescription').value = editorInstance.getData();
+                                        }
+                                    });
+                                }
 
                                 // Handle location dropdown toggles and labels
                                 const dropdownBtn = document.getElementById('locationDropdownBtn');

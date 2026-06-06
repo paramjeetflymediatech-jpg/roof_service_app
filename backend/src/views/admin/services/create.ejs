@@ -116,19 +116,10 @@
                                                         </div>
 
                                                         <div class="form-group full-width">
-                                                            <label for="longDescription" class="form-label">Service
-                                                                Content (Supports JSON: [{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": ""}])</label>
-                                                            <div class="json-helper-btns mb-2">
-                                                                <button type="button" class="btn btn-xs btn-secondary"
-                                                                    onclick="insertJsonTemplate('longDescription')">Use
-                                                                    JSON Template</button>
-                                                            </div>
+                                                            <label for="longDescription" class="form-label">Service Content</label>
                                                             <textarea id="longDescription" name="longDescription"
-                                                                rows="10" class="form-input json-input"
-                                                                placeholder="Enter service description or use the JSON template..."></textarea>
-                                                            <p id="longDescription-error"
-                                                                class="text-xs text-red-500 mt-1 hidden">Invalid JSON
-                                                                format</p>
+                                                                rows="10" class="form-input"
+                                                                placeholder="Enter service description..."></textarea>
                                                         </div>
 
                                                         <div class="form-buttons">
@@ -142,6 +133,27 @@
                                             </div>
                                     </main>
                             </div>
+                            <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+                            <style>
+                                .ck-editor__editable_inline {
+                                    min-height: 300px;
+                                    border-bottom-left-radius: 0.5rem !important;
+                                    border-bottom-right-radius: 0.5rem !important;
+                                }
+                                .ck-editor__top {
+                                    border-top-left-radius: 0.5rem !important;
+                                    border-top-right-radius: 0.5rem !important;
+                                }
+                                .ck.ck-editor {
+                                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                                    border-radius: 0.5rem;
+                                    margin-top: 0.5rem;
+                                }
+                                .ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-focused {
+                                    border-color: #6366f1 !important;
+                                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+                                }
+                            </style>
                             <script src="/js/toast.js"></script>
                             <script>
                                 const nameInput = document.getElementById('name');
@@ -152,85 +164,72 @@
                                     });
                                 }
 
-                                function insertJsonTemplate(id) {
-                                    const el = document.getElementById(id);
-                                    const template = '[{"id": 1, "tag": "h2", "titleTag": "Section Title", "subHeadingTag": "Sub Heading", "content": ""}]'
-                                    
+                                let editorInstance = null;
 
-                                    if (el.value.trim() === '') {
-                                        el.value = template;
-                                    } else {
-                                        if (confirm('Replace current content with JSON template?')) {
-                                            el.value = template;
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    ClassicEditor.create(document.getElementById('longDescription'), {
+                                        toolbar: [
+                                            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 
+                                            'blockQuote', 'insertTable', 'undo', 'redo'
+                                        ]
+                                    }).then(editor => {
+                                        editorInstance = editor;
+                                    }).catch(error => {
+                                        console.error("CKEditor initialization failed:", error);
+                                    });
+                                });
+
+                                const mainForm = document.querySelector('form');
+                                if (mainForm) {
+                                    mainForm.addEventListener('submit', () => {
+                                        if (editorInstance) {
+                                            document.getElementById('longDescription').value = editorInstance.getData();
                                         }
-                                    }
-                                    validateJson(el, document.getElementById(id + '-error'));
+                                    });
                                 }
 
-                                function validateJson(el, errorEl) {
-                                    const val = el.value.trim();
-                                    if (val.startsWith('[') || val.startsWith('{')) {
-                                        try {
-                                            JSON.parse(val);
-                                            errorEl.classList.add('hidden');
-                                            el.classList.remove('border-red-500');
-                                        } catch (e) {
-                                            errorEl.classList.remove('hidden');
-                                            el.classList.add('border-red-500');
+                                // Handle location dropdown toggles and labels
+                                const dropdownBtn = document.getElementById('locationDropdownBtn');
+                                const dropdownMenu = document.getElementById('locationDropdownMenu');
+                                const checkboxes = document.querySelectorAll('.location-checkbox');
+                                const label = document.getElementById('selectedLocationsLabel');
+
+                                if (dropdownBtn && dropdownMenu) {
+                                    dropdownBtn.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        dropdownMenu.classList.toggle('hidden');
+                                    });
+
+                                    document.addEventListener('click', (e) => {
+                                        if (!dropdownMenu.contains(e.target) && e.target !== dropdownBtn) {
+                                            dropdownMenu.classList.add('hidden');
                                         }
-                                    } else {
-                                        errorEl.classList.add('hidden');
-                                        el.classList.remove('border-red-500');
+                                    });
+
+                                    function updateLabel() {
+                                        const selected = [];
+                                        checkboxes.forEach((cb) => {
+                                            if (cb.checked) {
+                                                selected.push(cb.nextElementSibling.textContent.trim());
+                                            }
+                                        });
+                                        if (selected.length > 0) {
+                                            label.textContent = selected.join(', ');
+                                            label.classList.remove('text-gray-500');
+                                            label.classList.add('text-gray-900');
+                                        } else {
+                                            label.textContent = 'Select Locations';
+                                            label.classList.remove('text-gray-900');
+                                            label.classList.add('text-gray-500');
+                                        }
                                     }
+
+                                    checkboxes.forEach((cb) => {
+                                        cb.addEventListener('change', updateLabel);
+                                    });
+
+                                    updateLabel();
                                 }
-
-                                 document.querySelectorAll('.json-input').forEach(el => {
-                                     const errorEl = document.getElementById(el.id + '-error');
-                                     el.addEventListener('input', () => validateJson(el, errorEl));
-                                 });
-
-                                 // Handle location dropdown toggles and labels
-                                 const dropdownBtn = document.getElementById('locationDropdownBtn');
-                                 const dropdownMenu = document.getElementById('locationDropdownMenu');
-                                 const checkboxes = document.querySelectorAll('.location-checkbox');
-                                 const label = document.getElementById('selectedLocationsLabel');
-
-                                 if (dropdownBtn && dropdownMenu) {
-                                     dropdownBtn.addEventListener('click', (e) => {
-                                         e.stopPropagation();
-                                         dropdownMenu.classList.toggle('hidden');
-                                     });
-
-                                     document.addEventListener('click', (e) => {
-                                         if (!dropdownMenu.contains(e.target) && e.target !== dropdownBtn) {
-                                             dropdownMenu.classList.add('hidden');
-                                         }
-                                     });
-
-                                     function updateLabel() {
-                                         const selected = [];
-                                         checkboxes.forEach((cb) => {
-                                             if (cb.checked) {
-                                                 selected.push(cb.nextElementSibling.textContent.trim());
-                                             }
-                                         });
-                                         if (selected.length > 0) {
-                                             label.textContent = selected.join(', ');
-                                             label.classList.remove('text-gray-500');
-                                             label.classList.add('text-gray-900');
-                                         } else {
-                                             label.textContent = 'Select Locations';
-                                             label.classList.remove('text-gray-900');
-                                             label.classList.add('text-gray-500');
-                                         }
-                                     }
-
-                                     checkboxes.forEach((cb) => {
-                                         cb.addEventListener('change', updateLabel);
-                                     });
-
-                                     updateLabel();
-                                 }
                              </script>
     </body>
 

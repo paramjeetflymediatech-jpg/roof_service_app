@@ -10,12 +10,12 @@ export const getServices = async (params = {}) => {
   }
 };
 
-export const getServiceBySlug = async (slug) => {
+export const getServiceBySlug = async (slug, params = {}) => {
   try {
-    const response = await apiClient.get(`/services/slug/${slug}`);
+    const response = await apiClient.get(`/services/slug/${slug}`, { params });
     return response.data;
   } catch (error) {
     console.error("Error fetching service detail:", error);
-    return { success: false, data: null };
+    return null;
   }
 };

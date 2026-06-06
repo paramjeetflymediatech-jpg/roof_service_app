@@ -53,6 +53,10 @@ const SeoMeta = sequelize.define('SeoMeta', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  keywords: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   canonicalUrl: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -60,6 +64,11 @@ const SeoMeta = sequelize.define('SeoMeta', {
   schemaMarkup: {
     type: DataTypes.TEXT,
     allowNull: true,
+  },
+  faqSchema: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
   googleAnalyticsId: {
     type: DataTypes.STRING,

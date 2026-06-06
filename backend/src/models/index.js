@@ -98,6 +98,23 @@ Location.belongsToMany(Service, {
   as: "services",
 });
 
+LocationService.belongsTo(Location, {
+  foreignKey: "locationId",
+  as: "location",
+});
+LocationService.belongsTo(Service, {
+  foreignKey: "serviceId",
+  as: "service",
+});
+Location.hasMany(LocationService, {
+  foreignKey: "locationId",
+  as: "locationServices",
+});
+Service.hasMany(LocationService, {
+  foreignKey: "serviceId",
+  as: "locationServices",
+});
+
 // Export sequelize and models
 module.exports = {
   sequelize,

@@ -11,6 +11,7 @@ const {
   Estimate,
   JobWorkSession,
   Location,
+  LocationService,
 } = require("../models");
 const moment = require("moment");
 const fs = require("fs");
@@ -2628,25 +2629,303 @@ const deleteJob = async (req, res) => {
   }
 };
 
+
+// Service Location Management Controller Actions
+const getLocationServiceList = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 12;
+    const offset = (page - 1) * limit;
+    const { search } = req.query;
+
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { shortDescription: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    const { count: totalItems, rows: locationServices } = await LocationService.findAndCountAll({
+      where,
+      include: [
+        { model: Location, as: "location", attributes: ["id", "name", "slug"] },
+        { model: Service, as: "service", attributes: ["id", "name", "slug"] },
+      ],
+      limit,
+      offset,
+    });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    if (req.xhr || req.query.ajax) {
+      return res.render("admin/location_services/_table_rows", { locationServices }, (err, tableHtml) => {
+        res.render("admin/location_services/_pagination", {
+          currentPage: page,
+          totalPages,
+          totalItems,
+          limit,
+          query: req.query,
+        }, (err, paginationHtml) => {
+          return res.json({
+            success: true,
+            tableHtml,
+            paginationHtml,
+            totalItems,
+          });
+        });
+      });
+    }
+
+    res.render("admin/location_services/list", {
+      title: "Service Location Management",
+      userName: req.session.userName,
+      locationServices,
+      currentPage: page,
+      totalPages,
+      totalItems,
+      limit,
+      query: req.query,
+    });
+  } catch (error) {
+    console.error("LocationService list error:", error);
+    if (req.xhr || req.query.ajax) {
+      return res.status(500).json({ success: false, message: "Error loading service locations" });
+    }
+    req.flash("error", "Error loading service locations");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+const getCreateLocationService = async (req, res) => {
+  try {
+    const [locations, services] = await Promise.all([
+      Location.findAll({ order: [["name", "ASC"]] }),
+      Service.findAll({ order: [["name", "ASC"]] }),
+    ]);
+
+    res.render("admin/location_services/create", {
+      title: "Add Service Location",
+      userName: req.session.userName,
+      locations: locations.map(l => l.toJSON()),
+      services: services.map(s => s.toJSON()),
+    });
+  } catch (error) {
+    console.error("Get create service location view error:", error);
+    req.flash("error", "Error loading creation view");
+    res.redirect("/admin/location-services");
+  }
+};
+
+const postCreateLocationService = async (req, res) => {
+  try {
+    const {
+      locationId,
+      serviceId,
+      name,
+      shortDescription,
+      longDescription,
+      whyChooseUs,
+      pageTitle,
+      metaDescription,
+      metaRobots,
+      keywords,
+      ogTitle,
+      ogDescription,
+      canonicalUrl,
+      schemaMarkup,
+      googleAnalyticsId,
+      googleTagManagerId,
+    } = req.body;
+
+    if (!locationId || !serviceId) {
+      req.flash("error", "Location and Service are required");
+      return res.redirect("/admin/location-services/create");
+    }
+
+    const existingMapping = await LocationService.findOne({
+      where: { locationId, serviceId }
+    });
+
+    if (existingMapping) {
+      req.flash("error", "A mapping for this Service and Location already exists");
+      return res.redirect("/admin/location-services/create");
+    }
+
+    const whyChooseUsArray = whyChooseUs
+      ? whyChooseUs
+          .split("\n")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+
+    const seoBlob = {
+      pageTitle: pageTitle || "",
+      metaDescription: metaDescription || "",
+      metaRobots: metaRobots || "index, follow",
+      keywords: keywords || "",
+      ogTitle: ogTitle || "",
+      ogDescription: ogDescription || "",
+      canonicalUrl: canonicalUrl || "",
+      schemaMarkup: schemaMarkup || "",
+      googleAnalyticsId: googleAnalyticsId || "",
+      googleTagManagerId: googleTagManagerId || "",
+    };
+
+    await LocationService.create({
+      locationId,
+      serviceId,
+      name: name || null,
+      shortDescription: shortDescription || null,
+      longDescription: longDescription || null,
+      whyChooseUs: whyChooseUsArray,
+      seo: seoBlob,
+    });
+
+    req.flash("success", "Service Location mapped successfully");
+    res.redirect("/admin/location-services");
+  } catch (error) {
+    console.error("Create LocationService error:", error);
+    req.flash("error", "Error creating service location mapping");
+    res.redirect("/admin/location-services/create");
+  }
+};
+
+const getEditLocationService = async (req, res) => {
+  try {
+    const { locationId, serviceId } = req.params;
+
+    const locationService = await LocationService.findOne({
+      where: { locationId, serviceId },
+      include: [
+        { model: Location, as: "location" },
+        { model: Service, as: "service" },
+      ],
+    });
+
+    if (!locationService) {
+      req.flash("error", "Service Location mapping not found");
+      return res.redirect("/admin/location-services");
+    }
+
+    res.render("admin/location_services/edit", {
+      title: "Edit Service Location",
+      userName: req.session.userName,
+      locationService: locationService.toJSON(),
+    });
+  } catch (error) {
+    console.error("Edit LocationService error:", error);
+    req.flash("error", "Error loading edit service location view");
+    res.redirect("/admin/location-services");
+  }
+};
+
+const postUpdateLocationService = async (req, res) => {
+  try {
+    const { locationId, serviceId } = req.params;
+    const {
+      name,
+      shortDescription,
+      longDescription,
+      whyChooseUs,
+      pageTitle,
+      metaDescription,
+      metaRobots,
+      keywords,
+      ogTitle,
+      ogDescription,
+      canonicalUrl,
+      schemaMarkup,
+      googleAnalyticsId,
+      googleTagManagerId,
+    } = req.body;
+
+    const locationService = await LocationService.findOne({
+      where: { locationId, serviceId }
+    });
+
+    if (!locationService) {
+      req.flash("error", "Service Location mapping not found");
+      return res.redirect("/admin/location-services");
+    }
+
+    const whyChooseUsArray = whyChooseUs
+      ? whyChooseUs
+          .split("\n")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+
+    const seoBlob = {
+      pageTitle: pageTitle || "",
+      metaDescription: metaDescription || "",
+      metaRobots: metaRobots || "index, follow",
+      keywords: keywords || "",
+      ogTitle: ogTitle || "",
+      ogDescription: ogDescription || "",
+      canonicalUrl: canonicalUrl || "",
+      schemaMarkup: schemaMarkup || "",
+      googleAnalyticsId: googleAnalyticsId || "",
+      googleTagManagerId: googleTagManagerId || "",
+    };
+
+    await locationService.update({
+      name: name || null,
+      shortDescription: shortDescription || null,
+      longDescription: longDescription || null,
+      whyChooseUs: whyChooseUsArray,
+      seo: seoBlob,
+    });
+
+    req.flash("success", "Service Location updated successfully");
+    res.redirect("/admin/location-services");
+  } catch (error) {
+    console.error("Update LocationService error:", error);
+    req.flash("error", "Error updating service location mapping");
+    res.redirect(`/admin/location-services/${locationId}/${serviceId}/edit`);
+  }
+};
+
+const deleteLocationService = async (req, res) => {
+  try {
+    const { locationId, serviceId } = req.params;
+
+    const deleted = await LocationService.destroy({
+      where: { locationId, serviceId }
+    });
+
+    if (!deleted) {
+      req.flash("error", "Service Location mapping not found");
+    } else {
+      req.flash("success", "Service Location mapping deleted successfully");
+    }
+    res.redirect("/admin/location-services");
+  } catch (error) {
+    console.error("Delete LocationService error:", error);
+    req.flash("error", "Error deleting service location mapping");
+    res.redirect("/admin/location-services");
+  }
+};
+
 module.exports = {
   getLogin,
   postLogin,
   getDashboard,
   getLogout,
   getUserList,
-  getLeadList,
-  getCreateLead,
-  postCreateLead,
-  getEditLead,
-  postUpdateLead,
-  deleteLead,
-  deleteAllLeads,
   getCreateUser,
   postCreateUser,
   getEditUser,
   postUpdateUser,
   deleteUser,
   deleteAllUsers,
+  getLeadList,
+  getCreateLead,
+  postCreateLead,
+  deleteAllLeads,
+  postUpdateLead,
+  deleteLead,
+  getEditLead,
   getSeoList,
   getCreateSeo,
   postCreateSeo,
@@ -2680,4 +2959,10 @@ module.exports = {
   getEditLocation,
   postUpdateLocation,
   deleteLocation,
+  getLocationServiceList,
+  getCreateLocationService,
+  postCreateLocationService,
+  getEditLocationService,
+  postUpdateLocationService,
+  deleteLocationService,
 };

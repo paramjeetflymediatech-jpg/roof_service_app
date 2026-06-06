@@ -291,6 +291,44 @@ router.post(
   adminController.deleteLocation,
 );
 
+// Service Location mapping routes
+router.get(
+  "/location-services",
+  isAuthenticated,
+  isAdmin,
+  adminController.getLocationServiceList,
+);
+router.get(
+  "/location-services/create",
+  isAuthenticated,
+  isAdmin,
+  adminController.getCreateLocationService,
+);
+router.post(
+  "/location-services",
+  isAuthenticated,
+  isAdmin,
+  adminController.postCreateLocationService,
+);
+router.get(
+  "/location-services/:locationId/:serviceId/edit",
+  isAuthenticated,
+  isAdmin,
+  adminController.getEditLocationService,
+);
+router.post(
+  "/location-services/:locationId/:serviceId",
+  isAuthenticated,
+  isAdmin,
+  adminController.postUpdateLocationService,
+);
+router.post(
+  "/location-services/:locationId/:serviceId/delete",
+  isAuthenticated,
+  isAdmin,
+  adminController.deleteLocationService,
+);
+
 // Gallery management routes
 router.get(
   "/gallery",

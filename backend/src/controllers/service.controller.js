@@ -1,4 +1,4 @@
-const { Service, Location } = require("../models");
+const { Service, Location, LocationService } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
@@ -74,17 +74,70 @@ exports.getServiceById = async (req, res, next) => {
 // Get single service by slug
 exports.getServiceBySlug = async (req, res, next) => {
   try {
-    const service = await Service.findOne({
-      where: { slug: req.params.slug },
-      include: [
-        "category",
-        { model: Location, as: "locations", attributes: ["id"] },
-      ],
-    });
+    const { slug } = req.params;
+    let locationSlug = req.query.location || null;
+    let service = null;
+
+    // Check for composite slug e.g. roof-repairs-in-abbotsford
+    if (slug.includes("-in-")) {
+      const parts = slug.split("-in-");
+      const baseServiceSlug = parts[0];
+      const parsedLocSlug = parts[1];
+
+      service = await Service.findOne({
+        where: { slug: baseServiceSlug },
+        include: [
+          "category",
+          { model: Location, as: "locations", attributes: ["id", "name", "slug"] },
+        ],
+      });
+
+      if (service) {
+        locationSlug = parsedLocSlug;
+      }
+    }
+
+    // Fallback/standard lookup if not a composite slug or if generic service wasn't found by split
+    if (!service) {
+      service = await Service.findOne({
+        where: { slug: slug },
+        include: [
+          "category",
+          { model: Location, as: "locations", attributes: ["id", "name", "slug"] },
+        ],
+      });
+    }
 
     if (!service) return res.status(404).json({ message: "Service not found" });
+
     const serviceJson = service.toJSON();
     serviceJson.locationIds = (service.locations || []).map((l) => l.id);
+
+    // Merge localized data if locationSlug context is present
+    if (locationSlug) {
+      const location = await Location.findOne({
+        where: { slug: locationSlug },
+      });
+
+      if (location) {
+        serviceJson.location = location;
+        const locService = await LocationService.findOne({
+          where: {
+            serviceId: service.id,
+            locationId: location.id,
+          },
+        });
+
+        if (locService) {
+          serviceJson.name = locService.name || serviceJson.name;
+          serviceJson.shortDescription = locService.shortDescription || serviceJson.shortDescription;
+          serviceJson.longDescription = locService.longDescription || serviceJson.longDescription;
+          serviceJson.whyChooseUs = locService.whyChooseUs || serviceJson.whyChooseUs;
+          serviceJson.seo = locService.seo || serviceJson.seo;
+        }
+      }
+    }
+
     res.json(serviceJson);
   } catch (err) {
     next(err);

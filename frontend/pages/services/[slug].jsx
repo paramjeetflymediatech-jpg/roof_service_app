@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { HiPhone } from "react-icons/hi";
+import { HiPhone, HiChevronRight } from "react-icons/hi";
 import LayoutShell from "@/components/LayoutShell";
 import SeoHead from "@/components/SeoHead";
 import { getServiceBySlug } from "@/lib/api/service";
@@ -12,9 +12,9 @@ import RenderDynamicContent from "@/hooks/htmlconversion";
 import { COMPANY_INFO, SERVICE_SUB_FAQS, TILE_ROOF_FAQS, LEAK_REPAIR_FAQS, EPDM_ROOFING_FAQS, WALL_METAL_FAQS, REROOFING_FAQS, ROOF_INSULATION_FAQS, RAIN_STORM_DAMAGE_FAQS, METAL_GUTTERS_FAQS, TORCH_ON_FAQS, METAL_ROOFING_FAQS, NEW_CONSTRUCTION_FAQS } from "@/lib/constants";
 import Faq from "@/components/Faq";
 
-export async function getServerSideProps({ params, req }) {
+export async function getServerSideProps({ params, query }) {
   const { slug } = params;
-  const data = await getServiceBySlug(slug, req.url);
+  const data = await getServiceBySlug(slug, query);
 
   if (!data) {
     return {
@@ -25,16 +25,16 @@ export async function getServerSideProps({ params, req }) {
   // Transform service data to SEO format (if needed, or usage of existing fields)
   const service = data;
   const seoData = {
-    pageTitle: service.seo?.pageTitle || service.name,
-    metaDescription: service.seo?.metaDescription || service.shortDescription,
+    pageTitle: service.seo?.pageTitle || service.name || null,
+    metaDescription: service.seo?.metaDescription || service.shortDescription || null,
     metaRobots: service.seo?.metaRobots || "index, follow",
-    ogTitle: service.seo?.ogTitle || service.name,
-    ogDescription: service.seo?.ogDescription || service.shortDescription,
-    ogImage: service.seo?.ogImage || service.featuredImageUrl,
-    canonicalUrl: service.seo?.canonicalUrl,
-    schemaMarkup: service.seo?.schemaMarkup,
-    googleAnalyticsId: service.seo?.googleAnalyticsId,
-    googleTagManagerId: service.seo?.googleTagManagerId,
+    ogTitle: service.seo?.ogTitle || service.name || null,
+    ogDescription: service.seo?.ogDescription || service.shortDescription || null,
+    ogImage: service.seo?.ogImage || service.featuredImageUrl || null,
+    canonicalUrl: service.seo?.canonicalUrl || null,
+    schemaMarkup: service.seo?.schemaMarkup || null,
+    googleAnalyticsId: service.seo?.googleAnalyticsId || null,
+    googleTagManagerId: service.seo?.googleTagManagerId || null,
   };
 
   return {
@@ -102,6 +102,37 @@ export default function ServiceDetail({ service, seoData }) {
         </div>
       </div>
 
+      {/* Breadcrumbs Navigation */}
+      <div className="bg-gray-100 border-b border-gray-200 py-3">
+        <div className="container-custom px-4 text-sm text-gray-600 flex items-center gap-2 flex-wrap">
+          <Link href="/" className="hover:text-primary-600 transition-colors">
+            Home
+          </Link>
+          <HiChevronRight className="text-gray-400 font-bold" />
+          {service.location ? (
+            <>
+              <Link href="/locations" className="hover:text-primary-600 transition-colors">
+                Locations
+              </Link>
+              <HiChevronRight className="text-gray-400 font-bold" />
+              <Link href={`/locations/${service.location.slug}`} className="hover:text-primary-600 transition-colors">
+                {service.location.name}
+              </Link>
+              <HiChevronRight className="text-gray-400 font-bold" />
+              <span className="text-gray-900 font-semibold">{service.name}</span>
+            </>
+          ) : (
+            <>
+              <Link href="/services" className="hover:text-primary-600 transition-colors">
+                Services
+              </Link>
+              <HiChevronRight className="text-gray-400 font-bold" />
+              <span className="text-gray-900 font-semibold">{service.name}</span>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="bg-white py-12 md:py-20">
         <div className="container-custom px-4 md:px-6">
@@ -120,38 +151,7 @@ export default function ServiceDetail({ service, seoData }) {
 
               </motion.div>
 
-              {/* Feature List (Mockup/Optional) */}
-              <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 mt-8">
-                <h3 className="text-xl font-bold mb-4 text-gray-900">
-                  Why Choose Us for {service.name}?
-                </h3>
-                <ul className="space-y-3">
-                  {service.whyChooseUs && service.whyChooseUs.length > 0 ? (
-                    service.whyChooseUs.map((item, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <svg
-                          className="w-5 h-5 text-green-500 mt-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          ></path>
-                        </svg>
-                        <span>{item}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">
-                      No specific points listed.
-                    </p>
-                  )}
-                </ul>
-              </div>
+              
             </div>
 
             {/* Right Column: Sidebar */}
@@ -218,6 +218,14 @@ export default function ServiceDetail({ service, seoData }) {
 
       {/* Service Specific FAQs */}
       {(() => {
+        // If the service has FAQs stored in DB (whyChooseUs as objects {q, a}), use them
+        const hasDbFaqs =
+          Array.isArray(service.whyChooseUs) &&
+          service.whyChooseUs.length > 0 &&
+          typeof service.whyChooseUs[0] === 'object' &&
+          service.whyChooseUs[0] !== null &&
+          'q' in service.whyChooseUs[0];
+
         const faqMap = {
           'restorations-servicing': { data: SERVICE_SUB_FAQS, title: "Roof Restoration", highlight: "Restoration" },
           'tile-slate-roofing': { data: TILE_ROOF_FAQS, title: "Tile & Roof Installation", highlight: "Installation" },
@@ -232,8 +240,23 @@ export default function ServiceDetail({ service, seoData }) {
           'metal-roofing': { data: METAL_ROOFING_FAQS, title: "Metal Roofing", highlight: "Metal" },
           'new-construction': { data: NEW_CONSTRUCTION_FAQS, title: "New Construction", highlight: "New" },
         };
-        const faqInfo = faqMap[service.slug] || { data: SERVICE_SUB_FAQS, title: "Roofing Services", highlight: "Expert" };
 
+        if (hasDbFaqs) {
+          // Convert DB FAQs {q, a} to the format expected by the Faq component
+          const dbFaqData = service.whyChooseUs.map((f) => ({
+            question: f.q,
+            answer: f.a,
+          }));
+          return (
+            <Faq
+              data={dbFaqData}
+              title={service.name}
+              highlight="FAQ"
+            />
+          );
+        }
+
+        const faqInfo = faqMap[service.slug] || { data: SERVICE_SUB_FAQS, title: "Roofing Services", highlight: "Expert" };
         return (
           <Faq
             data={faqInfo.data}

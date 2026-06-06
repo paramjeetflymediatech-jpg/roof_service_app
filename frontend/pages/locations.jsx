@@ -36,50 +36,53 @@ export async function getServerSideProps() {
 }
 
 export default function LocationsPage({ seoData, services = [], locations = [] }) {
-  const [selectedLoc, setSelectedLoc] = useState(locations[0] || null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Filtered services based on selected city and search query (service name or location name)
-  const filteredServices = services.filter((service) => {
-    // Rule: if a service is not linked with any location, we don't show it at all
-    const isLinked = service.locationIds && Array.isArray(service.locationIds) && service.locationIds.length > 0;
-    if (!isLinked) return false;
+  // Build all service-location pairs
+  const allPairs = [];
+  services.forEach((service) => {
+    // Only map locations linked to this service
+    const linkedLocations = locations.filter((loc) =>
+      service.locationIds && Array.isArray(service.locationIds) && service.locationIds.includes(loc.id)
+    );
+    linkedLocations.forEach((loc) => {
+      // composite slug matching uniqueSlug generated in seed script
+      const compositeSlug = `${service.slug}-in-${loc.slug}`;
+      allPairs.push({
+        service,
+        location: loc,
+        name: `${service.name} in ${loc.name}`,
+        slug: compositeSlug,
+      });
+    });
+  });
 
-    // 1. City/Location Dropdown Filter
-    if (selectedCity) {
-      if (!service.locationIds.includes(Number(selectedCity))) {
-        return false;
-      }
+  // Filter pairs
+  const filteredPairs = allPairs.filter((pair) => {
+    if (selectedCity && pair.location.id !== Number(selectedCity)) {
+      return false;
     }
-
-    // 2. Search Query Filter (matches service name or linked location names)
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-
-      // Check service name
-      const serviceNameMatch = service.name.toLowerCase().includes(q);
-
-      // Check linked location names
-      const matchedLocations = locations.filter((loc) => service.locationIds.includes(loc.id));
-      const locationNameMatch = matchedLocations.some((loc) => loc.name.toLowerCase().includes(q));
-
-      if (!serviceNameMatch && !locationNameMatch) {
-        return false;
-      }
+      return pair.name.toLowerCase().includes(q);
     }
-
     return true;
   });
 
-  const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  // Group filtered pairs by service
+  const groupedByService = {};
+  filteredPairs.forEach((pair) => {
+    if (!groupedByService[pair.service.id]) {
+      groupedByService[pair.service.id] = {
+        service: pair.service,
+        pairs: [],
+      };
+    }
+    groupedByService[pair.service.id].pairs.push(pair);
+  });
 
-  // Slice services list for active page
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem);
+  const groupedSections = Object.values(groupedByService);
 
   // Fallback metadata if not set in DB
   const fallbackSeo = seoData || {
@@ -159,7 +162,6 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
-                    setCurrentPage(1);
                   }}
                   className="w-full pl-12 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 text-sm placeholder-gray-400 transition-all duration-200"
                 />
@@ -167,7 +169,6 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
                   <button
                     onClick={() => {
                       setSearchQuery("");
-                      setCurrentPage(1);
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
                   >
@@ -182,7 +183,6 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
                   value={selectedCity}
                   onChange={(e) => {
                     setSelectedCity(e.target.value);
-                    setCurrentPage(1);
                   }}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 text-sm bg-white cursor-pointer transition-all duration-200"
                 >
@@ -201,7 +201,6 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
                   onClick={() => {
                     setSearchQuery("");
                     setSelectedCity("");
-                    setCurrentPage(1);
                   }}
                   className="w-full lg:w-auto px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl text-sm transition-all duration-200"
                 >
@@ -211,120 +210,64 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
             </div>
           </div>
 
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {currentServices.map((service, idx) => (
-              <motion.div
-                key={service.slug}
-                className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                whileHover={{ y: -5 }}
-              >
-                <div>
-                  <div className="relative h-48 w-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                    {service.featuredImageUrl ? (
-                      <Image
-                        src={
-                          service.featuredImageUrl.startsWith("http")
-                            ? service.featuredImageUrl
-                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}${service.featuredImageUrl}`
-                        }
-                        alt={service.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="text-6xl">{service.icon || "🛠️"}</div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 text-white flex items-center gap-2">
-                      <h3 className="text-xl font-bold font-heading">{service.name}</h3>
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+          {/* Grouped Services Sections */}
+          <div className="space-y-16 mb-20">
+            {groupedSections.map(({ service, pairs }) => (
+              <div key={service.id} className="border-b border-gray-200 pb-12 last:border-0 last:pb-0">
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="text-4xl shrink-0">{service.icon || "🛠️"}</span>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 font-heading">
+                      {service.name} Services
+                    </h3>
+                    <p className="text-gray-550 text-sm mt-1 max-w-3xl">
                       {service.shortDescription}
                     </p>
-
-                    {/* Location tags linked to this service */}
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {locations
-                        .filter((loc) => service.locationIds.includes(loc.id))
-                        .slice(0, 4)
-                        .map((loc) => (
-                          <span key={loc.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md flex items-center gap-1">
-                            <HiLocationMarker size={10} className="text-primary-500" />
-                            <span>{loc.name}</span>
-                          </span>
-                        ))}
-                      {locations.filter((loc) => service.locationIds.includes(loc.id)).length > 4 && (
-                        <span className="text-xs bg-accent-50 text-accent-700 font-semibold px-2 py-1 rounded-md">
-                          +{locations.filter((loc) => service.locationIds.includes(loc.id)).length - 4} more
-                        </span>
-                      )}
-                    </div>
                   </div>
                 </div>
 
-                <div className="p-6 pt-0">
-                  <Link href={`/services/${service.slug}`}>
-                    <span className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-accent-600 text-white py-2.5 px-4 rounded-xl font-medium transition-all duration-300 cursor-pointer">
-                      <span>View Service Details</span>
-                      <HiArrowRight size={16} />
-                    </span>
-                  </Link>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                  {pairs.map((pair) => (
+                    <motion.div
+                      key={pair.slug}
+                      initial={{ opacity: 0, y: 15 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Link href={`/services/${pair.slug}`}>
+                        <span className="group block bg-dark-800 hover:bg-dark-900 border border-dark-700 hover:border-accent-500 rounded-2xl p-5 md:p-6 shadow-md hover:shadow-accent-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                          <div className="flex items-start gap-3.5">
+                            <span className="bg-dark-700 group-hover:bg-accent-600/20 text-accent-500 p-2.5 rounded-xl shrink-0 transition-colors duration-300">
+                              <HiLocationMarker className="text-xl" />
+                            </span>
+                            <div>
+                              <h4 className="text-white font-semibold text-sm md:text-base leading-snug group-hover:text-accent-400 transition-colors duration-300">
+                                {pair.service.name}
+                              </h4>
+                              <p className="text-gray-300 text-xs md:text-sm mt-1 font-medium flex items-center gap-1 group-hover:text-white transition-colors duration-300">
+                                in <span className="text-accent-400 font-bold">{pair.location.name}</span>
+                              </p>
+                            </div>
+                          </div>
+                        </span>
+                      </Link>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
+              </div>
             ))}
 
             {services.length === 0 ? (
-              <div className="col-span-3 text-center py-12">
+              <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No services configured.</p>
               </div>
-            ) : currentServices.length === 0 ? (
-              <div className="col-span-3 text-center py-12">
-                <p className="text-gray-500 text-lg">No services match your search or filter criteria.</p>
+            ) : groupedSections.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No services or locations match your search criteria.</p>
               </div>
             ) : null}
           </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mb-20">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Previous
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`w-10 h-10 rounded-xl font-medium transition-all ${currentPage === pageNum
-                      ? "bg-primary-600 text-white shadow-md shadow-primary-600/20"
-                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Next
-              </button>
-            </div>
-          )}
 
       
         </div>
