@@ -28,12 +28,13 @@ exports.getServices = async (req, res, next) => {
 
     const [items, total] = await Promise.all([
       Service.findAll({
+        where: { status: "published" },
         order: [["createdAt", "DESC"]],
         limit: limit,
         offset: offset,
         include: [{ model: Location, as: "locations", attributes: ["id"] }],
       }),
-      Service.count(),
+      Service.count({ where: { status: "published" } }),
     ]);
 
     const serializedItems = items.map((item) => {
