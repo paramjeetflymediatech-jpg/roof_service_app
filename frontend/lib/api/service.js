@@ -9,6 +9,16 @@ export const getServices = async (params = {}) => {
     return { success: false, items: [] };
   }
 };
+export const getAllLocationServices = async () => {
+  try {
+    const response = await apiClient.get("/services/all-location-services");
+    console.log(response.data,"response.dataresponse.dataresponse.data")
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    return { success: false, items: [] };
+  }
+};
 
 export const getServiceBySlug = async (slug, params = {}) => {
   try {

@@ -1,5 +1,6 @@
 import { getBlogs } from '@/lib/api/blog';
-import { getServices } from '@/lib/api/service';
+import { getServices, getAllLocationServices } from '@/lib/api/service';
+import { getLocations } from '@/lib/api/location';
 
 const BASE_URL = process.env.NEXT_FRONTEND_BASE_URL;
 console.log(BASE_URL, "HOST_URL");
@@ -18,7 +19,8 @@ export default async function sitemap() {
     '/projects',
     '/solar',
     '/thank-you',
-    '/data-deletion'
+    '/data-deletion',
+    '/locations'
   ].map((route) => ({
     url: `${BASE_URL}${route}`,
     lastModified: new Date(),
@@ -56,5 +58,25 @@ export default async function sitemap() {
     console.error('Error fetching services for sitemap:', error);
   }
 
-  return [...staticRoutes, ...blogRoutes, ...serviceRoutes];
+  // Dynamic routes - Location Services
+  let locationServiceRoutes = [];
+  try {
+    const locationServicesData = await getAllLocationServices();
+    const locationServices = locationServicesData?.items || [];
+    locationServiceRoutes = locationServices.map((locationService) => ({
+      url: `${BASE_URL}/services/${locationService.slug}`,
+      lastModified: new Date(locationService.updatedAt || locationService.createdAt || new Date()),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error('Error fetching location services for sitemap:', error);
+  }
+
+  return [
+    ...staticRoutes,
+    ...blogRoutes,
+    ...serviceRoutes,
+    ...locationServiceRoutes,
+  ];
 }

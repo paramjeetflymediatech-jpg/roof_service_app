@@ -2,7 +2,7 @@ import { getBlogs } from '@/lib/api/blog';
 import { getServices } from '@/lib/api/service';
 
 const BASE_URL = process.env.NEXT_FRONTEND_BASE_URL;
-console.log(BASE_URL, "url");
+
 export async function GET() {
   let content = `# Mainstreet Roofing Solutions\n\n`;
   content += `Welcome to Mainstreet Roofing LTD - Premium Roofing Solutions. We are a family-run business with over 20 years of experience serving Accrington, Burnley, Hyndburn, Blackburn, and surrounding areas.\n\n`;

@@ -53,7 +53,7 @@ exports.getServices = async (req, res, next) => {
     next(err);
   }
 };
-// Get all services (with basic pagination)
+// Get all locaton_services (with basic pagination)
 exports.getlocation_services = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -86,6 +86,36 @@ exports.getlocation_services = async (req, res, next) => {
     next(err);
   }
 };
+// Get all location_services (with no pagination)
+exports.getalllocation_services = async (req, res, next) => {
+  try {
+    const items = await LocationService.findAll({
+      include: [
+        { model: Location, as: "location", attributes: ["id", "name", "slug", "createdAt", "updatedAt"] },
+        { model: Service, as: "service", attributes: ["id", "name", "slug", "createdAt", "updatedAt"] },
+      ],
+    });
+
+    const serializedItems = items.map((item) => {
+      const plain = item.get({ plain: true });
+      if (plain.service && plain.location) {
+        plain.slug = `${plain.service.slug}-in-${plain.location.slug}`;
+        plain.createdAt = plain.service.createdAt || plain.location.createdAt;
+        plain.updatedAt = plain.service.updatedAt || plain.location.updatedAt;
+      }
+      return plain;
+    });
+
+    res.json({
+      success: true,
+      items: serializedItems,
+      total: serializedItems.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 // Get single service by id
 exports.getServiceById = async (req, res, next) => {
