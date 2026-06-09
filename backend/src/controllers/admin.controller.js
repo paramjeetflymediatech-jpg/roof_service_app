@@ -2811,12 +2811,29 @@ const postCreateLocationService = async (req, res) => {
       return res.redirect("/admin/location-services/create");
     }
 
-    const whyChooseUsArray = whyChooseUs
-      ? whyChooseUs
-          .split("\n")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
-      : [];
+    console.log("[DEBUG] postCreateLocationService req.body:", {
+      whyChooseUs,
+      faq_question: req.body.faq_question,
+      faq_answer: req.body.faq_answer
+    });
+
+    let whyChooseUsArray = [];
+    if (req.body.faq_question) {
+      const questions = Array.isArray(req.body.faq_question) ? req.body.faq_question : [req.body.faq_question];
+      const answers = Array.isArray(req.body.faq_answer) ? req.body.faq_answer : [req.body.faq_answer || ""];
+      for (let i = 0; i < questions.length; i++) {
+        const qText = (questions[i] || "").trim();
+        const aText = (answers[i] || "").trim();
+        if (qText || aText) {
+          whyChooseUsArray.push({ q: qText, a: aText });
+        }
+      }
+    } else if (whyChooseUs) {
+      whyChooseUsArray = whyChooseUs
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
 
     const seoBlob = {
       pageTitle: pageTitle || "",
@@ -2908,12 +2925,29 @@ const postUpdateLocationService = async (req, res) => {
       return res.redirect("/admin/location-services");
     }
 
-    const whyChooseUsArray = whyChooseUs
-      ? whyChooseUs
-          .split("\n")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
-      : [];
+    console.log("[DEBUG] postUpdateLocationService req.body:", {
+      whyChooseUs,
+      faq_question: req.body.faq_question,
+      faq_answer: req.body.faq_answer
+    });
+
+    let whyChooseUsArray = [];
+    if (req.body.faq_question) {
+      const questions = Array.isArray(req.body.faq_question) ? req.body.faq_question : [req.body.faq_question];
+      const answers = Array.isArray(req.body.faq_answer) ? req.body.faq_answer : [req.body.faq_answer || ""];
+      for (let i = 0; i < questions.length; i++) {
+        const qText = (questions[i] || "").trim();
+        const aText = (answers[i] || "").trim();
+        if (qText || aText) {
+          whyChooseUsArray.push({ q: qText, a: aText });
+        }
+      }
+    } else if (whyChooseUs) {
+      whyChooseUsArray = whyChooseUs
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
 
     const seoBlob = {
       pageTitle: pageTitle || "",
