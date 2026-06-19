@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+console.log(process.env, "object");
 // Verify transporter configuration
 transporter.verify((error, success) => {
   if (error) {
@@ -21,16 +22,17 @@ transporter.verify((error, success) => {
 });
 
 // Send lead notification email
-const sendLeadNotification = async (leadData) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-    to: process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
-    envelope: {
-      from: process.env.EMAIL_USER,
-    },
-    subject: `New Lead: ${leadData.name}`,
-    html: `
+const sendLeadNotification = (leadData) => {
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
+      to: process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
+      envelope: {
+        from: process.env.EMAIL_USER,
+      },
+      subject: `New Lead: ${leadData.name}`,
+      html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; color:black;margin: 0 auto;">
                 <h2 style="color: black;">New Lead Submission</h2>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
@@ -50,33 +52,36 @@ const sendLeadNotification = async (leadData) => {
                 </p>
             </div>
         `,
-  };
+    };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error("❌ Email send error:", error);
-    return { success: false, error: error.message };
-  }
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("❌ Email send error:", error);
+        reject(error);
+      } else {
+        console.log("✅ Email sent:", info.messageId);
+        resolve({ success: true, messageId: info.messageId });
+      }
+    });
+  });
 };
 
 // Send confirmation email to customer
-const sendCustomerConfirmation = async (leadData) => {
-  if (!leadData.email) {
-    console.log("ℹ️ No customer email provided, skipping confirmation email.");
-    return;
-  }
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-    to: leadData.email,
-    envelope: {
-      from: process.env.EMAIL_USER,
-    },
-    subject: "Thank You for Contacting Mainstreet Roofing Ltd",
-    html: `
+const sendCustomerConfirmation = (leadData) => {
+  return new Promise((resolve, reject) => {
+    if (!leadData.email) {
+      console.log("ℹ️ No customer email provided, skipping confirmation email.");
+      return resolve({ success: false, error: "No email provided" });
+    }
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
+      to: leadData.email,
+      envelope: {
+        from: process.env.EMAIL_USER,
+      },
+      subject: "Thank You for Contacting Mainstreet Roofing Ltd",
+      html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #EA580C;">Thank You, ${leadData.name.split(" ")[0]}!</h2>
                 <p>We've received your inquiry and will get back to you within 24 hours.</p>
@@ -93,27 +98,32 @@ const sendCustomerConfirmation = async (leadData) => {
                 </p>
             </div>
         `,
-  };
+    };
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Confirmation email sent to customer");
-  } catch (error) {
-    console.error("❌ Customer email error:", error);
-  }
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("❌ Customer email error:", error);
+        reject(error);
+      } else {
+        console.log("✅ Confirmation email sent to customer");
+        resolve({ success: true, messageId: info.messageId });
+      }
+    });
+  });
 };
 
 // Send password reset email
-const sendPasswordResetEmail = async (user, resetToken) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-    to: user.email,
-    envelope: {
-      from: process.env.EMAIL_USER,
-    },
-    subject: "Password Reset Request",
-    html: `
+const sendPasswordResetEmail = (user, resetToken) => {
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
+      to: user.email,
+      envelope: {
+        from: process.env.EMAIL_USER,
+      },
+      subject: "Password Reset Request",
+      html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #EA580C;">Password Reset Request</h2>
                 <p>You requested a password reset. Please use the following code to reset your password:</p>
@@ -124,16 +134,18 @@ const sendPasswordResetEmail = async (user, resetToken) => {
                 <p>If you did not request this email, please ignore it.</p>
             </div>
         `,
-  };
+    };
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Password reset email sent to:", user.email);
-    return { success: true };
-  } catch (error) {
-    console.error("❌ Password reset email error:", error);
-    return { success: false, error: error.message };
-  }
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("❌ Password reset email error:", error);
+        reject(error);
+      } else {
+        console.log("✅ Password reset email sent to:", user.email);
+        resolve({ success: true });
+      }
+    });
+  });
 };
 
 module.exports = {
