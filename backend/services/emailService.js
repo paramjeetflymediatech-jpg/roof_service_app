@@ -11,7 +11,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-console.log(process.env, "object");
 // Verify transporter configuration
 transporter.verify((error, success) => {
   if (error) {
@@ -24,12 +23,14 @@ transporter.verify((error, success) => {
 // Send lead notification email
 const sendLeadNotification = (leadData) => {
   return new Promise((resolve, reject) => {
+    const adminEmails = process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com";
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-      to: process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
+      to: adminEmails,
       envelope: {
         from: process.env.EMAIL_USER,
+        to: adminEmails,
       },
       subject: `New Lead: ${leadData.name}`,
       html: `
@@ -79,6 +80,7 @@ const sendCustomerConfirmation = (leadData) => {
       to: leadData.email,
       envelope: {
         from: process.env.EMAIL_USER,
+        to: leadData.email,
       },
       subject: "Thank You for Contacting Mainstreet Roofing Ltd",
       html: `
@@ -121,6 +123,7 @@ const sendPasswordResetEmail = (user, resetToken) => {
       to: user.email,
       envelope: {
         from: process.env.EMAIL_USER,
+        to: user.email,
       },
       subject: "Password Reset Request",
       html: `
