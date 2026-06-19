@@ -105,6 +105,7 @@ exports.postCreate = async (req, res) => {
       content,
       excerpt,
       image,
+      imageUrl,
       author,
       tags,
       status,
@@ -128,6 +129,11 @@ exports.postCreate = async (req, res) => {
         .send("Missing required fields: title, slug, or content");
     }
 
+    let imagePath = imageUrl || image || "";
+    if (req.file) {
+      imagePath = `/uploads/blogs/${req.file.filename}`;
+    }
+
     const generateUniqueSlug = async (baseSlug) => {
       let uniqueSlug = baseSlug;
       let counter = 1;
@@ -149,7 +155,7 @@ exports.postCreate = async (req, res) => {
       slug: uniqueSlug,
       content,
       excerpt,
-      image,
+      image: imagePath,
       author,
       tags: tags
         ? tags
@@ -215,6 +221,7 @@ exports.postUpdate = async (req, res) => {
       content,
       excerpt,
       image,
+      imageUrl,
       author,
       tags,
       status,
@@ -229,6 +236,11 @@ exports.postUpdate = async (req, res) => {
       googleAnalyticsId,
       googleTagManagerId,
     } = req.body;
+
+    let imagePath = imageUrl || image || "";
+    if (req.file) {
+      imagePath = `/uploads/blogs/${req.file.filename}`;
+    }
 
     const generateUniqueSlug = async (baseSlug, currentId) => {
       let uniqueSlug = baseSlug;
@@ -258,7 +270,7 @@ exports.postUpdate = async (req, res) => {
         slug: uniqueSlug,
         content,
         excerpt,
-        image,
+        image: imagePath,
         author,
         tags: tags
           ? tags

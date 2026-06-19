@@ -1,5 +1,12 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+// Ensure blogs directory exists
+const blogsDir = path.join(__dirname, "../../public/uploads/blogs");
+if (!fs.existsSync(blogsDir)) {
+  fs.mkdirSync(blogsDir, { recursive: true });
+}
 
 // Set storage engine
 const storage = multer.diskStorage({
@@ -13,6 +20,8 @@ const storage = multer.diskStorage({
       cb(null, "public/uploads/gallery/");
     } else if (req.originalUrl.includes("leads")) {
       cb(null, "public/uploads/leads/");
+    } else if (req.originalUrl.includes("blogs")) {
+      cb(null, "public/uploads/blogs/");
     } else if (
       req.originalUrl.includes("upload") ||
       req.originalUrl.includes("jobs") ||
@@ -33,6 +42,7 @@ const storage = multer.diskStorage({
       else if (req.user.role === "admin") prefix = "admin-";
     } else if (req.originalUrl.includes("gallery")) prefix = "gallery-";
     else if (req.originalUrl.includes("leads")) prefix = "lead-";
+    else if (req.originalUrl.includes("blogs")) prefix = "blog-";
     else if (req.originalUrl.includes("invoices")) prefix = "invoice-";
     else if (req.originalUrl.includes("estimates")) prefix = "estimate-";
     else if (

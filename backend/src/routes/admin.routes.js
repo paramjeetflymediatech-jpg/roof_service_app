@@ -165,9 +165,9 @@ router.post(
 // Blog management routes
 router.get("/blogs", isAuthenticated, isAdmin, blogController.getAdminList);
 router.get("/blogs/create", isAuthenticated, isAdmin, blogController.getCreate);
-router.post("/blogs", isAuthenticated, isAdmin, blogController.postCreate);
+router.post("/blogs", isAuthenticated, isAdmin, upload.single("image"), blogController.postCreate);
 router.get("/blogs/:id/edit", isAuthenticated, isAdmin, blogController.getEdit);
-router.post("/blogs/:id", isAuthenticated, isAdmin, blogController.postUpdate);
+router.post("/blogs/:id", isAuthenticated, isAdmin, upload.single("image"), blogController.postUpdate);
 router.post(
   "/blogs/:id/delete",
   isAuthenticated,
