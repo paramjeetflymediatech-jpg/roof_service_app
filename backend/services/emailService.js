@@ -24,6 +24,7 @@ transporter.verify((error, success) => {
 const sendLeadNotification = async (leadData) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
+    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
     to: "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
     subject: `New Lead: ${leadData.name}`,
     html: `
@@ -66,6 +67,7 @@ const sendCustomerConfirmation = async (leadData) => {
   }
   const mailOptions = {
     from: process.env.EMAIL_FROM,
+    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
     to: leadData.email,
     subject: "Thank You for Contacting Mainstreet Roofing Ltd",
     html: `
@@ -99,6 +101,7 @@ const sendCustomerConfirmation = async (leadData) => {
 const sendPasswordResetEmail = async (user, resetToken) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
+    replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
     to: user.email,
     subject: "Password Reset Request",
     html: `
