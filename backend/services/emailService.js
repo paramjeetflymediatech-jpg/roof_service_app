@@ -22,18 +22,22 @@ transporter.verify((error, success) => {
 
 // Send lead notification email
 const sendLeadNotification = (leadData) => {
-  return new Promise((resolve, reject) => {
-    const adminEmails = process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com";
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-      to: adminEmails,
-      envelope: {
-        from: process.env.EMAIL_USER,
-        to: adminEmails,
-      },
-      subject: `New Lead: ${leadData.name}`,
-      html: `
+  const adminEmails = process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com";
+  // Split, trim, filter empty, and deduplicate email addresses
+  const emailList = [...new Set(adminEmails.split(",").map(e => e.trim()).filter(Boolean))];
+
+  const promises = emailList.map((email) => {
+    return new Promise((resolve, reject) => {
+      const mailOptions = {
+        from: process.env.EMAIL_FROM,
+        replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
+        to: email,
+        envelope: {
+          from: process.env.EMAIL_USER,
+          to: email,
+        },
+        subject: `New Lead: ${leadData.name}`,
+        html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; color:black;margin: 0 auto;">
                 <h2 style="color: black;">New Lead Submission</h2>
                 <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
@@ -53,18 +57,21 @@ const sendLeadNotification = (leadData) => {
                 </p>
             </div>
         `,
-    };
+      };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("❌ Email send error:", error);
-        reject(error);
-      } else {
-        console.log("✅ Email sent:", info.messageId);
-        resolve({ success: true, messageId: info.messageId });
-      }
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(`❌ Email send error for ${email}:`, error);
+          reject(error);
+        } else {
+          console.log(`✅ Email sent to ${email}:`, info.messageId);
+          resolve({ success: true, email, messageId: info.messageId });
+        }
+      });
     });
   });
+
+  return Promise.all(promises);
 };
 
 // Send confirmation email to customer
