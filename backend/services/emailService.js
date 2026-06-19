@@ -25,7 +25,10 @@ const sendLeadNotification = async (leadData) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
-    to: "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
+    to: process.env.ADMIN_EMAILS || "mainstreetroofing604@gmail.com,anujguptaflymedia@gmail.com,paramjeet.flymediatech@gmail.com,paramjeet.flymediatech@gmail.com", // Send to your email
+    envelope: {
+      from: process.env.EMAIL_USER,
+    },
     subject: `New Lead: ${leadData.name}`,
     html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; color:black;margin: 0 auto;">
@@ -69,6 +72,9 @@ const sendCustomerConfirmation = async (leadData) => {
     from: process.env.EMAIL_FROM,
     replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
     to: leadData.email,
+    envelope: {
+      from: process.env.EMAIL_USER,
+    },
     subject: "Thank You for Contacting Mainstreet Roofing Ltd",
     html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -103,6 +109,9 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     from: process.env.EMAIL_FROM,
     replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM,
     to: user.email,
+    envelope: {
+      from: process.env.EMAIL_USER,
+    },
     subject: "Password Reset Request",
     html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
