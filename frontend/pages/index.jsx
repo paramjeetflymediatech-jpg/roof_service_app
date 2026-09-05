@@ -1,18 +1,17 @@
-import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import Layout from "@/components/LayoutShell";
 import Hero from "@/components/Hero";
-import GoogleReviews from "@/components/GoogleReviews";
-import FeaturedProjects from "@/components/FeaturedProjects";
-import Testimonials from "@/components/Testimonials";
 import Services from "@/components/Services";
 import Secondsechome from "@/components/Secondsechome";
-import OurProcess from "@/components/OurProcess";
 import SeoHead from "@/components/SeoHead";
-import Faq from "@/components/Faq";
-import { cleanupScrollTriggers } from "@/lib/animations";
 import { getSeoData } from "@/lib/api/seo";
 import apiClient from "@/lib/apiClient";
 
+// Dynamically import below-the-fold components for optimal mobile Performance & TBT
+const OurProcess = dynamic(() => import("@/components/OurProcess"), { ssr: true });
+const FeaturedProjects = dynamic(() => import("@/components/FeaturedProjects"), { ssr: true });
+const GoogleReviews = dynamic(() => import("@/components/GoogleReviews"), { ssr: false });
+const Faq = dynamic(() => import("@/components/Faq"), { ssr: true });
 
 export async function getServerSideProps() {
   try {
@@ -39,36 +38,19 @@ export async function getServerSideProps() {
 }
 
 export default function HomePage({ seoData, services }) {
-  useEffect(() => {
-    // Cleanup GSAP ScrollTriggers on unmount
-    return () => {
-      cleanupScrollTriggers();
-    };
-  }, []);
-
   return (
     <Layout>
       <SeoHead pageName="home" initialSeoData={seoData} />
       <Hero />
       <div id="services"></div>
-
       <Secondsechome />
-      {/* <div id="about">
-        <WhyChooseUs />
-      </div> */}
-      {/* <AboutPage /> */}
-
-      {/* <AboutPage /> */}
       <Services services={services} />
-      {/* <RoofingProducts /> */}
-
       <OurProcess />
       <FeaturedProjects />
-     
       <div id="testimonials">
         <GoogleReviews />
       </div>
- <Faq />
+      <Faq />
     </Layout>
   );
 }

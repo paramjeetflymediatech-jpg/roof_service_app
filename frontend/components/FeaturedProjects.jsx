@@ -1,41 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HiX, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { PROJECTS } from '@/lib/constants';
 
-if (typeof window !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-}
-
 export default function FeaturedProjects() {
-    const sectionRef = useRef(null);
-    const cardsRef = useRef([]);
     const [selectedIndex, setSelectedIndex] = useState(null);
 
     // Show only first 4 projects
     const displayedProjects = PROJECTS.slice(0, 4);
-
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.from(cardsRef.current, {
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 80%',
-                },
-                opacity: 0,
-                y: 60,
-                stagger: 0.15,
-                duration: 1,
-                ease: 'power3.out',
-            });
-        }, sectionRef);
-
-        return () => ctx.revert();
-    }, []);
 
     const nextImage = useCallback((e) => {
         e?.stopPropagation();
@@ -64,7 +38,7 @@ export default function FeaturedProjects() {
     }, [selectedIndex, nextImage, prevImage, closeLightbox]);
 
     return (
-        <section ref={sectionRef} className="py-20 bg-gray-50">
+        <section className="py-20 bg-gray-50">
             <div className="container-custom">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
@@ -92,7 +66,6 @@ export default function FeaturedProjects() {
                     {displayedProjects.map((project, index) => (
                         <div
                             key={project.id}
-                            ref={(el) => (cardsRef.current[index] = el)}
                             className="bg-white shadow-lg rounded-xl overflow-hidden group cursor-pointer"
                             onClick={() => setSelectedIndex(index)}
                         >
@@ -101,6 +74,7 @@ export default function FeaturedProjects() {
                                     src={project.image}
                                     alt={project.title || "Mainstreet Roofing Project"}
                                     fill
+                                    quality={75}
                                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     className="object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 />

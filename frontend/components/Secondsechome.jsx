@@ -24,6 +24,7 @@ export default function Secondsechome() {
                                 src="/assets/aw-about-1.jpg"
                                 alt="About Us"
                                 fill
+                                quality={75}
                                 sizes="(max-width: 640px) 280px, (max-width: 1024px) 360px, 380px"
                                 className="object-cover"
                             />
@@ -43,6 +44,8 @@ export default function Secondsechome() {
                                 src="/assets/aw-about-2.jpg"
                                 alt="Roof"
                                 fill
+                                quality={75}
+                                sizes="(max-width: 640px) 220px, (max-width: 1024px) 300px, 320px"
                                 className="object-cover"
                             />
                         </div>

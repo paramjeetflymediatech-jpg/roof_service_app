@@ -1,5 +1,3 @@
-import { Youtube } from "lucide-react";
-
 // Company Information
 export const COMPANY_INFO = {
     name: 'Mainstreet Roofing Ltd Services',

@@ -1,23 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { WHY_CHOOSE_US, STATS } from '@/lib/constants';
-import { animateCounter } from '@/lib/animations';
 
-export default function WhyChooseUs() {
-    const sectionRef = useRef(null);
-    const statsRef = useRef([]);
+function StatCounter({ value, suffix, label }) {
+    const [count, setCount] = useState(0);
+    const ref = useRef(null);
 
     useEffect(() => {
-        // Animate counters
-        statsRef.current.forEach((stat, index) => {
-            if (stat) {
-                const value = STATS[index]?.value || 0;
-                animateCounter(stat, value);
+        let startTime = null;
+        let animationFrameId;
+        const duration = 1500;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                const animate = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    setCount(Math.floor(progress * value));
+                    if (progress < 1) {
+                        animationFrameId = requestAnimationFrame(animate);
+                    }
+                };
+                animationFrameId = requestAnimationFrame(animate);
+                observer.disconnect();
             }
-        });
-    }, []);
+        }, { threshold: 0.3 });
+
+        if (ref.current) observer.observe(ref.current);
+
+        return () => {
+            observer.disconnect();
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        };
+    }, [value]);
+
+    return (
+        <div ref={ref} className="text-center">
+            <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
+                <span>{count}</span>
+                {suffix}
+            </div>
+            <div className="text-gray-600 font-medium">{label}</div>
+        </div>
+    );
+}
+
+export default function WhyChooseUs() {
 
     const iconMap = {
         shield: '🛡️',
@@ -50,16 +80,12 @@ export default function WhyChooseUs() {
                 {/* Stats Section */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
                     {STATS.map((stat, index) => (
-                        <div
+                        <StatCounter
                             key={index}
-                            className="text-center"
-                        >
-                            <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
-                                <span ref={(el) => (statsRef.current[index] = el)}>0</span>
-                                {stat.suffix}
-                            </div>
-                            <div className="text-gray-600 font-medium">{stat.label}</div>
-                        </div>
+                            value={stat.value}
+                            suffix={stat.suffix}
+                            label={stat.label}
+                        />
                     ))}
                 </div>
 

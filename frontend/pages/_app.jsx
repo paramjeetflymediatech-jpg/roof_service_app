@@ -1,10 +1,13 @@
 import '@/styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { Inter, Poppins } from 'next/font/google';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useRouter } from 'next/router';
-import { ToastContainer } from 'react-toastify';
+import dynamic from 'next/dynamic';
 import Head from 'next/head';
+
+const ToastContainer = dynamic(
+  () => import('react-toastify').then((mod) => mod.ToastContainer),
+  { ssr: false }
+);
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,8 +24,6 @@ const poppins = Poppins({
 });
 
 export default function MyApp({ Component, pageProps }) {
-  const router = useRouter();
-
   return (
     <div className={`${inter.variable} ${poppins.variable} font-sans min-h-screen`}>
       <Head>
@@ -30,18 +31,7 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="icon" href="/assets/roofing-logo.png" type="image/png" />
         <title>Mainstreet Roofing Ltd</title>
       </Head>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={router.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Component {...pageProps} />
-        </motion.div>
-      </AnimatePresence>
-
+      <Component {...pageProps} />
       <ToastContainer
         position="top-right"
         autoClose={3000}
