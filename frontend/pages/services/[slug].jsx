@@ -102,9 +102,7 @@ export default function ServiceDetail({ service, seoData }) {
                 {service.category.name}
               </span>
             )}
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              {service.shortDescription}
-            </p>
+         
           </motion.div>
         </div>
       </div>
