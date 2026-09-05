@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import LayoutShell from "@/components/LayoutShell";
 import { COMPANY_INFO } from "@/lib/constants";
@@ -35,11 +36,15 @@ export default function PrivacyPolicyPage({ seoData }) {
       {/* Breadcrumb / Hero Section */}
       <section className="relative h-[300px] md:h-[400px] bg-dark-900 overflow-hidden">
         {/* Dark overlay with background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: "url('/assets/roofing-background.jpg')" }}
+        <Image
+          src="/assets/roofing-background.jpg"
+          alt="Mainstreet Roofing Privacy Policy"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/20 pointer-events-none" />
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4">
           <motion.h1

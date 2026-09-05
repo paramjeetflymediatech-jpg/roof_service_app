@@ -102,12 +102,14 @@ export default function BlogPage({ blogs, seoData }) {
                                     >
                                         <Link href={`/blogs/${blog.slug}`}>
                                             <div className="group bg-white rounded-xl md:rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col border border-gray-100">
-                                                <div className="relative md:h-56  w-full bg-gray-200 overflow-hidden">
+                                                <div className="relative h-48 sm:h-56 w-full bg-gray-100 overflow-hidden">
                                                     {blog.image ? (
-                                                        <img
+                                                        <Image
                                                             src={blog.image}
                                                             alt={blog.title}
-                                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                                            fill
+                                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-10">

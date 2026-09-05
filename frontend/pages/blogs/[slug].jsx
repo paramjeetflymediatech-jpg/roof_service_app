@@ -97,9 +97,16 @@ export default function BlogPost({ blog, seoData }) {
 
             {/* Featured Image */}
             {blog.image && (
-                <div className="bg-white">
-                    <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] rounded-2xl overflow-hidden">
-                        <img src={blog.image} alt={blog.title} className="w-full h-full object-contain" />
+                <div className="bg-white container-custom max-w-4xl px-4 md:px-6 pt-8">
+                    <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl overflow-hidden">
+                        <Image
+                            src={blog.image}
+                            alt={blog.title}
+                            fill
+                            priority
+                            sizes="(max-width: 1024px) 100vw, 900px"
+                            className="object-cover"
+                        />
                     </div>
                 </div>
             )}

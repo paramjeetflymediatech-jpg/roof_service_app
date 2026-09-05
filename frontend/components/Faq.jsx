@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiPlus, HiMinus } from 'react-icons/hi';
 import Head from 'next/head';
+import Link from 'next/link';
 import { FAQS, getFAQSchema } from '@/lib/constants';
 
 const FaqItem = ({ question, answer, isOpen, onClick }) => {
@@ -71,12 +72,12 @@ export default function Faq({ data = FAQS, title = "Questions", highlight = "Hav
                                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 hidden md:block">
                                     <h4 className="font-bold text-gray-900 mb-2 font-secondary uppercase text-sm tracking-wider">Still need help?</h4>
                                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">Our expert team is always ready to assist you with your roofing needs.</p>
-                                    <a
+                                    <Link
                                         href="/contact"
                                         className="inline-flex items-center text-primary font-bold hover:gap-2 transition-all duration-300 text-sm"
                                     >
                                         CONTACT US NOW <span className="ml-1 text-lg">→</span>
-                                    </a>
+                                    </Link>
                                 </div>
                             </motion.div>
                         </div>

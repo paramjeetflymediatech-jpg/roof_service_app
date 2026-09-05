@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Layout from '@/components/LayoutShell';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import { COMPANY_INFO } from '@/lib/constants';
@@ -69,12 +70,14 @@ export default function CompanyPage({ seoData }) {
                             </p>
                         </div>
                         <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
-                            <img
-                                src="/assets/project-residential.jpg"
+                            <Image
+                                src="/assets/project-1.jpg"
                                 alt="Our Work"
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover"
                             />
-                            <div className="absolute inset-0 bg-primary-900/10 hover:bg-transparent transition-colors duration-500" />
+                            <div className="absolute inset-0 bg-primary-900/10 hover:bg-transparent transition-colors duration-500 pointer-events-none" />
                         </div>
                     </div>
                 </div>

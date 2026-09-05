@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +9,7 @@
 
   html {
     @apply scroll-smooth overflow-x-hidden;
+    text-rendering: optimizeLegibility;
   }
 
   body {
@@ -123,15 +122,34 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0px);
     }
-
     50% {
       transform: translateY(-10px);
     }
+  }
+
+  /* GPU-Accelerated Marquee for Reviews */
+  @keyframes reviewMarquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .animate-review-marquee {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: reviewMarquee 35s linear infinite;
+  }
+
+  .animate-review-marquee:hover {
+    animation-play-state: paused;
   }
 
   /* Gradient Backgrounds */

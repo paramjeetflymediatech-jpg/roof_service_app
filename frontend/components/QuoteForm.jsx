@@ -246,6 +246,7 @@ export default function QuoteForm({ initialCity = "" }) {
                 src="https://maps.google.com/maps?q=Mainstreet+Roofing+LTD,+Surrey,+BC&t=&z=13&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"
+                title="Mainstreet Roofing Surrey Location"
                 style={{ border: 0 }}
                 allowFullScreen=""
                 loading="lazy"

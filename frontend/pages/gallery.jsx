@@ -1,12 +1,11 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { HiPhone, HiChevronRight, HiX, HiChevronLeft } from "react-icons/hi";
-import { COMPANY_INFO, PROJECTS } from "@/lib/constants";
+import { COMPANY_INFO } from "@/lib/constants";
 import LayoutShell from "@/components/LayoutShell";
 import { useState, useCallback, useEffect } from "react";
-import { useSeo } from "@/hooks/useSeo";
-
 import SeoHead from "@/components/SeoHead";
 import { getSeoData } from "@/lib/api/seo";
 
@@ -30,26 +29,21 @@ export async function getServerSideProps() {
 
 export default function GalleryPage({ seoData }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [galleryItems, setGalleryItems] = useState([]); // Initialize with static data
+  const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     import("@/lib/api/gallery").then(({ getGalleryItems }) => {
       getGalleryItems().then((items) => {
         if (items && items.length > 0) {
-          // Map backend items to frontend structure
           const mappedItems = items.map((item) => ({
             id: item.id,
             title: item.title,
             category: item.category,
-            // Handle image URL (prepend backend URL if needed)
             image: item.imageUrl.startsWith("http")
               ? item.imageUrl
               : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"}${item.imageUrl}`,
           }));
-          // Combine with static projects or replace? User asked for dynamic.
-          // Let's prepend dynamic items to static ones, or just use dynamic if available.
-          // For now, I'll prepend so user sees their uploads first.
           setGalleryItems([...mappedItems]);
         }
         setLoading(false);
@@ -95,20 +89,22 @@ export default function GalleryPage({ seoData }) {
     <LayoutShell>
       <SeoHead pageName="gallery" initialSeoData={seoData} />
       {/* Hero Section */}
-      <div
-        className="relative h-80 bg-cover bg-center flex items-center justify-center"
-        style={{
-          backgroundImage: "url('/assets/project-1.jpg')",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/60"></div>
+      <div className="relative h-80 bg-dark-900 flex items-center justify-center overflow-hidden">
+        <Image
+          src="/assets/project-1.jpg"
+          alt="Roofing Gallery"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-black/50 pointer-events-none"></div>
         <div className="relative z-10 text-center text-white px-4">
           <motion.h1
             className="text-4xl md:text-6xl font-bold mb-4 uppercase tracking-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
             OUR WORK <span className="text-primary">GALLERY</span>
           </motion.h1>
@@ -116,7 +112,7 @@ export default function GalleryPage({ seoData }) {
             className="text-xl max-w-2xl mx-auto text-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
             Explore our portfolio of quality roofing projects and craftsmanship
           </motion.p>
@@ -138,20 +134,22 @@ export default function GalleryPage({ seoData }) {
             {galleryItems.map((project, index) => (
               <motion.div
                 key={project.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
                 viewport={{ once: true }}
                 onClick={() => setSelectedIndex(index)}
                 className="group cursor-pointer"
               >
                 <div className="relative overflow-hidden rounded-2xl shadow-lg aspect-[4/3] bg-gray-100">
-                  <img
+                  <Image
                     src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    alt={project.title || "Gallery Item"}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 z-10">
                     <p className="text-primary font-bold text-sm mb-1 uppercase tracking-wider">
                       {project.category}
                     </p>
@@ -177,6 +175,7 @@ export default function GalleryPage({ seoData }) {
                 <button
                   onClick={closeLightbox}
                   className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]"
+                  aria-label="Close lightbox"
                 >
                   <HiX size={40} />
                 </button>
@@ -184,30 +183,34 @@ export default function GalleryPage({ seoData }) {
                 <button
                   onClick={prevImage}
                   className="absolute left-4 md:left-10 text-white/50 hover:text-white transition-colors z-[110] bg-white/10 hover:bg-white/20 p-2 rounded-full"
+                  aria-label="Previous image"
                 >
                   <HiChevronLeft size={48} />
                 </button>
                 <button
                   onClick={nextImage}
                   className="absolute right-4 md:right-10 text-white/50 hover:text-white transition-colors z-[110] bg-white/10 hover:bg-white/20 p-2 rounded-full"
+                  aria-label="Next image"
                 >
                   <HiChevronRight size={48} />
                 </button>
 
                 <motion.div
                   key={selectedIndex}
-                  initial={{ scale: 0.9, opacity: 0 }}
+                  initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  className="relative max-w-5xl w-full h-full flex items-center justify-center"
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="relative max-w-5xl w-full h-[75vh] flex items-center justify-center"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <img
+                  <Image
                     src={galleryItems[selectedIndex].image}
-                    alt={galleryItems[selectedIndex].title}
-                    className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                    alt={galleryItems[selectedIndex].title || "Gallery project"}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 1200px"
+                    className="object-contain rounded-lg shadow-2xl"
                   />
-                  <div className="absolute bottom-[-40px] left-0 right-0 text-center">
+                  <div className="absolute bottom-[-45px] left-0 right-0 text-center z-20">
                     <h3 className="text-white text-2xl font-bold">
                       {galleryItems[selectedIndex].title}
                     </h3>
@@ -228,12 +231,8 @@ export default function GalleryPage({ seoData }) {
               { number: "100+", label: "Satisfied Customers" },
               { number: "100%", label: "Satisfaction Guarantee" },
             ].map((stat, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
                 className="text-center"
               >
                 <p className="text-4xl md:text-5xl font-extrabold text-primary mb-2 tracking-tight">
@@ -242,20 +241,16 @@ export default function GalleryPage({ seoData }) {
                 <p className="text-gray-600 font-bold uppercase text-sm tracking-widest">
                   {stat.label}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Call to Action */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+          <div
             className="bg-gray-900 text-white rounded-3xl p-8 md:p-16 text-center shadow-2xl relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full -ml-32 -mb-32 blur-3xl pointer-events-none"></div>
 
             <div className="relative z-10">
               <h3 className="text-3xl md:text-5xl font-bold mb-6">
@@ -275,7 +270,7 @@ export default function GalleryPage({ seoData }) {
                   <span>{COMPANY_INFO.phone}</span>
                 </a>
                 <Link
-                  href="/#contact"
+                  href="/contact"
                   className="bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 px-10 rounded-full transition-all flex items-center justify-center gap-3 shadow-lg"
                 >
                   <span>Get a Free Quote</span>
@@ -283,7 +278,7 @@ export default function GalleryPage({ seoData }) {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </LayoutShell>

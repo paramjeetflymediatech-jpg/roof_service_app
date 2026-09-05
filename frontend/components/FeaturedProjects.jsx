@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { HiX, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { PROJECTS } from '@/lib/constants';
 
@@ -95,10 +96,15 @@ export default function FeaturedProjects() {
                             className="bg-white shadow-lg rounded-xl overflow-hidden group cursor-pointer"
                             onClick={() => setSelectedIndex(index)}
                         >
-                            <div
-                                className="h-64 bg-cover bg-center transform group-hover:scale-105 transition-transform duration-500"
-                                style={{ backgroundImage: `url(${project.image})` }}
-                            />
+                            <div className="relative h-64 overflow-hidden">
+                                <Image
+                                    src={project.image}
+                                    alt={project.title || "Mainstreet Roofing Project"}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    className="object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                            </div>
 
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-accent-600">

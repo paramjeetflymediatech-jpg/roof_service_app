@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
 
 if (typeof window !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
@@ -9,7 +11,6 @@ if (typeof window !== 'undefined') {
 
 export default function RoofingProducts() {
     const sectionRef = useRef(null);
-    const imageRef = useRef(null);
     const titleRef = useRef(null);
     const cardsRef = useRef([]);
 
@@ -28,32 +29,20 @@ export default function RoofingProducts() {
                 ease: 'power2.out',
             });
 
-            // Background image parallax
-            gsap.to(imageRef.current, {
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: 1,
-                },
-                backgroundPosition: '50% 100%',
-                ease: 'none',
-            });
-
             // Cards batch animation
             ScrollTrigger.batch(cardsRef.current, {
                 onEnter: (batch) =>
                     gsap.to(batch, {
-                        duration: 1,
+                        duration: 0.8,
                         opacity: 1,
                         y: 0,
-                        stagger: 0.15,
+                        stagger: 0.12,
                         overwrite: true,
                     }),
-                onLeave: (batch) => gsap.set(batch, { opacity: 0, y: -100, overwrite: true }),
-                onEnterBack: (batch) => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.15, overwrite: true }),
-                onLeaveBack: (batch) => gsap.set(batch, { opacity: 0, y: 100, overwrite: true }),
-                start: 'top 80%',
+                onLeave: (batch) => gsap.set(batch, { opacity: 0, y: -50, overwrite: true }),
+                onEnterBack: (batch) => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.12, overwrite: true }),
+                onLeaveBack: (batch) => gsap.set(batch, { opacity: 0, y: 50, overwrite: true }),
+                start: 'top 85%',
             });
         }, sectionRef);
 
@@ -66,7 +55,6 @@ export default function RoofingProducts() {
             title: 'Asphalt Shingles',
             description: 'Durable and cost-effective roofing solution with a wide variety of colors and styles.',
             image: '/assets/asphalt-shingles.jpg',
-            fallbackImage: 'https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80',
             features: ['25-30 Year Warranty', 'Wind Resistant', 'Energy Efficient'],
         },
         {
@@ -74,7 +62,6 @@ export default function RoofingProducts() {
             title: 'Metal Roofing',
             description: 'Long-lasting, eco-friendly roofing with superior durability and modern aesthetics.',
             image: '/assets/metal-roofing.jpg',
-            fallbackImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=2070&q=80',
             features: ['50+ Year Lifespan', 'Fire Resistant', 'Low Maintenance'],
         },
         {
@@ -82,7 +69,6 @@ export default function RoofingProducts() {
             title: 'Tile Roofing',
             description: 'Mainstreet Roofing Ltd option offering timeless beauty and exceptional longevity.',
             image: '/assets/tile-roofing.jpg',
-            fallbackImage: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=2070&q=80',
             features: ['Lifetime Durability', 'Weather Resistant', 'Classic Style'],
         },
         {
@@ -90,24 +76,12 @@ export default function RoofingProducts() {
             title: 'Flat Roofing',
             description: 'Modern commercial roofing solution with excellent waterproofing and accessibility.',
             image: '/assets/flat-roofing.jpg',
-            fallbackImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80',
             features: ['TPO & EPDM Options', 'Easy Maintenance', 'Cost Effective'],
         },
     ];
 
     return (
         <section ref={sectionRef} id="products" className="relative py-24 bg-gray-50 overflow-hidden">
-            {/* Background Image with Parallax */}
-            <div
-                ref={imageRef}
-                className="absolute inset-0 opacity-10"
-                style={{
-                    backgroundImage: "url('/assets/roofing-background.jpg'), url('https://images.unsplash.com/photo-1590482161867-1ff8e3c97a6e?auto=format&fit=crop&w=2070&q=80')",
-                    backgroundSize: 'cover',
-                    backgroundPosition: '50% 0%',
-                }}
-            />
-
             <div className="container-custom relative z-10">
                 {/* Section Title */}
                 <div ref={titleRef} className="text-center mb-16">
@@ -133,26 +107,29 @@ export default function RoofingProducts() {
                         <div
                             key={product.id}
                             ref={(el) => (cardsRef.current[index] = el)}
-                            className="opacity-0 translate-y-20"
+                            className="opacity-0 translate-y-12"
                         >
                             <motion.div
-                                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group"
-                                whileHover={{ y: -10 }}
+                                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group h-full flex flex-col"
+                                whileHover={{ y: -6 }}
                             >
                                 {/* Product Image */}
                                 <div className="relative h-64 overflow-hidden">
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
-                                        style={{ backgroundImage: `url('${product.image}')` }}
+                                    <Image
+                                        src={product.image}
+                                        alt={product.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        className="object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 to-transparent" />
-                                    <div className="absolute bottom-4 left-4 right-4">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 to-transparent pointer-events-none" />
+                                    <div className="absolute bottom-4 left-4 right-4 z-10">
                                         <h3 className="text-2xl font-bold text-white">{product.title}</h3>
                                     </div>
                                 </div>
 
                                 {/* Product Content */}
-                                <div className="p-6">
+                                <div className="p-6 flex-1 flex flex-col justify-between">
                                     <p className="text-gray-700 mb-4">{product.description}</p>
                                     <ul className="space-y-2">
                                         {product.features.map((feature, idx) => (
@@ -170,14 +147,12 @@ export default function RoofingProducts() {
 
                 {/* CTA */}
                 <div className="text-center">
-                    <motion.a
+                    <Link
                         href="/contact"
-                        className="btn btn-primary text-lg"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        className="btn btn-primary text-lg inline-block transition-transform duration-300 hover:scale-105"
                     >
                         Request Product Consultation
-                    </motion.a>
+                    </Link>
                 </div>
             </div>
         </section>

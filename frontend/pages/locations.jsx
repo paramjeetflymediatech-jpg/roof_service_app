@@ -97,15 +97,17 @@ export default function LocationsPage({ seoData, services = [], locations = [] }
     <LayoutShell>
       <SeoHead pageName="locations" initialSeoData={fallbackSeo} />
 
-      {/* Hero Banner */}
-      <div
-        className="relative h-72 md:h-96 bg-cover bg-center flex items-center justify-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&h=600&fit=crop')",
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-dark-900/90 to-dark-900/40"></div>
+      {/* Hero Banner with Next.js Image */}
+      <div className="relative h-72 md:h-96 bg-dark-900 flex items-center justify-center overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&h=600&fit=crop"
+          alt="Mainstreet Roofing Service Locations"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-dark-900/90 to-dark-900/40 pointer-events-none"></div>
         <div className="relative z-10 text-center text-white container-custom px-4">
           <motion.h1
             className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-4 tracking-tight"

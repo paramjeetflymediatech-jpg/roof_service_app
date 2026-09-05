@@ -18,15 +18,18 @@ export default function Secondsechome() {
                         {/* MAIN TALL IMAGE */}
                         <div className="relative 
               w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px]
+              h-[350px] sm:h-[400px] md:h-[450px] lg:h-[480px]
               rounded-xl overflow-hidden shadow-xl">
-                            <img
+                            <Image
                                 src="/assets/aw-about-1.jpg"
                                 alt="About Us"
-                                className="w-full h-auto object-cover"
+                                fill
+                                sizes="(max-width: 640px) 280px, (max-width: 1024px) 360px, 380px"
+                                className="object-cover"
                             />
 
                             {/* White Inner Border */}
-                            <div className="absolute inset-4 sm:inset-5 md:inset-6 border border-white z-10"></div>
+                            <div className="absolute inset-4 sm:inset-5 md:inset-6 border border-white z-10 pointer-events-none"></div>
                         </div>
 
                         {/* SECOND IMAGE (BOTTOM RIGHT OVERLAP) */}

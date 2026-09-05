@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiMenu, HiX, HiPhone, HiMail, HiLocationMarker, HiChevronDown } from "react-icons/hi";
 import {
@@ -304,10 +305,12 @@ export default function LayoutShell({ children }) {
                   rel="noopener noreferrer"
                   className="inline-block hover:opacity-80 transition-opacity"
                 >
-                  <img
+                  <Image
                     src="/BBB23.png"
                     alt="Better Business Bureau"
-                    className="     w-full  h-auto object-contain"
+                    width={250}
+                    height={100}
+                    className="w-full h-auto object-contain"
                   />
                 </a>
               </div>

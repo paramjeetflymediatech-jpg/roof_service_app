@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { HiHome } from 'react-icons/hi';
 import LayoutShell from "@/components/LayoutShell";
@@ -36,9 +37,13 @@ export default function AboutPage({ seoData }) {
       <SeoHead pageName="about" initialSeoData={seoData} />
       {/* Breadcrumb / Hero Section */}
       <section className="relative h-[300px] md:h-[400px] bg-dark-900 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: "url('/assets/roofing-background.jpg')" }}
+        <Image
+          src="/assets/roofing-background.jpg"
+          alt="Mainstreet Roofing Surrey BC"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/20" />
 
@@ -167,16 +172,19 @@ export default function AboutPage({ seoData }) {
 
             <div className="lg:w-1/2">
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 className="relative"
               >
-                <div className="absolute inset-0 bg-primary blur-[100px] opacity-20" />
-                <img
+                <div className="absolute inset-0 bg-primary blur-[100px] opacity-20 pointer-events-none" />
+                <Image
                   src="/assets/ab-roof-chimney.jpg"
                   alt="Roof Complexity"
-                  className="rounded-3xl shadow-2xl relative z-10 border border-white/10"
+                  width={600}
+                  height={450}
+                  sizes="(max-width: 768px) 100vw, 600px"
+                  className="rounded-3xl shadow-2xl relative z-10 border border-white/10 w-full h-auto object-cover"
                 />
               </motion.div>
             </div>
@@ -188,7 +196,7 @@ export default function AboutPage({ seoData }) {
       <section className="py-24 bg-white">
         <div className="container-custom">
           <div className="bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 text-primary/5">
+            <div className="absolute top-0 right-0 p-12 text-primary/5 pointer-events-none">
               <HiHome size={200} />
             </div>
 
@@ -235,13 +243,7 @@ export default function AboutPage({ seoData }) {
                 </motion.p>
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-                className="mt-12 flex flex-col sm:flex-row gap-6 mt-12"
-              >
+              <div className="mt-12 flex flex-col sm:flex-row gap-6">
                 <Link href="/contact" className="btn btn-primary px-10 py-4 rounded-full font-bold shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2">
                   FREE INSPECTION <HiArrowRight />
                 </Link>
@@ -254,7 +256,7 @@ export default function AboutPage({ seoData }) {
                     <span className="text-gray-900 font-bold">{COMPANY_INFO.phone}</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>

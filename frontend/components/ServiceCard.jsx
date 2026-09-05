@@ -85,14 +85,11 @@ export default function ServiceCard({
       )}
 
       {/* Learn More Button */}
-      <Link href={serviceUrl}>
-        <motion.button
-          className="w-full btn btn-primary mt-auto"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Learn More
-        </motion.button>
+      <Link
+        href={serviceUrl}
+        className="w-full btn btn-primary mt-auto text-center"
+      >
+        Learn More
       </Link>
 
       {/* Hover Border Effect */}

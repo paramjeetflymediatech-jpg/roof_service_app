@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { SERVICES } from "@/lib/constants";
 import ServiceCard from "./ServiceCard";
 
@@ -40,9 +41,9 @@ export default function Services({ services = [] }) {
             Don't see what you're looking for? We offer custom solutions for
             unique roofing needs.
           </p>
-          <a href="/contact" className="btn btn-primary text-lg">
+          <Link href="/contact" className="btn btn-primary text-lg">
             Request Custom Quote
-          </a>
+          </Link>
         </div>
       </div>
     </section>
