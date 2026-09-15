@@ -277,10 +277,10 @@ export const SERVICES_DROPDOWN = [
 
 // Projects Data
 export const PROJECTS = [
-    { id: 1, image: '/assets/project-1.jpg', title: 'Residential Roofing', category: 'Residential' },
-    { id: 2, image: '/assets/project-2.jpg', title: 'Modern Metal Roof', category: 'Metal Roofing' },
-    { id: 3, image: '/assets/project-3.jpg', title: 'Commercial Flat Roof', category: 'Commercial' },
-    { id: 4, image: '/assets/project-4.jpg', title: 'Tile Roof Restoration', category: 'Residential' },
+    { id: 1, image: '/assets/project-1.jpg', title: 'Residential Roof Replacement', category: 'Residential' },
+    { id: 2, image: '/assets/project-2.jpg', title: 'New Construction Roofing', category: 'Metal Roofing' },
+    { id: 3, image: '/assets/project-3.jpg', title: 'Tile Roof Restoration', category: 'Commercial' },
+    { id: 4, image: '/assets/project-4.jpg', title: 'Modern Metal Roof', category: 'Residential' },
     { id: 5, image: '/assets/project-5.jpg', title: 'Emergency Leak Repair', category: 'Repairs' },
     { id: 6, image: '/assets/project-6.jpg', title: 'Industrial Wall Metal', category: 'Wall Metals' },
     { id: 7, image: '/assets/project-7.jpg', title: 'New Construction Roof', category: 'New Construction' },

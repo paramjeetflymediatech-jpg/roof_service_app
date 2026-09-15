@@ -82,7 +82,7 @@ export default function FeaturedProjects() {
 
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-accent-600">
-                                    Mainstreet Roofing Ltd
+                                   {project.title}
                                 </h3>
                             </div>
                         </div>
