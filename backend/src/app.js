@@ -22,6 +22,9 @@ app.use(express.static(path.join(__dirname, "../public")));
 const allowedOrigins = [
   process.env.HOST_URL || "http://localhost:3000",
   process.env.FRONTEND_URL || "http://localhost:3001",
+  "https://www.mainstreet-roofing.ca",
+  "https://mainstreet-roofing.ca",
+  "https://api.mainstreet-roofing.ca",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:8081",

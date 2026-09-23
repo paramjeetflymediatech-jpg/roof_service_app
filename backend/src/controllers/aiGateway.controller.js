@@ -48,16 +48,16 @@ exports.getOpenApiSpec = async (req, res) => {
     },
     servers: [
       {
-        url: baseUrl,
-        description: "Active API Server",
+        url: "https://api.mainstreet-roofing.ca",
+        description: "Production Backend API",
       },
       {
         url: "https://www.mainstreet-roofing.ca",
         description: "Production Frontend Domain",
       },
       {
-        url: "https://api.socialflymediatech.com",
-        description: "Production Backend Domain",
+        url: baseUrl,
+        description: "Active Current Server",
       },
     ],
     paths: {
