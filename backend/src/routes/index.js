@@ -17,12 +17,15 @@ const invoiceApiRoutes = require("./invoice.api.routes");
 const reviewRoutes = require("./review.routes");
 const timesheetRoutes = require("./timesheet.routes");
 
+const aiGatewayRoutes = require("./aiGateway.routes");
+
 const { jwtAuth, checkAccountStatus } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
 router.use("/", apiRoutes);
 router.use("/auth", authRoutes);
+router.use("/ai-gateway", aiGatewayRoutes);
 
 // Apply checkAccountStatus after authentication to restrict pending_deletion accounts
 router.use("/leads",  leadRoutes);
