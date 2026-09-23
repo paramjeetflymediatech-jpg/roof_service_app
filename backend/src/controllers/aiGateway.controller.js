@@ -40,7 +40,7 @@ exports.getOpenApiSpec = async (req, res) => {
   const baseUrl = getBaseUrl(req);
 
   const spec = {
-    openapi: "3.0.0",
+    openapi: "3.1.0",
     info: {
       title: "Mainstreet Roofing AI Gateway API",
       version: "1.0.0",
@@ -49,15 +49,7 @@ exports.getOpenApiSpec = async (req, res) => {
     servers: [
       {
         url: "https://api.mainstreet-roofing.ca",
-        description: "Production Backend API",
-      },
-      {
-        url: "https://www.mainstreet-roofing.ca",
-        description: "Production Frontend Domain",
-      },
-      {
-        url: baseUrl,
-        description: "Active Current Server",
+        description: "Mainstreet Roofing Production API",
       },
     ],
     paths: {
