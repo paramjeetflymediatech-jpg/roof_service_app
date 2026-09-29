@@ -23,8 +23,20 @@ const nextConfig = {
         hostname: 'mainstreet-roofing.ca',
       },
       {
+        protocol: 'https',
+        hostname: 'www.mainstreet-roofing.ca',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.mainstreet-roofing.ca',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
   },

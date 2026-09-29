@@ -8,6 +8,7 @@ import LayoutShell from '@/components/LayoutShell';
 import SeoHead from '@/components/SeoHead';
 import { getBlogs } from '@/lib/api/blog';
 import { getSeoData } from '@/lib/api/seo';
+import { getImageUrl } from '@/lib/imageHelper';
 
 export async function getServerSideProps() {
     try {
@@ -105,7 +106,7 @@ export default function BlogPage({ blogs, seoData }) {
                                                 <div className="relative h-48 sm:h-56 w-full bg-gray-100 overflow-hidden">
                                                     {blog.image ? (
                                                         <Image
-                                                            src={blog.image}
+                                                            src={getImageUrl(blog.image)}
                                                             alt={blog.title}
                                                             fill
                                                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

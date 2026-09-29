@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import LayoutShell from '@/components/LayoutShell';
 import SeoHead from '@/components/SeoHead';
 import { getBlogBySlug } from '@/lib/api/blog';
+import { getImageUrl } from '@/lib/imageHelper';
 
 export async function getServerSideProps({ params }) {
     const { slug } = params;
@@ -26,7 +27,7 @@ export async function getServerSideProps({ params }) {
         metaRobots: blog.metaRobots || 'index, follow',
         ogTitle: blog.ogTitle || blog.metaTitle || blog.title || null,
         ogDescription: blog.ogDescription || blog.metaDescription || blog.excerpt || null,
-        ogImage: blog.ogImage || blog.image || null,
+        ogImage: getImageUrl(blog.ogImage || blog.image) || null,
         canonicalUrl: blog.canonicalUrl || null,
         schemaMarkup: blog.schemaMarkup || null,
         googleAnalyticsId: blog.googleAnalyticsId || null,
@@ -100,7 +101,7 @@ export default function BlogPost({ blog, seoData }) {
                 <div className="bg-white container-custom max-w-4xl px-4 md:px-6 pt-8">
                     <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl overflow-hidden">
                         <Image
-                            src={blog.image}
+                            src={getImageUrl(blog.image)}
                             alt={blog.title}
                             fill
                             priority
