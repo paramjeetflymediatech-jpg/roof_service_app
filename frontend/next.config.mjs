@@ -41,6 +41,16 @@ const nextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/locations/*',
+        destination: '/404',
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
