@@ -45,7 +45,7 @@ const nextConfig = {
     return [
       {
         source: '/locations/:path*',
-        destination: '/404',
+        destination: '/',
         permanent: true,
       },
     ];
