@@ -44,7 +44,7 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/locations/*',
+        source: '/locations/:path*',
         destination: '/404',
         permanent: true,
       },
