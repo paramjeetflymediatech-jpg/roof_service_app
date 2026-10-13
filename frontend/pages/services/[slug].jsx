@@ -234,16 +234,16 @@ export default function ServiceDetail({ service, seoData }) {
         const faqMap = {
           'restorations-servicing': { data: SERVICE_SUB_FAQS, title: "Roof Restoration", highlight: "Restoration" },
           'tile-slate-roofing': { data: TILE_ROOF_FAQS, title: "Tile & Roof Installation", highlight: "Installation" },
-          'leak-repair': { data: LEAK_REPAIR_FAQS, title: "Leak Repair", highlight: "Leak" },
-          'epdm': { data: EPDM_ROOFING_FAQS, title: "EPDM Roofing", highlight: "EPDM" },
-          'wall-metals': { data: WALL_METAL_FAQS, title: "Wall Metal", highlight: "Metal" },
-          'reroofs': { data: REROOFING_FAQS, title: "Reroofing", highlight: "Reroofing" },
-          'insulation': { data: ROOF_INSULATION_FAQS, title: "Roof Insulation", highlight: "Insulation" },
-          'rain-storm-damage': { data: RAIN_STORM_DAMAGE_FAQS, title: "Rain & Storm Damage", highlight: "Storm" },
-          'metal-gutters-downspouts': { data: METAL_GUTTERS_FAQS, title: "Metal Gutters", highlight: "Gutters" },
-          'torch-on-roofing': { data: TORCH_ON_FAQS, title: "Torch-on Roofing", highlight: "Torch-on" },
-          'metal-roofing': { data: METAL_ROOFING_FAQS, title: "Metal Roofing", highlight: "Metal" },
-          'new-construction': { data: NEW_CONSTRUCTION_FAQS, title: "New Construction", highlight: "New" },
+          'leak-repair': { data: LEAK_REPAIR_FAQS, title: "Leak Repair", },
+          'epdm': { data: EPDM_ROOFING_FAQS, title: "EPDM Roofing", },
+          'wall-metals': { data: WALL_METAL_FAQS, title: "Wall Metal", },
+          'reroofs': { data: REROOFING_FAQS, title: "Reroofing", },
+          'insulation': { data: ROOF_INSULATION_FAQS, title: "Roof Insulation", },
+          'rain-storm-damage': { data: RAIN_STORM_DAMAGE_FAQS, title: "Rain & Storm Damage", },
+          'metal-gutters-downspouts': { data: METAL_GUTTERS_FAQS, title: "Metal Gutters", },
+          'torch-on-roofing': { data: TORCH_ON_FAQS, title: "Torch-on Roofing", },
+          'metal-roofing': { data: METAL_ROOFING_FAQS, title: "Metal Roofing", },
+          'new-construction': { data: NEW_CONSTRUCTION_FAQS, title: "New Construction",  },
         };
 
         if (hasDbFaqs) {
