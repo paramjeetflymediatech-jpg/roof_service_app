@@ -52,6 +52,16 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/services/epdm',
+        destination: '/services/epdm-roofing',
+        permanent: true,
+      },
+      {
+        source: '/services/torch-on-roofing',
+        destination: '/services/torch-on',
+        permanent: true,
+      },
     ];
   },
 
