@@ -22,6 +22,7 @@ const ensureUploadDirs = () => {
     'public/uploads/services',
     'public/uploads/estimates',
     'public/uploads/invoices',
+    'public/uploads/blogs',
   ];
 
   dirs.forEach((dir) => {

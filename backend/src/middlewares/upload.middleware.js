@@ -2,8 +2,10 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+const uploadRootDir = path.join(__dirname, "../../public");
+
 // Ensure blogs directory exists
-const blogsDir = path.join(__dirname, "../../public/uploads/blogs");
+const blogsDir = path.join(uploadRootDir, "uploads/blogs");
 if (!fs.existsSync(blogsDir)) {
   fs.mkdirSync(blogsDir, { recursive: true });
 }
@@ -12,16 +14,16 @@ if (!fs.existsSync(blogsDir)) {
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     if (req.originalUrl.includes("profile-picture")) {
-      if (req.user.role === "user") cb(null, "public/uploads/profiles/");
+      if (req.user.role === "user") cb(null, path.join(uploadRootDir, "uploads/profiles/"));
       else if (req.user.role === "employee")
-        cb(null, "public/uploads/employees/");
-      else if (req.user.role === "admin") cb(null, "public/uploads/admins/");
+        cb(null, path.join(uploadRootDir, "uploads/employees/"));
+      else if (req.user.role === "admin") cb(null, path.join(uploadRootDir, "uploads/admins/"));
     } else if (req.originalUrl.includes("gallery")) {
-      cb(null, "public/uploads/gallery/");
+      cb(null, path.join(uploadRootDir, "uploads/gallery/"));
     } else if (req.originalUrl.includes("leads")) {
-      cb(null, "public/uploads/leads/");
+      cb(null, path.join(uploadRootDir, "uploads/leads/"));
     } else if (req.originalUrl.includes("blogs")) {
-      cb(null, "public/uploads/blogs/");
+      cb(null, path.join(uploadRootDir, "uploads/blogs/"));
     } else if (
       req.originalUrl.includes("upload") ||
       req.originalUrl.includes("jobs") ||
@@ -29,9 +31,9 @@ const storage = multer.diskStorage({
       req.originalUrl.includes("estimates")
     ) {
       // Generic upload, jobs, or invoices
-      cb(null, "public/uploads/jobs/");
+      cb(null, path.join(uploadRootDir, "uploads/jobs/"));
     } else {
-      cb(null, "public/uploads/services/");
+      cb(null, path.join(uploadRootDir, "uploads/services/"));
     }
   },
   filename: function (req, file, cb) {

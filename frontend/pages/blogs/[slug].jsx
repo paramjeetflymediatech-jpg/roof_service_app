@@ -105,6 +105,7 @@ export default function BlogPost({ blog, seoData }) {
                             alt={blog.title}
                             fill
                             priority
+                            unoptimized
                             sizes="(max-width: 1024px) 100vw, 900px"
                             className="object-cover"
                         />

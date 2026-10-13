@@ -8,13 +8,13 @@ export const getImageUrl = (imagePath) => {
   if (typeof imagePath !== 'string') return imagePath;
   
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
-    return imagePath;
+    return imagePath.replace(/([^:]\/)\/+/g, '$1');
   }
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
   const cleanBackend = backendUrl.replace(/\/+$/, '');
   const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-  return `${cleanBackend}${cleanPath}`;
+  return `${cleanBackend}${cleanPath}`.replace(/([^:]\/)\/+/g, '$1');
 };
 
 export default getImageUrl;
