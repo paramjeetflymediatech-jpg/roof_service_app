@@ -53,6 +53,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/services/roof',
+        destination: '/services',
+        permanent: true,
+      },
+      {
         source: '/services/epdm',
         destination: '/services/epdm-roofing',
         permanent: true,

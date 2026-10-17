@@ -15,7 +15,10 @@ export const getBlogBySlug = async (slug) => {
         const response = await apiClient.get(`/blogs/${slug}`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching blog detail:', error);
+        if (error.response?.status === 404) {
+            return { success: false, data: null };
+        }
+        console.error(`Error fetching blog detail for "${slug}":`, error?.message || error);
         return { success: false, data: null };
     }
 };

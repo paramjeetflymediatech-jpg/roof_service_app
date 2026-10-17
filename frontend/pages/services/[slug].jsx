@@ -15,7 +15,8 @@ import Faq from "@/components/Faq";
 
 export async function getServerSideProps({ params, query }) {
   const { slug } = params;
-  const data = await getServiceBySlug(slug, query);
+  const { slug: _removed, ...queryParams } = query || {};
+  const data = await getServiceBySlug(slug, queryParams);
 
   if (!data) {
     return {

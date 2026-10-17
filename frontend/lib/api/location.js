@@ -15,7 +15,10 @@ export const getLocationBySlug = async (slug) => {
     const response = await apiClient.get(`/locations/slug/${slug}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching location detail by slug:", error);
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error(`Error fetching location detail for "${slug}":`, error?.message || error);
     return null;
   }
 };
