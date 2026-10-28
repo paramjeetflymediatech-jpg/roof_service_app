@@ -467,29 +467,31 @@
                                     </p>
                                 </div>
 
-                                <div class="w-full flex-row flex items-center justify-center">
+                                <div class="w-full flex flex-row items-center justify-center md:justify-end gap-2.5 sm:gap-3">
                                     <!-- 1. Canadian Flag Stack (Now Left) -->
-                                    <div class="flex flex-col items-start gap-0.5 border-r border-gray-100 pr-4">
-                                        <img src="/flag.png" alt="Canada Flag" class="h-12 w-15 shadow-sm rounded-sm"
+                                    <div class="flex flex-col items-center gap-0.5 border-r border-gray-100 pr-2.5 sm:pr-3">
+                                        <img src="/flag.png" alt="Canada Flag" class="h-8 w-auto shadow-xs rounded-sm object-contain"
                                             onerror="this.style.display='none'">
                                         <span
-                                            class="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Proudly
+                                            class="text-[7.5px] font-bold text-gray-600 uppercase tracking-wider text-center whitespace-nowrap">Proudly
                                             Canadian</span>
                                     </div>
 
                                     <!-- 2. Website QR Stack (Middle) -->
-                                    <div class="flex flex-col items-center gap-0.5">
+                                    <div class="flex flex-col items-center gap-0.5 border-r border-gray-100 pr-2.5 sm:pr-3">
                                         <img src="/qr_website.png" alt="Website QR"
-                                            class="w-20 border p-0.5 rounded-lg bg-white shadow-sm"
+                                            class="w-10 h-10 border border-gray-100 p-0.5 rounded-lg bg-white shadow-xs object-contain"
                                             onerror="this.style.display='none'">
                                         <span
-                                            class="text-[8px] font-bold text-gray-500 uppercase tracking-tight text-center leading-none">Scan
+                                            class="text-[7px] font-bold text-gray-500 uppercase tracking-tight text-center leading-none whitespace-nowrap">Scan
                                             to visit<br>our website</span>
                                     </div>
 
                                     <!-- 3. BBB Logo (Now Right) -->
-                                    <img src="/BBB.png" alt="BBB Logo" style="height: 120px;" class="w-25  mb-1.5"
-                                        onerror="this.style.display='none'">
+                                    <div class="flex items-center">
+                                        <img src="/BBB.png" alt="BBB Logo" class="h-10 sm:h-11 max-w-[115px] w-auto object-contain flex-shrink-0"
+                                            onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src='/bbb.png';}else{this.style.display='none';}">
+                                    </div>
                                 </div>
                             </div>
 
